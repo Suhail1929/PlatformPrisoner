@@ -14,6 +14,16 @@
 #define Probe 10
 #define Life 11
 #define Bomb 12
+#define LEVEL 14
+#define CLEAR 16
+#include <stdlib.h>
+#include <ncurses.h>
+
+#include "../Fonction/fonction.h"
+#include "../Couleur/couleur.h"
+#include "../Window/window.h"
+#include "../Level/niveau.h"
+#include "../Tool/monstre.h"
 
 // Structure représentant l'interface de l'application
 typedef struct

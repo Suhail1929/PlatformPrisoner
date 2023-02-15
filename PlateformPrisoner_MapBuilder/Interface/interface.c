@@ -1,18 +1,13 @@
-#include <stdlib.h>
-#include <ncurses.h>
-
-#include "../Fonction/fonction.h"
-#include "../Couleur/couleur.h"
-#include "../Window/window.h"
-
-#include "../Tool/monstre.h"
-
 #include "interface.h"
 int nb_door = 1;
-
+char level[15];
+int level_nb = 1;
 interface_t *interface_create()
 {
     interface_t *result;
+    // Initialisation du niveau
+    niveau_t *niveau = malloc(sizeof(niveau_t));
+    niveau_init(niveau);
 
     // Structure allocation
     if ((result = malloc(sizeof(interface_t))) == NULL)
@@ -79,7 +74,7 @@ void interface_tools_update(interface_t *interface)
     else
     {
         window_printw_col(interface->win_tools, WHITE, " ");
-        window_color(interface->win_tools, RED);
+        window_color(interface->win_tools, BLUE);
     }
 
     window_printw(interface->win_tools, " Delete\n");
@@ -92,7 +87,7 @@ void interface_tools_update(interface_t *interface)
     else
     {
         window_printw_col(interface->win_tools, WHITE, " ");
-        window_color(interface->win_tools, RED);
+        window_color(interface->win_tools, BLUE);
     }
 
     window_printw(interface->win_tools, " Block\n");
@@ -105,7 +100,7 @@ void interface_tools_update(interface_t *interface)
     else
     {
         window_printw_col(interface->win_tools, WHITE, " ");
-        window_color(interface->win_tools, RED);
+        window_color(interface->win_tools, BLUE);
     }
 
     window_printw(interface->win_tools, " Ladder\n");
@@ -118,7 +113,7 @@ void interface_tools_update(interface_t *interface)
     else
     {
         window_printw_col(interface->win_tools, WHITE, " ");
-        window_color(interface->win_tools, RED);
+        window_color(interface->win_tools, BLUE);
     }
 
     window_printw(interface->win_tools, " Trap\n");
@@ -132,7 +127,7 @@ void interface_tools_update(interface_t *interface)
     else
     {
         window_printw_col(interface->win_tools, WHITE, " ");
-        window_color(interface->win_tools, RED);
+        window_color(interface->win_tools, BLUE);
         window_printw(interface->win_tools, " Gate\n");
     }
     window_mvprintw_col(interface->win_tools, 4, 8, FD_MAGENTA, " ");
@@ -148,7 +143,7 @@ void interface_tools_update(interface_t *interface)
     else
     {
         window_printw_col(interface->win_tools, WHITE, " ");
-        window_color(interface->win_tools, RED);
+        window_color(interface->win_tools, BLUE);
     }
     window_printw(interface->win_tools, " Key\n");
 
@@ -176,7 +171,7 @@ void interface_tools_update(interface_t *interface)
     else
     {
         window_printw_col(interface->win_tools, WHITE, " ");
-        window_color(interface->win_tools, RED);
+        window_color(interface->win_tools, BLUE);
     }
     window_printw(interface->win_tools, " Door\n");
 
@@ -188,7 +183,7 @@ void interface_tools_update(interface_t *interface)
     else
     {
         window_printw_col(interface->win_tools, WHITE, " ");
-        window_color(interface->win_tools, RED);
+        window_color(interface->win_tools, BLUE);
     }
 
     window_printw(interface->win_tools, " Exit\n");
@@ -200,7 +195,7 @@ void interface_tools_update(interface_t *interface)
     else
     {
         window_printw_col(interface->win_tools, WHITE, " ");
-        window_color(interface->win_tools, RED);
+        window_color(interface->win_tools, BLUE);
     }
 
     window_printw(interface->win_tools, " Start\n");
@@ -212,7 +207,7 @@ void interface_tools_update(interface_t *interface)
     else
     {
         window_printw_col(interface->win_tools, WHITE, " ");
-        window_color(interface->win_tools, RED);
+        window_color(interface->win_tools, BLUE);
     }
 
     window_printw(interface->win_tools, " Robot\n");
@@ -224,7 +219,7 @@ void interface_tools_update(interface_t *interface)
     else
     {
         window_printw_col(interface->win_tools, WHITE, " ");
-        window_color(interface->win_tools, RED);
+        window_color(interface->win_tools, BLUE);
     }
 
     window_printw(interface->win_tools, " Probe\n");
@@ -236,7 +231,7 @@ void interface_tools_update(interface_t *interface)
     else
     {
         window_printw_col(interface->win_tools, WHITE, " ");
-        window_color(interface->win_tools, RED);
+        window_color(interface->win_tools, BLUE);
     }
 
     window_printw(interface->win_tools, " Life\n");
@@ -248,10 +243,41 @@ void interface_tools_update(interface_t *interface)
     else
     {
         window_printw_col(interface->win_tools, WHITE, " ");
+        window_color(interface->win_tools, BLUE);
+    }
+    window_printw(interface->win_tools, " Bomb\n");
+    window_printw(interface->win_tools, " \n");
+    if (interface->selection == LEVEL)
+    {
+        window_printw_col(interface->win_tools, WHITE, " ");
+        window_color(interface->win_tools, YELLOW);
+    }
+    else
+    {
+        window_printw_col(interface->win_tools, WHITE, " ");
         window_color(interface->win_tools, RED);
     }
-
-    window_printw(interface->win_tools, " Bomb\n");
+    if (level_nb < 10)
+    {
+        sprintf(level, "< Level 0%d >", level_nb);
+    }
+    else
+    {
+        sprintf(level, "< Level %d >", level_nb);
+    }
+    window_printw(interface->win_tools, level);
+    window_printw(interface->win_tools, " \n");
+    if (interface->selection == CLEAR)
+    {
+        window_printw_col(interface->win_tools, WHITE, " ");
+        window_color(interface->win_tools, YELLOW);
+    }
+    else
+    {
+        window_printw_col(interface->win_tools, WHITE, " ");
+        window_color(interface->win_tools, RED);
+    }
+    window_printw(interface->win_tools, "  CLEAR\n");
 
     window_refresh(interface->win_tools);
 }
@@ -268,12 +294,12 @@ void interface_tools_actions(interface_t *interface, int posX, int posY)
     window_refresh(interface->win_tools);
     window_refresh(interface->win_infos);
 
-    if ((posY >= 0) && (posY <= 12))
+    if ((posY >= 0) && (posY <= 18))
     {
         switch (posY)
         {
         case 0:
-            interface->selection = Delete;
+            interface->selection = CLEAR;
             break;
         case 1:
             interface->selection = Block;
@@ -329,6 +355,23 @@ void interface_tools_actions(interface_t *interface, int posX, int posY)
             break;
         case 12:
             interface->selection = Bomb;
+            break;
+        case 14:
+            interface->selection = LEVEL;
+            if (posX >= 0 && posX <= 2)
+            {
+                if (level_nb > 1)
+                {
+                    level_nb--;
+                }
+            }
+            else if (posX >= 10 && posX <= 12)
+            {
+                level_nb++;
+            }
+            break;
+        case 16:
+            interface->selection = CLEAR;
             break;
         }
         interface_tools_update(interface);
@@ -419,6 +462,9 @@ void interface_level_actions(interface_t *interface, int posX, int posY)
         break;
     case Bomb:
         window_mvaddch_col(interface->win_level, posY, posX, WHITE, 'o');
+        break;
+    case CLEAR:
+        window_clear(interface->win_level);
         break;
     default:
         break;
