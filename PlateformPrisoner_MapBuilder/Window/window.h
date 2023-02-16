@@ -21,6 +21,5 @@ bool window_getcoordinates(window_t *window, int posx, int posy, int *x, int *y)
 int window_color(window_t *window, unsigned int color);
 int window_mvaddch(window_t *window, int posY, int posX, chtype c);
 int window_mvaddch_col(window_t *window, int posY, int posX, unsigned int color, chtype c);
-int window_clear(window_t *window);
 
 #endif

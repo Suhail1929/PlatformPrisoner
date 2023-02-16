@@ -53,19 +53,19 @@ void niveau_remove(off_t niveau_pos, char *file)
     if (fd == -1)
     {
         printf("Erreur: %s\n", strerror(errno));
-        return 1;
+        exit(EXIT_FAILURE);
     }
     // on recupre la position du curseur offset
     offset = lseek(fd, niveau_pos, SEEK_SET);
     if (offset == -1)
     {
         perror("Error seeking to position 100");
-        return 1;
+        exit(EXIT_FAILURE);
     }
     if (read(fd, &niveau, sizeof(niveau_t)) == -1)
     {
         perror("Error reading file");
-        return 1;
+        exit(EXIT_FAILURE);
     }
     niveau.is_deleted = 1;
     // on recupre la position du curseur offset
@@ -75,12 +75,12 @@ void niveau_remove(off_t niveau_pos, char *file)
     if (write(fd, &niveau, sizeof(niveau_t)) == -1)
     {
         perror("Error writing to file");
-        return 1;
+        exit(EXIT_FAILURE);
     }
     // on ferme le fichier
     if (close(fd) == -1)
     {
         perror("Error closing file");
-        return 1;
+        exit(EXIT_FAILURE);
     }
 }

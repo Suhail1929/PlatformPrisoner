@@ -142,7 +142,3 @@ int window_mvaddch_col(window_t *window, int posY, int posX, unsigned int color,
 
     return result;
 }
-int window_clear(window_t *window)
-{
-    return werase(window->inner);
-}

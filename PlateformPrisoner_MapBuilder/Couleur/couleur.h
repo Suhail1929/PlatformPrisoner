@@ -1,6 +1,7 @@
 #ifndef _COULEUR_
 #define _COULEUR_
 
+#define BLACK 0
 #define WHITE 1
 #define GREEN 2
 #define BLUE 3

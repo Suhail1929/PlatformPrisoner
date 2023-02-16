@@ -7,6 +7,7 @@
  */
 void palette()
 {
+    init_pair(BLACK, COLOR_BLACK, COLOR_BLACK);
     init_pair(WHITE, COLOR_WHITE, COLOR_BLACK);
     init_pair(GREEN, COLOR_GREEN, COLOR_BLACK);
     init_pair(BLUE, COLOR_BLUE, COLOR_BLACK);

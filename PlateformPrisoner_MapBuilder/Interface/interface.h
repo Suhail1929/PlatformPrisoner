@@ -14,8 +14,8 @@
 #define Probe 10
 #define Life 11
 #define Bomb 12
-#define LEVEL 14
-#define CLEAR 16
+#define LEVEL 16
+#define CLEAR 18
 #include <stdlib.h>
 #include <ncurses.h>
 
