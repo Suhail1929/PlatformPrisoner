@@ -1,6 +1,23 @@
 #include "interface.h"
-int nb_door = 1;
+#include "../Fonction/fonction.h"
+#include "../Couleur/couleur.h"
+#include "../Level/niveau.h"
+#include "../Tool/Block.h"
+#include "../Tool/Start.h"
+#include "../Tool/Exit.h"
+#include "../Tool/Gate.h"
+#include "../Tool/Key.h"
+#include "../Tool/Ladder.h"
+#include "../Tool/Life.h"
+#include "../Tool/Probe.h"
+#include "../Tool/Robot.h"
+#include "../Tool/Bomb.h"
+#include "../Tool/Door.h"
+#include "../Tool/Player.h"
+#include "../Tool/Trap.h"
+#include "../Objet/objet.h"
 char level[15];
+
 int level_nb = 1;
 interface_t *interface_create()
 {
@@ -26,28 +43,33 @@ interface_t *interface_create()
     result->win_level = window_create(0, 0, 62, 22, "Level", FALSE);
 
     // player
-    window_mvaddch_col(result->win_level, 2, 32, RED, ' ' | A_REVERSE);
-    window_mvaddch_col(result->win_level, 2, 31, RED, '-' | A_REVERSE);
-    window_mvaddch_col(result->win_level, 3, 31, BLUE, ' ' | ACS_HLINE);
-    window_mvaddch_col(result->win_level, 3, 32, BLUE, ' ' | ACS_PLUS);
-    window_mvaddch_col(result->win_level, 3, 33, BLUE, ' ' | ACS_HLINE);
-    window_mvaddch_col(result->win_level, 4, 31, BLUE, ' ' | ACS_ULCORNER);
-    window_mvaddch_col(result->win_level, 4, 32, BLUE, ' ' | ACS_BTEE);
-    window_mvaddch_col(result->win_level, 4, 33, BLUE, ' ' | ACS_URCORNER);
-    window_mvaddch_col(result->win_level, 5, 31, BLUE, ' ' | ACS_VLINE);
-    window_mvaddch_col(result->win_level, 5, 33, BLUE, ' ' | ACS_VLINE);
-
+    drawPlayer(result->win_level, 25, 5, RED, BLUE);
+    // outliner
+    outliner(result);
     window_refresh(result->win_level);
-
     // fenetre tools
     result->win_tools = window_create(62, 0, 15, 22, "Tools", FALSE);
 
     result->current_color = MAGENTA; // default color
-    result->selection = Block;       // default selection
+    result->selection = BLOCK;       // default selection
     interface_tools_update(result);
     window_refresh(result->win_tools);
 
     return result;
+}
+
+void outliner(interface_t *interface)
+{
+    for (int i = 0; i <= 59; i++)
+    {
+        window_mvaddch_col(interface->win_level, 0, i, CYAN, ' ' | A_REVERSE);
+        window_mvaddch_col(interface->win_level, 19, i, CYAN, ' ' | A_REVERSE);
+    }
+    for (int i = 0; i <= 19; i++)
+    {
+        window_mvaddch_col(interface->win_level, i, 0, CYAN, ' ' | A_REVERSE);
+        window_mvaddch_col(interface->win_level, i, 59, CYAN, ' ' | A_REVERSE);
+    }
 }
 
 void interface_delete(interface_t **interface)
@@ -68,7 +90,7 @@ void interface_tools_update(interface_t *interface)
 {
     window_erase(interface->win_tools);
 
-    if (interface->selection == Delete)
+    if (interface->selection == DELETE)
     {
         window_printw_col(interface->win_tools, WHITE, ">");
         window_color(interface->win_tools, WHITE);
@@ -81,7 +103,7 @@ void interface_tools_update(interface_t *interface)
 
     window_printw(interface->win_tools, " Delete\n");
 
-    if (interface->selection == Block)
+    if (interface->selection == BLOCK)
     {
         window_printw_col(interface->win_tools, WHITE, ">");
         window_color(interface->win_tools, WHITE);
@@ -94,7 +116,7 @@ void interface_tools_update(interface_t *interface)
 
     window_printw(interface->win_tools, " Block\n");
 
-    if (interface->selection == Ladder)
+    if (interface->selection == LADDER)
     {
         window_printw_col(interface->win_tools, WHITE, ">");
         window_color(interface->win_tools, WHITE);
@@ -107,7 +129,7 @@ void interface_tools_update(interface_t *interface)
 
     window_printw(interface->win_tools, " Ladder\n");
 
-    if (interface->selection == Trap)
+    if (interface->selection == TRAP)
     {
         window_printw_col(interface->win_tools, WHITE, ">");
         window_color(interface->win_tools, WHITE);
@@ -120,7 +142,7 @@ void interface_tools_update(interface_t *interface)
 
     window_printw(interface->win_tools, " Trap\n");
 
-    if (interface->selection == Gate)
+    if (interface->selection == GATE)
     {
         window_printw_col(interface->win_tools, WHITE, ">");
         window_printw(interface->win_tools, " Gate\n");
@@ -137,7 +159,7 @@ void interface_tools_update(interface_t *interface)
     window_mvprintw_col(interface->win_tools, 4, 10, FD_YELLOW, " ");
     window_mvprintw_col(interface->win_tools, 4, 11, FD_BLUE, " \n");
 
-    if (interface->selection == Key)
+    if (interface->selection == KEY)
     {
         window_printw_col(interface->win_tools, WHITE, ">");
         window_color(interface->win_tools, WHITE);
@@ -167,44 +189,44 @@ void interface_tools_update(interface_t *interface)
         break;
     }
 
-    window_printw_col(interface->win_tools, WHITE, (interface->selection == Door) ? ">" : " ");
-    window_color(interface->win_tools, (interface->selection == Door) ? WHITE : RED);
+    window_printw_col(interface->win_tools, WHITE, (interface->selection == DOOR) ? ">" : " ");
+    window_color(interface->win_tools, (interface->selection == DOOR) ? WHITE : RED);
 
     // char Door_num[12];
-    // sprintf(Door_num, "  Door  %d\n", nb_door);
+    // sprintf(Door_num, "  DOOR  %d\n", nb_door);
     window_printw(interface->win_tools, " Door  ");
     if (nb_door < 10)
     {
         window_printw_col(interface->win_tools, WHITE, "<0%d>\n", nb_door);
     }
 
-    window_printw_col(interface->win_tools, WHITE, (interface->selection == Exit) ? ">" : " ");
-    window_color(interface->win_tools, (interface->selection == Exit) ? WHITE : RED);
+    window_printw_col(interface->win_tools, WHITE, (interface->selection == EXIT) ? ">" : " ");
+    window_color(interface->win_tools, (interface->selection == EXIT) ? WHITE : RED);
 
     window_printw(interface->win_tools, " Exit\n");
 
-    window_printw_col(interface->win_tools, WHITE, (interface->selection == Start) ? ">" : " ");
-    window_color(interface->win_tools, (interface->selection == Start) ? WHITE : RED);
+    window_printw_col(interface->win_tools, WHITE, (interface->selection == START) ? ">" : " ");
+    window_color(interface->win_tools, (interface->selection == START) ? WHITE : RED);
 
     window_printw(interface->win_tools, " Start\n");
 
-    window_printw_col(interface->win_tools, WHITE, (interface->selection == Robot) ? ">" : " ");
-    window_color(interface->win_tools, (interface->selection == Robot) ? WHITE : RED);
+    window_printw_col(interface->win_tools, WHITE, (interface->selection == ROBOT) ? ">" : " ");
+    window_color(interface->win_tools, (interface->selection == ROBOT) ? WHITE : RED);
 
     window_printw(interface->win_tools, " Robot\n");
 
-    window_printw_col(interface->win_tools, WHITE, (interface->selection == Probe) ? ">" : " ");
-    window_color(interface->win_tools, (interface->selection == Probe) ? WHITE : RED);
+    window_printw_col(interface->win_tools, WHITE, (interface->selection == PROBE) ? ">" : " ");
+    window_color(interface->win_tools, (interface->selection == PROBE) ? WHITE : RED);
 
     window_printw(interface->win_tools, " Probe\n");
 
-    window_printw_col(interface->win_tools, WHITE, (interface->selection == Life) ? ">" : " ");
-    window_color(interface->win_tools, (interface->selection == Life) ? WHITE : RED);
+    window_printw_col(interface->win_tools, WHITE, (interface->selection == LIFE) ? ">" : " ");
+    window_color(interface->win_tools, (interface->selection == LIFE) ? WHITE : RED);
 
     window_printw(interface->win_tools, " Life\n");
 
-    window_printw_col(interface->win_tools, WHITE, (interface->selection == Bomb) ? ">" : " ");
-    window_color(interface->win_tools, (interface->selection == Bomb) ? WHITE : RED);
+    window_printw_col(interface->win_tools, WHITE, (interface->selection == BOMB) ? ">" : " ");
+    window_color(interface->win_tools, (interface->selection == BOMB) ? WHITE : RED);
 
     window_printw(interface->win_tools, " Bomb\n");
 
@@ -239,19 +261,19 @@ void interface_tools_actions(interface_t *interface, int posX, int posY)
     {
         switch (posY)
         {
-        case Delete:
-            interface->selection = Delete;
+        case DELETE:
+            interface->selection = DELETE;
             break;
-        case Block:
-            interface->selection = Block;
+        case BLOCK:
+            interface->selection = BLOCK;
             break;
-        case Ladder:
-            interface->selection = Ladder;
+        case LADDER:
+            interface->selection = LADDER;
             break;
-        case Trap:
-            interface->selection = Trap;
+        case TRAP:
+            interface->selection = TRAP;
             break;
-        case Gate:
+        case GATE:
             switch (posX)
             {
                 // add color to struct for each case
@@ -270,40 +292,40 @@ void interface_tools_actions(interface_t *interface, int posX, int posY)
             }
             if (posX < 8)
             {
-                interface->selection = Gate;
+                interface->selection = GATE;
             }
             break;
-        case Key:
-            interface->selection = Key;
+        case KEY:
+            interface->selection = KEY;
             break;
-        case Door:
-            interface->selection = Door;
-            if (posX == 8 && nb_door > 1)
+        case DOOR:
+            interface->selection = DOOR;
+            if (posX == 8)
             {
-                nb_door--;
+                decrementDoor();
             }
-            else if (posX == 11 && nb_door < 9)
+            else if (posX == 11)
             {
-                nb_door++;
+                incrementDoor();
             }
             break;
-        case Exit:
-            interface->selection = Exit;
+        case EXIT:
+            interface->selection = EXIT;
             break;
-        case Start:
-            interface->selection = Start;
+        case START:
+            interface->selection = START;
             break;
-        case Robot:
-            interface->selection = Robot;
+        case ROBOT:
+            interface->selection = ROBOT;
             break;
-        case Probe:
-            interface->selection = Probe;
+        case PROBE:
+            interface->selection = PROBE;
             break;
-        case Life:
-            interface->selection = Life;
+        case LIFE:
+            interface->selection = LIFE;
             break;
-        case Bomb:
-            interface->selection = Bomb;
+        case BOMB:
+            interface->selection = BOMB;
             break;
         case LEVEL:
             interface->selection = LEVEL;
@@ -319,6 +341,7 @@ void interface_tools_actions(interface_t *interface, int posX, int posY)
         case CLEAR:
             interface->selection = CLEAR;
             window_erase(interface->win_level);
+            outliner(interface);
             window_refresh(interface->win_level);
             break;
         default:
@@ -330,108 +353,66 @@ void interface_tools_actions(interface_t *interface, int posX, int posY)
 
 void interface_level_actions(interface_t *interface, int posX, int posY)
 {
+    Objet_t *objet;
     switch (interface->selection)
     {
-    case Delete:
+    case DELETE:
         window_mvaddch(interface->win_level, posY, posX, ' ');
         break;
-    case Block:
-        window_mvaddch_col(interface->win_level, posY, posX, CYAN, ' ' | A_REVERSE);
+    case BLOCK:
+
+        objet = initObjet(1, 1, CYAN, BLOCK); // les coordonnées sont à modifier
+        drawObjet(*objet, interface->win_level, posX, posY);
         break;
-    case Ladder:
-        window_mvaddch_col(interface->win_level, posY, posX, YELLOW, ' ' | ACS_LTEE);
-        window_mvaddch_col(interface->win_level, posY, posX + 1, YELLOW, ' ' | ACS_HLINE);
-        window_mvaddch_col(interface->win_level, posY, posX + 2, YELLOW, ' ' | ACS_RTEE);
+    case LADDER:
+        objet = initObjet(2, 2, YELLOW, LADDER);
+        drawObjet(*objet, interface->win_level, posX, posY);
         break;
-    case Trap:
-        window_mvaddch_col(interface->win_level, posY, posX, CYAN, '#' | A_REVERSE);
+    case TRAP:
+        objet = initObjet(2, 1, interface->current_color, TRAP);
+        drawObjet(*objet, interface->win_level, posX, posY);
         break;
-    case Gate:
-        for (size_t i = 0; i < 4; i++)
-        {
-            window_mvaddch_col(interface->win_level, posY + i, posX, interface->current_color, ' ' | ACS_PLUS);
-        }
+    case GATE:
+        objet = initObjet(2, 1, interface->current_color, GATE);
+        drawObjet(*objet, interface->win_level, posX, posY);
         break;
-    case Key:
-        window_mvaddch_col(interface->win_level, posY, posX, MAGENTA, ' ' | A_REVERSE);
-        window_mvaddch_col(interface->win_level, posY + 1, posX, MAGENTA, ' ' | ACS_LLCORNER);
+    case KEY:
+        objet = initObjet(1, 1, interface->current_color, KEY);
+        drawObjet(*objet, interface->win_level, posX, posY);
         break;
-    case Door:
-        for (size_t i = 0; i < 3; i++)
-        {
-            for (size_t j = 0; j < 4; j++)
-            {
-                window_mvaddch_col(interface->win_level, posY + j, posX + i, interface->current_color, ' ' | A_REVERSE);
-            }
-        }
-        window_mvaddch(interface->win_level, posY, posX, '0');
-        window_mvaddch(interface->win_level, posY, posX + 1, "123456789"[nb_door - 1]);
+    case DOOR:
+        objet = initObjet(2, 2, interface->current_color, DOOR);
+        drawObjet(*objet, interface->win_level, posX, posY);
         break;
-    case Exit:
-        for (size_t i = 0; i < 3; i++)
-        {
-            for (size_t j = 0; j < 4; j++)
-            {
-                window_mvaddch_col(interface->win_level, posY + j, posX + i, YELLOW, ' ' | A_REVERSE);
-            }
-        }
+    case EXIT:
+        objet = initObjet(2, 2, interface->current_color, EXIT);
+        drawObjet(*objet, interface->win_level, posX, posY);
         break;
-    case Start:
-        for (size_t i = 0; i < 3; i++)
-        {
-            for (size_t j = 0; j < 4; j++)
-            {
-                window_mvaddch_col(interface->win_level, posY + j, posX + i, MAGENTA, ' ' | A_REVERSE);
-            }
-        }
+    case START:
+        objet = initObjet(2, 2, interface->current_color, START);
+        drawObjet(*objet, interface->win_level, posX, posY);
         break;
-    case Robot:
-        window_mvaddch_col(interface->win_level, posY, posX, WHITE, ' ' | ACS_ULCORNER);
-        window_mvaddch_col(interface->win_level, posY, posX + 1, WHITE, ' ' | ACS_BTEE);
-        window_mvaddch_col(interface->win_level, posY, posX + 2, WHITE, ' ' | ACS_URCORNER);
-        window_mvaddch_col(interface->win_level, posY + 1, posX, WHITE, ' ' | ACS_LLCORNER);
-        window_mvaddch_col(interface->win_level, posY + 1, posX + 1, WHITE, ' ' | ACS_TTEE);
-        window_mvaddch_col(interface->win_level, posY + 1, posX + 2, WHITE, ' ' | ACS_LRCORNER);
-        window_mvaddch_col(interface->win_level, posY + 2, posX, WHITE, ' ' | ACS_HLINE);
-        window_mvaddch_col(interface->win_level, posY + 2, posX + 1, WHITE, ' ' | ACS_PLUS);
-        window_mvaddch_col(interface->win_level, posY + 2, posX + 2, WHITE, ' ' | ACS_HLINE);
-        window_mvaddch_col(interface->win_level, posY + 3, posX, WHITE, ' ' | ACS_ULCORNER);
-        window_mvaddch_col(interface->win_level, posY + 3, posX + 1, WHITE, ' ' | ACS_BTEE);
-        window_mvaddch_col(interface->win_level, posY + 3, posX + 2, WHITE, ' ' | ACS_URCORNER);
+    case ROBOT:
+        objet = initObjet(2, 2, WHITE, ROBOT);
+        drawObjet(*objet, interface->win_level, posX, posY);
         break;
-    case Probe:
-        window_mvaddch_col(interface->win_level, posY, posX, WHITE, ' ' | ACS_LTEE);
-        window_mvaddch_col(interface->win_level, posY, posX + 1, WHITE, ' ' | ACS_HLINE);
-        window_mvaddch_col(interface->win_level, posY, posX + 2, WHITE, ' ' | ACS_RTEE);
-        window_mvaddch_col(interface->win_level, posY + 1, posX, WHITE, ' ' | ACS_LLCORNER);
-        window_mvaddch_col(interface->win_level, posY + 1, posX + 1, WHITE, ' ' | ACS_HLINE);
-        window_mvaddch_col(interface->win_level, posY + 1, posX + 2, WHITE, ' ' | ACS_LRCORNER);
+    case PROBE:
+        objet = initObjet(2, 2, WHITE, PROBE);
+        drawObjet(*objet, interface->win_level, posX, posY);
         break;
-    case Life:
-        window_mvaddch_col(interface->win_level, posY, posX, RED, 'V');
+    case LIFE:
+        objet = initObjet(1, 1, WHITE, LIFE);
+        drawObjet(*objet, interface->win_level, posX, posY);
         break;
-    case Bomb:
-        window_mvaddch_col(interface->win_level, posY, posX, WHITE, 'o');
+    case BOMB:
+        objet = initObjet(1, 1, WHITE, BOMB);
+        drawObjet(*objet, interface->win_level, posX, posY);
         break;
     default:
         break;
     }
     window_refresh(interface->win_level);
 }
-// Monstre *m = (Monstre *)malloc(sizeof(Monstre));
-// init_monstre(m);
-// // afficher le sprite du monstre, sprite est un tableau de char
-// for (int i = 0; i < 4; i++)
-// {
-//     for (int j = 0; j < 3; j++)
-//     {
-//         window_mvaddch_col(interface->win_level, posY + i, posX + j, WHITE, NCURSES_ACS(m->sprite[i][j]));
-//     }
-// }
-
-// window_refresh(interface->win_level);
-// free(m);
-// }
 
 void interface_actions(interface_t *interface, int c)
 {

@@ -1,9 +1,17 @@
 {
   "files.associations": {
+    "*.lex": "bibtex",
     "cellule.h": "c",
     "add.h": "c",
     "table_adresse.h": "c",
     "address_table.h": "c",
-    "bloc.h": "c"
-  }
+    "bloc.h": "c",
+    "niveau.h": "c",
+    "couleur.h": "c",
+    "fonction.h": "c",
+    "block.h": "c",
+    "window.h": "c",
+    "interface.h": "c"
+  },
+  "C_Cpp.errorSquiggles": "disabled"
 }
