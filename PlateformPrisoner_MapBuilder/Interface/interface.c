@@ -173,7 +173,16 @@ void interface_tools_update(interface_t *interface)
         window_printw_col(interface->win_tools, WHITE, " ");
         window_color(interface->win_tools, BLUE);
     }
-    window_printw(interface->win_tools, " Door\n");
+    char Door_num[12];
+    sprintf(Door_num, " Door  %d\n", nb_door);
+    if (nb_door < 10)
+    {
+        window_printw(interface->win_tools, " Door <0%d>\n", nb_door);
+    }
+    else
+    {
+        window_printw(interface->win_tools, " Door <%d>\n", nb_door);
+    }
 
     if (interface->selection == Exit)
     {
@@ -337,6 +346,16 @@ void interface_tools_actions(interface_t *interface, int posX, int posY)
             break;
         case 6:
             interface->selection = Door;
+            if (posX >= 6 && posX <= 7)
+            {
+                if (nb_door > 1)
+                    nb_door--;
+            }
+            else if (posX >= 10 && posX <= 11)
+            {
+                if (nb_door < 9)
+                    nb_door++;
+            }
             break;
         case 7:
             interface->selection = Exit;
@@ -361,13 +380,12 @@ void interface_tools_actions(interface_t *interface, int posX, int posY)
             if (posX >= 0 && posX <= 2)
             {
                 if (level_nb > 1)
-                {
                     level_nb--;
-                }
             }
             else if (posX >= 10 && posX <= 12)
             {
-                level_nb++;
+                if (level_nb < 99)
+                    level_nb++;
             }
             break;
         case 16:
