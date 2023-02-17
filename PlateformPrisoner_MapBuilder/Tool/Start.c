@@ -1,5 +1,5 @@
+#include "../Window/window.h"
 #include "Start.h"
-
 Start_t *initStart(int largeur, int hauteur)
 {
     Start_t *start = malloc(sizeof(Start_t));

@@ -1,3 +1,5 @@
+#include "../Window/window.h"
+#include <string.h>
 #include "Player.h"
 
 Player_t *initPlayer(char *name, int health, int id, int largeur, int hauteur)

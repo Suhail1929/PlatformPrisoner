@@ -1,16 +1,49 @@
 // # Author: HAYAT Rahim && MTARFI Souhail
+#include <stdio.h>
+#include <stdlib.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <string.h>
+#include <sys/stat.h>
+#include <errno.h>
+#include "../Window/window.h"
+#include "../Couleur/couleur.h"
+#include "../Tool/Block.h"
+#include "../Tool/Start.h"
+#include "../Tool/Exit.h"
+#include "../Tool/Gate.h"
+#include "../Tool/Key.h"
+#include "../Tool/Ladder.h"
+#include "../Tool/Life.h"
+#include "../Tool/Probe.h"
+#include "../Tool/Robot.h"
+#include "../Tool/Bomb.h"
+#include "../Tool/Door.h"
+#include "../Tool/Player.h"
+#include "../Tool/Trap.h"
 #include "niveau.h"
+#include "../Objet/objet.h"
+
 int level_id = 1;
-void niveau_init(niveau_t *niveau)
+niveau_t *niveau_init()
 {
+    niveau_t *niveau = malloc(sizeof(niveau_t));
     niveau->niveau_position = 0;
     niveau->id = level_id;
     niveau->nom = NULL;
     niveau->description = NULL;
     niveau->id_adresse = NULL;
     niveau->is_deleted = 0;
+    for (int i = 0; i < HAUTEUR; i++)
+    {
+        for (int j = 0; j < LARGEUR; j++)
+        {
+            niveau->objet[i][j] = 0;
+        }
+    }
     level_id++;
     // à modifier
+    return niveau;
 }
 off_t niveau_add(niveau_t *niveau, char *file)
 {
@@ -82,5 +115,17 @@ void niveau_remove(off_t niveau_pos, char *file)
     {
         perror("Error closing file");
         exit(EXIT_FAILURE);
+    }
+}
+void display_niveau(niveau_t *niveau)
+{
+    printf("id: %d , nom: %s , description: %s , is_deleted: %d \n", niveau->id, niveau->nom, niveau->description, niveau->is_deleted);
+    for (int i = 0; i < HAUTEUR; i++)
+    {
+        for (int j = 0; j < LARGEUR; j++)
+        {
+            printf("%d ", niveau->objet[i][j]);
+        }
+        printf("\n");
     }
 }

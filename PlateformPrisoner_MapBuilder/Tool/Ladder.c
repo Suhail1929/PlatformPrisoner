@@ -1,3 +1,4 @@
+#include "../Window/window.h"
 #include "Ladder.h"
 
 Ladder_t *initLadder(int largeur, int hauteur)

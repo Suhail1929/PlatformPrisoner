@@ -1,7 +1,7 @@
 #ifndef LADDER_H
 #define LADDER_H
 
-#include "../Window/window.h"
+
 
 typedef struct Ladder
 {

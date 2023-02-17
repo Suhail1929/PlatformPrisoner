@@ -1,7 +1,7 @@
 #ifndef GATE_H
 #define GATE_H
 
-#include "../Window/window.h"
+
 
 typedef struct Gate
 {

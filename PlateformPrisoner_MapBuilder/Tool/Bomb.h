@@ -1,9 +1,6 @@
 #ifndef BOMB_H
 #define BOMB_H
-#include <ncurses.h>
-#include <stdlib.h>
 
-#include "../Window/window.h"
 typedef struct Bomb
 {
     int largeur;

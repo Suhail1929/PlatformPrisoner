@@ -1,7 +1,7 @@
 #ifndef KEY_H
 #define KEY_H
 
-#include "../Window/window.h"
+
 
 typedef struct Key
 {

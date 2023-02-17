@@ -1,3 +1,4 @@
+#include "../Window/window.h"
 #include "Probe.h"
 
 Probe_t *initProbe(int largeur, int hauteur)

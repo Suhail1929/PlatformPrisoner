@@ -1,5 +1,5 @@
+#include "../Window/window.h"
 #include "Robot.h"
-
 Robot_t *initRobot(int largeur, int hauteur, int health)
 {
     Robot_t *robot = malloc(sizeof(Robot_t));

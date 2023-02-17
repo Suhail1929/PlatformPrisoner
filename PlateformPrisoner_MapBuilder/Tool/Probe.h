@@ -1,7 +1,6 @@
 #ifndef PROBE_H
 #define PROBE_H
 
-#include "../Window/window.h"
 
 typedef struct Probe
 {

@@ -1,7 +1,7 @@
 #ifndef EXIT_H
 #define EXIT_H
 
-#include "../Window/window.h"
+
 
 typedef struct Exit
 {

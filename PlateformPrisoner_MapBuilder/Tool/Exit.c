@@ -1,3 +1,4 @@
+#include "../Window/window.h"
 #include "Exit.h"
 Exit_t *initExit(int largeur, int hauteur)
 {

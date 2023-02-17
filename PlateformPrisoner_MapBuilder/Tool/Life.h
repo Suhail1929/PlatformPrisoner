@@ -1,8 +1,6 @@
 #ifndef LIFE_H
 #define LIFE_H
 
-#include "../Window/window.h"
-
 typedef struct Life
 {
     int point_de_vie;

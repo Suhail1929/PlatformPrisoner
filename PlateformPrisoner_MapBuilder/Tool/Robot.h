@@ -1,7 +1,7 @@
 #ifndef ROBOT_H
 #define ROBOT_H
 
-#include "../Window/window.h"
+
 
 typedef struct Robot
 {

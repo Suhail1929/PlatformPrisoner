@@ -1,3 +1,6 @@
+#include <ncurses.h>
+#include <stdlib.h>
+#include "../Window/window.h"
 #include "Bomb.h"
 
 Bomb_t *initBomb(int hauteur, int largeur, int degat)

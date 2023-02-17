@@ -17,10 +17,6 @@
 #define LEVEL 16
 #define CLEAR 18
 #define PLAYER 19
-#include <stdlib.h>
-#include <ncurses.h>
-#include "../Window/window.h"
-
 
 // Structure représentant l'interface de l'application
 typedef struct interface
@@ -32,12 +28,12 @@ typedef struct interface
     unsigned int current_color; // La couleur du gate sélectionné
 } interface_t;
 
-interface_t *interface_create();
+interface_t *interface_create(niveau_t *niveau);
 void interface_delete(interface_t **interface);
 void interface_tools_update(interface_t *interface);
 void interface_tools_actions(interface_t *interface, int posX, int posY);
-void interface_actions(interface_t *interface, int c);
+void interface_actions(interface_t *interface, niveau_t *niveau, int c);
 void outliner(interface_t *interface);
-void interface_level_actions(interface_t *interface, int posX, int posY);
+void interface_level_actions(interface_t *interface, niveau_t *niveau, int posX, int posY);
 
 #endif

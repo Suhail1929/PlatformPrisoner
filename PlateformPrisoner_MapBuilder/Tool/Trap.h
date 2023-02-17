@@ -1,7 +1,7 @@
 #ifndef TRAP_H
 #define TRAP_H
 
-#include "../Window/window.h"
+
 
 typedef struct Trap
 {

@@ -1,7 +1,9 @@
-#include "interface.h"
+#include <stdlib.h>
+#include <ncurses.h>
+#include "../Window/window.h"
+#include "../Level/enum.h"
 #include "../Fonction/fonction.h"
 #include "../Couleur/couleur.h"
-#include "../Level/niveau.h"
 #include "../Tool/Block.h"
 #include "../Tool/Start.h"
 #include "../Tool/Exit.h"
@@ -16,15 +18,17 @@
 #include "../Tool/Player.h"
 #include "../Tool/Trap.h"
 #include "../Objet/objet.h"
+#include "../Level/niveau.h"
+#include "interface.h"
+
 char level[15];
 
 int level_nb = 1;
-interface_t *interface_create()
+
+interface_t *interface_create(niveau_t *niveau)
 {
     interface_t *result;
     // Initialisation du niveau
-    niveau_t *niveau = malloc(sizeof(niveau_t));
-    niveau_init(niveau);
 
     // Structure allocation
     if ((result = malloc(sizeof(interface_t))) == NULL)
@@ -43,7 +47,9 @@ interface_t *interface_create()
     result->win_level = window_create(0, 0, 62, 22, "Level", FALSE);
 
     // player
+    niveau->objet[5][25] = ID_PLAYER;
     drawPlayer(result->win_level, 25, 5, RED, BLUE);
+
     // outliner
     outliner(result);
     window_refresh(result->win_level);
@@ -351,62 +357,231 @@ void interface_tools_actions(interface_t *interface, int posX, int posY)
     }
 }
 
-void interface_level_actions(interface_t *interface, int posX, int posY)
+void interface_level_actions(interface_t *interface, niveau_t *niveau, int posY, int posX)
 {
-    Objet_t *objet;
     switch (interface->selection)
     {
     case DELETE:
-        window_mvaddch(interface->win_level, posY, posX, ' ');
+        window_mvaddch(interface->win_level, posX, posY, ' ');
         break;
     case BLOCK:
 
-        objet = initObjet(1, 1, CYAN, BLOCK); // les coordonnées sont à modifier
-        drawObjet(*objet, interface->win_level, posX, posY);
+        drawBlock(interface->win_level, posY, posX, CYAN);
+        niveau->objet[posX][posY] = ID_BLOCK;
         break;
     case LADDER:
-        objet = initObjet(2, 2, YELLOW, LADDER);
-        drawObjet(*objet, interface->win_level, posX, posY);
+        drawLadder(interface->win_level, posY, posX, YELLOW);
+        niveau->objet[posX][posY] = ID_LADDER;
         break;
     case TRAP:
-        objet = initObjet(2, 1, interface->current_color, TRAP);
-        drawObjet(*objet, interface->win_level, posX, posY);
+        drawTrap(interface->win_level, posY, posX, CYAN);
+        niveau->objet[posX][posY] = ID_TRAP;
         break;
     case GATE:
-        objet = initObjet(2, 1, interface->current_color, GATE);
-        drawObjet(*objet, interface->win_level, posX, posY);
+        drawGate(interface->win_level, posY, posX, interface->current_color);
+        switch (interface->current_color)
+        {
+        case MAGENTA:
+            niveau->objet[posX][posY] = ID_PURPLE_GATE;
+            break;
+        case GREEN:
+            niveau->objet[posX][posY] = ID_GREEN_GATE;
+            break;
+        case YELLOW:
+            niveau->objet[posX][posY] = ID_YELLOW_GATE;
+            break;
+        case BLUE:
+            niveau->objet[posX][posY] = ID_BLUE_GATE;
+            break;
+        default:
+            break;
+        }
         break;
     case KEY:
-        objet = initObjet(1, 1, interface->current_color, KEY);
-        drawObjet(*objet, interface->win_level, posX, posY);
+        drawKey(interface->win_level, posY, posX, interface->current_color);
+        switch (interface->current_color)
+        {
+        case MAGENTA:
+            niveau->objet[posX][posY] = ID_PURPLE_KEY;
+            break;
+        case GREEN:
+            niveau->objet[posX][posY] = ID_GREEN_KEY;
+            break;
+        case YELLOW:
+            niveau->objet[posX][posY] = ID_YELLOW_KEY;
+            break;
+        case BLUE:
+            niveau->objet[posX][posY] = ID_BLUE_KEY;
+            break;
+        default:
+            break;
+        }
         break;
     case DOOR:
-        objet = initObjet(2, 2, interface->current_color, DOOR);
-        drawObjet(*objet, interface->win_level, posX, posY);
+        drawDoor(interface->win_level, posY, posX, interface->current_color);
+        switch (interface->current_color)
+        {
+        case MAGENTA:
+            switch (nb_door)
+            {
+            case 1:
+                niveau->objet[posX][posY] = ID_PURPLE_DOOR1;
+                break;
+            case 2:
+                niveau->objet[posX][posY] = ID_PURPLE_DOOR2;
+                break;
+            case 3:
+                niveau->objet[posX][posY] = ID_PURPLE_DOOR3;
+                break;
+            case 4:
+                niveau->objet[posX][posY] = ID_PURPLE_DOOR4;
+                break;
+            case 5:
+                niveau->objet[posX][posY] = ID_PURPLE_DOOR5;
+                break;
+            case 6:
+                niveau->objet[posX][posY] = ID_PURPLE_DOOR6;
+                break;
+            case 7:
+                niveau->objet[posX][posY] = ID_PURPLE_DOOR7;
+                break;
+            case 8:
+                niveau->objet[posX][posY] = ID_PURPLE_DOOR8;
+                break;
+            case 9:
+                niveau->objet[posX][posY] = ID_PURPLE_DOOR9;
+                break;
+            default:
+                break;
+            }
+            break;
+        case GREEN:
+            switch (nb_door)
+            {
+            case 1:
+                niveau->objet[posX][posY] = ID_GREEN_DOOR1;
+                break;
+            case 2:
+                niveau->objet[posX][posY] = ID_GREEN_DOOR2;
+                break;
+            case 3:
+                niveau->objet[posX][posY] = ID_GREEN_DOOR3;
+                break;
+            case 4:
+                niveau->objet[posX][posY] = ID_GREEN_DOOR4;
+                break;
+            case 5:
+                niveau->objet[posX][posY] = ID_GREEN_DOOR5;
+                break;
+            case 6:
+                niveau->objet[posX][posY] = ID_GREEN_DOOR6;
+                break;
+            case 7:
+                niveau->objet[posX][posY] = ID_GREEN_DOOR7;
+                break;
+            case 8:
+                niveau->objet[posX][posY] = ID_GREEN_DOOR8;
+                break;
+            case 9:
+                niveau->objet[posX][posY] = ID_GREEN_DOOR9;
+                break;
+            default:
+                break;
+            }
+            break;
+        case YELLOW:
+            switch (nb_door)
+            {
+            case 1:
+                niveau->objet[posX][posY] = ID_YELLOW_DOOR1;
+                break;
+            case 2:
+                niveau->objet[posX][posY] = ID_YELLOW_DOOR2;
+                break;
+            case 3:
+                niveau->objet[posX][posY] = ID_YELLOW_DOOR3;
+                break;
+            case 4:
+                niveau->objet[posX][posY] = ID_YELLOW_DOOR4;
+                break;
+            case 5:
+                niveau->objet[posX][posY] = ID_YELLOW_DOOR5;
+                break;
+            case 6:
+                niveau->objet[posX][posY] = ID_YELLOW_DOOR6;
+                break;
+            case 7:
+                niveau->objet[posX][posY] = ID_YELLOW_DOOR7;
+                break;
+            case 8:
+                niveau->objet[posX][posY] = ID_YELLOW_DOOR8;
+                break;
+            case 9:
+                niveau->objet[posX][posY] = ID_YELLOW_DOOR9;
+                break;
+            default:
+                break;
+            }
+            break;
+        case BLUE:
+            switch (nb_door)
+            {
+            case 1:
+                niveau->objet[posX][posY] = ID_BLUE_DOOR1;
+                break;
+            case 2:
+                niveau->objet[posX][posY] = ID_BLUE_DOOR2;
+                break;
+            case 3:
+                niveau->objet[posX][posY] = ID_BLUE_DOOR3;
+                break;
+            case 4:
+                niveau->objet[posX][posY] = ID_BLUE_DOOR4;
+                break;
+            case 5:
+                niveau->objet[posX][posY] = ID_BLUE_DOOR5;
+                break;
+            case 6:
+                niveau->objet[posX][posY] = ID_BLUE_DOOR6;
+                break;
+            case 7:
+                niveau->objet[posX][posY] = ID_BLUE_DOOR7;
+                break;
+            case 8:
+                niveau->objet[posX][posY] = ID_BLUE_DOOR8;
+                break;
+            case 9:
+                niveau->objet[posX][posY] = ID_BLUE_DOOR9;
+                break;
+            default:
+                break;
+            }
+            break;
+        }
         break;
     case EXIT:
-        objet = initObjet(2, 2, interface->current_color, EXIT);
-        drawObjet(*objet, interface->win_level, posX, posY);
+        drawExit(interface->win_level, posY, posX, GREEN);
+        niveau->objet[posX][posY] = ID_EXIT;
         break;
     case START:
-        objet = initObjet(2, 2, interface->current_color, START);
-        drawObjet(*objet, interface->win_level, posX, posY);
+        drawStart(interface->win_level, posY, posX, BLUE);
+        niveau->objet[posX][posY] = ID_START;
         break;
     case ROBOT:
-        objet = initObjet(2, 2, WHITE, ROBOT);
-        drawObjet(*objet, interface->win_level, posX, posY);
+        drawRobot(interface->win_level, posY, posX, WHITE);
+        niveau->objet[posX][posY] = ID_ROBOT;
         break;
     case PROBE:
-        objet = initObjet(2, 2, WHITE, PROBE);
-        drawObjet(*objet, interface->win_level, posX, posY);
+        drawProbe(interface->win_level, posY, posX, WHITE);
+        niveau->objet[posX][posY] = ID_PROBE;
         break;
     case LIFE:
-        objet = initObjet(1, 1, WHITE, LIFE);
-        drawObjet(*objet, interface->win_level, posX, posY);
+        drawLife(interface->win_level, posY, posX, GREEN);
+        niveau->objet[posX][posY] = ID_LIFE;
         break;
     case BOMB:
-        objet = initObjet(1, 1, WHITE, BOMB);
-        drawObjet(*objet, interface->win_level, posX, posY);
+        drawBomb(interface->win_level, posY, posX, WHITE);
+        niveau->objet[posX][posY] = ID_BOMB;
         break;
     default:
         break;
@@ -414,7 +589,7 @@ void interface_level_actions(interface_t *interface, int posX, int posY)
     window_refresh(interface->win_level);
 }
 
-void interface_actions(interface_t *interface, int c)
+void interface_actions(interface_t *interface, niveau_t *niveau, int c)
 {
     int mouseX, mouseY, posX, posY;
 
@@ -427,7 +602,7 @@ void interface_actions(interface_t *interface, int c)
         }
         else if (window_getcoordinates(interface->win_level, mouseX, mouseY, &posX, &posY))
         {
-            interface_level_actions(interface, posX, posY);
+            interface_level_actions(interface, niveau, posX, posY);
         }
     }
 }

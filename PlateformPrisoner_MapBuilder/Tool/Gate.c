@@ -1,3 +1,4 @@
+#include "../Window/window.h"
 #include "Gate.h"
 
 Gate_t *initGate(int largeur, int hauteur)

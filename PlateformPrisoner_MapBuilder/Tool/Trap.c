@@ -1,3 +1,4 @@
+#include "../Window/window.h"
 #include "Trap.h"
 Trap_t *initTrap(int largeur, int hauteur, int degat)
 {

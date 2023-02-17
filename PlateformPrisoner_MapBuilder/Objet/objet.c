@@ -1,3 +1,20 @@
+#include "../Window/window.h"
+#include "../Couleur/couleur.h"
+#include "../Tool/Block.h"
+#include "../Tool/Start.h"
+#include "../Tool/Exit.h"
+#include "../Tool/Gate.h"
+#include "../Tool/Key.h"
+#include "../Tool/Ladder.h"
+#include "../Tool/Life.h"
+#include "../Tool/Probe.h"
+#include "../Tool/Robot.h"
+#include "../Tool/Bomb.h"
+#include "../Tool/Door.h"
+#include "../Tool/Player.h"
+#include "../Tool/Trap.h"
+#include "../Level/niveau.h"
+#include "../Interface/interface.h"
 #include "objet.h"
 
 Objet_t *initObjet(int largeur, int hauteur, int couleur, int id_type)
@@ -98,4 +115,9 @@ void drawObjet(Objet_t objet, window_t *window, int x, int y)
     default:
         break;
     }
+}
+
+void deleteObjet(Objet_t *objet)
+{
+    free(objet);
 }

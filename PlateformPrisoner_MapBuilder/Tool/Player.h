@@ -1,8 +1,7 @@
 #ifndef PLAYER_H
 #define PLAYER_H
 
-#include "../Window/window.h"
-#include <string.h>
+
 typedef struct Player
 {
     char name[20];

@@ -1,3 +1,4 @@
+#include "../Window/window.h"
 #include "Life.h"
 Life_t *initLife(int largeur, int hauteur, int point_de_vie)
 {

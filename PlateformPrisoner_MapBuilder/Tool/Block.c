@@ -1,3 +1,8 @@
+#include <ncurses.h>
+#include <stdlib.h>
+#include "../Fonction/fonction.h"
+#include "../Couleur/couleur.h"
+#include "../Window/window.h"
 #include "Block.h"
 Block_t *initBlock(int largeur, int hauteur)
 {

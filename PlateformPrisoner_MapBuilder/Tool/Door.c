@@ -1,3 +1,6 @@
+#include <stdlib.h>
+#include "../Window/window.h"
+#include "../Tool/Key.h"
 #include "Door.h"
 int nb_door = 1;
 Door_t *initDoor(int largeur, int hauteur)
@@ -6,7 +9,6 @@ Door_t *initDoor(int largeur, int hauteur)
     door->largeur = largeur;
     door->hauteur = hauteur;
     door->id_door = nb_door;
-    door->key = NULL;
     return door;
 }
 void drawDoor(window_t *window, int x, int y, int color)

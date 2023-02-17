@@ -1,3 +1,4 @@
+#include "../Window/window.h"
 #include "Key.h"
 
 Key_t *initKey(int largeur, int hauteur)
