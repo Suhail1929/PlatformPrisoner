@@ -1,7 +1,6 @@
 #ifndef _WINDOW_
 #define _WINDOW_
-#include <ncurses.h>
-#include <stdlib.h>
+
 typedef struct
 {
     int posx, posy;

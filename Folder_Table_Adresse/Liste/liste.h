@@ -6,8 +6,9 @@
 
 typedef struct list_t
 {
-    bloc_t *head;
-    int nb_entry;
+    off_t head;
+    int total_entry;
+    int nb_available;
 } list_t;
 
 void init_list(list_t *l);

@@ -1,5 +1,6 @@
 enum Map
 {
+    ID_DELETE = 0,
     ID_BLOCK = 1,
     ID_LADDER = 2,
     ID_TRAP = 3,
@@ -9,7 +10,7 @@ enum Map
     ID_PROBE = 7,
     ID_LIFE = 8,
     ID_BOMB = 9,
-    ID_PLAYER = 10,
+    // ID_PLAYER = 10,
     ID_PURPLE_GATE = 40,
     ID_GREEN_GATE = 41,
     ID_BLUE_GATE = 42,

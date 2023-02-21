@@ -11,12 +11,21 @@
 #include <sys/stat.h>
 #include <errno.h>
 
-typedef struct data_t data_t;
-struct data_t
+#define BLOC_SIZE 5
+
+typedef struct cell_t cell_t;
+struct cell_t
 {
     int hole; // 0 = address, 1 = hole
     off_t data_position;
     int data_size;
+};
+
+typedef struct data_t data_t;
+struct data_t
+{
+    cell_t bloc[BLOC_SIZE];
+    off_t next;
 }; // address_t ou hole_t
 
 // ---------- Table d'adresses ----------

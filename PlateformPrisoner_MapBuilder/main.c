@@ -3,15 +3,12 @@
 #include "Fonction/fonction.h"
 #include "Couleur/couleur.h"
 #include "Window/window.h"
-#include "Level/niveau.h"
 #include "Interface/interface.h"
 
 int main()
 {
     interface_t *interface;
-    niveau_t *niveau = niveau_init();
-    niveau->nom = "First level";
-    niveau->description = "This is the first level of the game";
+
     ncurses_init();
     ncurses_colors();
     palette();
@@ -22,18 +19,19 @@ int main()
     refresh();
 
     // Creation de l'interface
-    interface = interface_create(niveau);
+    interface = interface_create();
 
     int ch;
     while ((ch = getch()) != 27)
     {
-        interface_actions(interface, niveau, ch);
+        interface_actions(interface, ch);
     }
     // Quitter le mode d'affichage ncurses
     ncurses_stop();
 
+    displayMapID();
     // supprimer l'interface
     interface_delete(&interface);
-    display_niveau(niveau);
-    return 0;
+
+    return EXIT_SUCCESS;
 }
