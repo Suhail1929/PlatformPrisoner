@@ -38,7 +38,8 @@ void interface_actions(interface_t *interface, int c);
 void interface_level_actions(interface_t *interface, int posX, int posY);
 void outliner(interface_t *interface);
 int insertEntityID(int posX, int posY, int largeur, int hauteur, int entityID);
-void deleteEntity(interface_t *interface, int posX, int posY);
+void updateEntity(interface_t *interface, int posX, int posY, int action);
+void getHeadEntity(int *posX, int *posY, int bloc_width, int bloc_height);
 void clearMapID();
 void displayMapID();
 #endif

@@ -4,8 +4,8 @@
 #include "../Fonction/fonction.h"
 #include "../Couleur/couleur.h"
 #include "../Window/window.h"
-#include "entity.h"
 #include "interface.h"
+#include "../Fonction/entity.h"
 #include <limits.h>
 
 int nb_door = 1;
@@ -343,7 +343,7 @@ void interface_level_actions(interface_t *interface, int posX, int posY)
     switch (interface->selection)
     {
     case Delete:
-        deleteEntity(interface, posX, posY);
+        updateEntity(interface, posX, posY, 0);
         break;
     case Block:
         if (!insertEntityID(posX, posY, 1, 1, ID_BLOCK))
@@ -831,62 +831,69 @@ int insertEntityID(int posX, int posY, int entity_WIDTH, int entity_HEIGHT, int 
     return 0;
 }
 
-void deleteEntity(interface_t *interface, int posX, int posY)
+void updateEntity(interface_t *interface, int posX, int posY, int action) // action {0 : delete, 1: restore}
 {
-    if (tab[posY][posX] == 0)
-        return;
     int bloc_width = 0;
     int bloc_height = 0;
-    if (tab[posY][posX] == ID_BLOCK || tab[posY][posX] == ID_TRAP || tab[posY][posX] == ID_LIFE || tab[posY][posX] == ID_BOMB)
+    int prev_select = getEntityDetail(interface, tab, posX, posY, &bloc_width, &bloc_height, nb_door);
+    if (!action)
     {
-        bloc_width = 1;
-        bloc_height = 1;
+        interface->selection = prev_select;
     }
-    else if (tab[posY][posX] == ID_LADDER)
-    {
-        bloc_width = 3;
-        bloc_height = 1;
-    }
-    else if (tab[posY][posX] >= 40 && tab[posY][posX] <= 43) // GATE
-    {
-        bloc_width = 1;
-        bloc_height = 4;
-    }
-    else if (tab[posY][posX] >= 50 && tab[posY][posX] <= 53) // KEY
-    {
-        bloc_width = 1;
-        bloc_height = 2;
-    }
-    else if ((tab[posY][posX] >= 61 && tab[posY][posX] <= 99) || (tab[posY][posX] >= 4 && tab[posY][posX] <= 6)) // DOOR or EXIT,START,ROBOT
-    {
-        bloc_width = 3;
-        bloc_height = 4;
-    }
-    else if (tab[posY][posX] == ID_PROBE)
-    {
-        bloc_width = 2;
-        bloc_height = 3;
-    }
+    // tmp_pos : position du clic et pos : position de la tête du bloc
+    int tmp_posX = posX;
+    int tmp_posY = posY;
+    getHeadEntity(&posX, &posY, bloc_width, bloc_height);
 
+    // ----- debug : entity information -----
+    // ncurses_stop();
+    // printf("Detect id: %d, posX: %d, posY: %d\n", tab[posY][posX], tmp_posX, tmp_posY);
+    // printf("Head (posX, posY): (%d, %d)\n", posX, posY);
+    // printf("Detail (bloc_width, bloc_height): (%d, %d)\n", bloc_width, bloc_height);
+    // exit(0);
+
+    // Supprimer/Restaurer toutes les cases de l'ID spécifié
+    for (int i = 0; i < bloc_height; i++)
+    {
+        for (int j = 0; j < bloc_width; j++)
+        {
+            if (action) // restore
+            {
+                if (tmp_posX != posX && tmp_posY != posY)
+                {
+                    interface_level_actions(interface, posX + j, posY + i);
+                }
+            }
+            else // delete
+            {
+                tab[posY + i][posX + j] = 0;
+                window_mvaddch(interface->win_level, posY + i, posX + j, ' ');
+            }
+        }
+    }
+}
+
+void getHeadEntity(int *posX, int *posY, int bloc_width, int bloc_height)
+{
     // Récupérer l'ID du bloc
-    int bloc_id = tab[posY][posX];
+    int bloc_id = tab[*posY][*posX];
     // position de la case de départ sélectionnée
-    int tmp_x = posX;
-    int tmp_y = posY;
+    int tmp_x = *posX;
+    int tmp_y = *posY;
     int nb_cells = 0;
 
     // parcours vers le haut -----
-    if ((posY - bloc_height >= 0) && tab[posY - bloc_height][posX] == bloc_id)
+    if ((*posY - bloc_height >= 0) && tab[*posY - bloc_height][*posX] == bloc_id)
     {
         // compteurHeight qui compte les cases au dessus tant que c'est le même bloc_id
         int compteurHeight = 0;
-        while ((posY - compteurHeight >= 0) && tab[posY - compteurHeight][posX] == bloc_id)
+        while ((*posY - compteurHeight >= 0) && tab[*posY - compteurHeight][*posX] == bloc_id)
         {
             compteurHeight++;
         }
         nb_cells = (int)((compteurHeight - 1) / bloc_height) * bloc_height;
         // on descend de nb_cells case vers le bas et donc head_y prend la nouvelle valeur y de la position de la case.
-        tmp_y = (posY - compteurHeight + 1) + nb_cells;
+        tmp_y = (*posY - compteurHeight + 1) + nb_cells;
         // ncurses_stop();
         // printf("nb_cells : %d, compteur Height : %d, PosY: %d, tmp_y,: %d\n", nb_cells, compteurHeight, posY, tmp_y);
         // exit(0);
@@ -901,17 +908,17 @@ void deleteEntity(interface_t *interface, int posX, int posY)
     }
 
     // parcours vers la gauche
-    if ((posX - bloc_width >= 0) && tab[tmp_y][posX - bloc_width] == bloc_id)
+    if ((*posX - bloc_width >= 0) && tab[tmp_y][*posX - bloc_width] == bloc_id)
     {
         // compteurHeight qui compte les cases au dessus tant que c'est le même bloc_id
         int compteurWidth = 0;
-        while ((posX - compteurWidth >= 0) && tab[posY][posX - compteurWidth] == bloc_id)
+        while ((*posX - compteurWidth >= 0) && tab[*posY][*posX - compteurWidth] == bloc_id)
         {
             compteurWidth++;
         }
         nb_cells = (int)((compteurWidth - 1) / bloc_width) * bloc_width;
         // on descend de nb_cells case vers le bas et donc head_y prend la nouvelle valeur y de la position de la case.
-        tmp_x = (posX - compteurWidth + 1) + nb_cells;
+        tmp_x = (*posX - compteurWidth + 1) + nb_cells;
     }
     else
     {
@@ -921,16 +928,8 @@ void deleteEntity(interface_t *interface, int posX, int posY)
         }
         tmp_x++;
     }
-
-    // Supprimer toutes les cases de l'ID spécifié
-    for (int i = 0; i < bloc_height; i++)
-    {
-        for (int j = 0; j < bloc_width; j++)
-        {
-            tab[tmp_y + i][tmp_x + j] = 0;
-            window_mvaddch(interface->win_level, tmp_y + i, tmp_x + j, ' ');
-        }
-    }
+    *posX = tmp_x;
+    *posY = tmp_y;
 }
 
 void clearMapID()
