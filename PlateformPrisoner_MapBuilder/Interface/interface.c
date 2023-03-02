@@ -936,7 +936,7 @@ int updateEntity(interface_t *interface, int posX, int posY, int action) // acti
 {
     int bloc_width = 0;
     int bloc_height = 0;
-    int prev_select = getEntityDetail(interface, tab, posX, posY, &bloc_width, &bloc_height, nb_door);
+    int prev_select = getEntityDetail(interface, tab, posX, posY, &bloc_width, &bloc_height, &nb_door);
     if (action == 0)
     {
         interface->selection = prev_select;

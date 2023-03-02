@@ -2,12 +2,13 @@
 #include <stdlib.h>
 #include "../Couleur/couleur.h"
 #include "../Window/window.h"
+#include "../Data/data_table.h"
 #include "../Interface/interface.h"
 #include "entity.h"
 
-int getEntityDetail(interface_t *interface, int tab[20][60], int posX, int posY, int *bloc_width, int *bloc_height, int nb_door)
+int getEntityDetail(interface_t *interface, int tab[20][60], int posX, int posY, int *bloc_width, int *bloc_height, int *nb_door)
 {
-    nb_door = 1;
+    *nb_door = 1;
     int previous_selection = interface->selection;
     switch (tab[posY][posX])
     {
@@ -94,217 +95,217 @@ int getEntityDetail(interface_t *interface, int tab[20][60], int posX, int posY,
         *bloc_width = 3, *bloc_height = 4;
         interface->selection = Door;
         interface->current_color = MAGENTA;
-        nb_door = 1;
+        *nb_door = 1;
         break;
     case ID_PURPLE_DOOR2:
         *bloc_width = 3, *bloc_height = 4;
         interface->selection = Door;
         interface->current_color = MAGENTA;
-        nb_door = 2;
+        *nb_door = 2;
         break;
     case ID_PURPLE_DOOR3:
         *bloc_width = 3, *bloc_height = 4;
         interface->selection = Door;
         interface->current_color = MAGENTA;
-        nb_door = 3;
+        *nb_door = 3;
         break;
     case ID_PURPLE_DOOR4:
         *bloc_width = 3, *bloc_height = 4;
         interface->selection = Door;
         interface->current_color = MAGENTA;
-        nb_door = 4;
+        *nb_door = 4;
         break;
     case ID_PURPLE_DOOR5:
         *bloc_width = 3, *bloc_height = 4;
         interface->selection = Door;
         interface->current_color = MAGENTA;
-        nb_door = 5;
+        *nb_door = 5;
         break;
     case ID_PURPLE_DOOR6:
         *bloc_width = 3, *bloc_height = 4;
         interface->selection = Door;
         interface->current_color = MAGENTA;
-        nb_door = 6;
+        *nb_door = 6;
         break;
     case ID_PURPLE_DOOR7:
         *bloc_width = 3, *bloc_height = 4;
         interface->selection = Door;
         interface->current_color = MAGENTA;
-        nb_door = 7;
+        *nb_door = 7;
         break;
     case ID_PURPLE_DOOR8:
         *bloc_width = 3, *bloc_height = 4;
         interface->selection = Door;
         interface->current_color = MAGENTA;
-        nb_door = 8;
+        *nb_door = 8;
         break;
     case ID_PURPLE_DOOR9:
         *bloc_width = 3, *bloc_height = 4;
         interface->selection = Door;
         interface->current_color = MAGENTA;
-        nb_door = 9;
+        *nb_door = 9;
         break;
     case ID_GREEN_DOOR1:
         *bloc_width = 3, *bloc_height = 4;
         interface->selection = Door;
         interface->current_color = GREEN;
-        nb_door = 1;
+        *nb_door = 1;
         break;
     case ID_GREEN_DOOR2:
         *bloc_width = 3, *bloc_height = 4;
         interface->selection = Door;
         interface->current_color = GREEN;
-        nb_door = 2;
+        *nb_door = 2;
         break;
     case ID_GREEN_DOOR3:
         *bloc_width = 3, *bloc_height = 4;
         interface->selection = Door;
         interface->current_color = GREEN;
-        nb_door = 3;
+        *nb_door = 3;
         break;
     case ID_GREEN_DOOR4:
         *bloc_width = 3, *bloc_height = 4;
         interface->selection = Door;
         interface->current_color = GREEN;
-        nb_door = 4;
+        *nb_door = 4;
         break;
     case ID_GREEN_DOOR5:
         *bloc_width = 3, *bloc_height = 4;
         interface->selection = Door;
         interface->current_color = GREEN;
-        nb_door = 5;
+        *nb_door = 5;
         break;
     case ID_GREEN_DOOR6:
         *bloc_width = 3, *bloc_height = 4;
         interface->selection = Door;
         interface->current_color = GREEN;
-        nb_door = 6;
+        *nb_door = 6;
         break;
     case ID_GREEN_DOOR7:
         *bloc_width = 3, *bloc_height = 4;
         interface->selection = Door;
         interface->current_color = GREEN;
-        nb_door = 7;
+        *nb_door = 7;
         break;
     case ID_GREEN_DOOR8:
         *bloc_width = 3, *bloc_height = 4;
         interface->selection = Door;
         interface->current_color = GREEN;
-        nb_door = 8;
+        *nb_door = 8;
         break;
     case ID_GREEN_DOOR9:
         *bloc_width = 3, *bloc_height = 4;
         interface->selection = Door;
         interface->current_color = GREEN;
-        nb_door = 9;
+        *nb_door = 9;
         break;
     case ID_BLUE_DOOR1:
         *bloc_width = 3, *bloc_height = 4;
         interface->selection = Door;
         interface->current_color = BLUE;
-        nb_door = 1;
+        *nb_door = 1;
         break;
     case ID_BLUE_DOOR2:
         *bloc_width = 3, *bloc_height = 4;
         interface->selection = Door;
         interface->current_color = BLUE;
-        nb_door = 2;
+        *nb_door = 2;
         break;
     case ID_BLUE_DOOR3:
         *bloc_width = 3, *bloc_height = 4;
         interface->selection = Door;
         interface->current_color = BLUE;
-        nb_door = 3;
+        *nb_door = 3;
         break;
     case ID_BLUE_DOOR4:
         *bloc_width = 3, *bloc_height = 4;
         interface->selection = Door;
         interface->current_color = BLUE;
-        nb_door = 4;
+        *nb_door = 4;
         break;
     case ID_BLUE_DOOR5:
         *bloc_width = 3, *bloc_height = 4;
         interface->selection = Door;
         interface->current_color = BLUE;
-        nb_door = 5;
+        *nb_door = 5;
         break;
     case ID_BLUE_DOOR6:
         *bloc_width = 3, *bloc_height = 4;
         interface->selection = Door;
         interface->current_color = BLUE;
-        nb_door = 6;
+        *nb_door = 6;
         break;
     case ID_BLUE_DOOR7:
         *bloc_width = 3, *bloc_height = 4;
         interface->selection = Door;
         interface->current_color = BLUE;
-        nb_door = 7;
+        *nb_door = 7;
         break;
     case ID_BLUE_DOOR8:
         *bloc_width = 3, *bloc_height = 4;
         interface->selection = Door;
         interface->current_color = BLUE;
-        nb_door = 8;
+        *nb_door = 8;
         break;
     case ID_BLUE_DOOR9:
         *bloc_width = 3, *bloc_height = 4;
         interface->selection = Door;
         interface->current_color = BLUE;
-        nb_door = 9;
+        *nb_door = 9;
         break;
     case ID_YELLOW_DOOR1:
         *bloc_width = 3, *bloc_height = 4;
         interface->selection = Door;
         interface->current_color = YELLOW;
-        nb_door = 1;
+        *nb_door = 1;
         break;
     case ID_YELLOW_DOOR2:
         *bloc_width = 3, *bloc_height = 4;
         interface->selection = Door;
         interface->current_color = YELLOW;
-        nb_door = 2;
+        *nb_door = 2;
         break;
     case ID_YELLOW_DOOR3:
         *bloc_width = 3, *bloc_height = 4;
         interface->selection = Door;
         interface->current_color = YELLOW;
-        nb_door = 3;
+        *nb_door = 3;
         break;
     case ID_YELLOW_DOOR4:
         *bloc_width = 3, *bloc_height = 4;
         interface->selection = Door;
         interface->current_color = YELLOW;
-        nb_door = 4;
+        *nb_door = 4;
         break;
     case ID_YELLOW_DOOR5:
         *bloc_width = 3, *bloc_height = 4;
         interface->selection = Door;
         interface->current_color = YELLOW;
-        nb_door = 5;
+        *nb_door = 5;
         break;
     case ID_YELLOW_DOOR6:
         *bloc_width = 3, *bloc_height = 4;
         interface->selection = Door;
         interface->current_color = YELLOW;
-        nb_door = 6;
+        *nb_door = 6;
         break;
     case ID_YELLOW_DOOR7:
         *bloc_width = 3, *bloc_height = 4;
         interface->selection = Door;
         interface->current_color = YELLOW;
-        nb_door = 7;
+        *nb_door = 7;
         break;
     case ID_YELLOW_DOOR8:
         *bloc_width = 8, *bloc_height = 4;
         interface->selection = Door;
         interface->current_color = YELLOW;
-        nb_door = 2;
+        *nb_door = 2;
         break;
     case ID_YELLOW_DOOR9:
         *bloc_width = 3, *bloc_height = 4;
         interface->selection = Door;
         interface->current_color = YELLOW;
-        nb_door = 9;
+        *nb_door = 9;
         break;
     default:
         // traitement par défaut
