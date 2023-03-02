@@ -34,7 +34,39 @@ interface_t *interface_create()
     // fenetre coordonnées
     result->win_level = window_create(0, 0, 62, 22, "Level", FALSE);
     // default tab : empty
-    clearMapID();
+    // clearMapID();
+
+    for (int i = 0; i < HEIGHT; i++)
+    {
+        for (int j = 0; j < WIDTH; j++)
+        {
+            tab[i][j] = 0;
+        }
+    }
+    tab[0][1] = 41;
+    tab[0][2] = 41;
+
+    tab[1][1] = 41;
+    tab[1][2] = 41;
+
+    tab[2][1] = 41;
+    tab[2][2] = 41;
+
+    tab[3][1] = 41;
+    tab[3][2] = 41;
+
+    int tmp_decalage = 0;
+    for (int i = 0; i < HEIGHT; i++)
+    {
+        for (int j = 0; j < WIDTH; j++)
+        {
+            tmp_decalage = updateEntity(result, j, i, 1);
+            if (tmp_decalage != -1)
+            {
+                j += tmp_decalage;
+            }
+        }
+    }
 
     // player
     // window_mvaddch_col(result->win_level, 2, 32, RED, ' ' | A_REVERSE);
@@ -49,7 +81,8 @@ interface_t *interface_create()
     // window_mvaddch_col(result->win_level, 5, 33, BLUE, ' ' | ACS_VLINE);
 
     // outliner
-    outliner(result);
+    // outliner(result);
+
     window_refresh(result->win_level);
     // fenetre tools
     result->win_tools = window_create(62, 0, 15, 22, "Tools", FALSE);
@@ -337,8 +370,11 @@ void interface_tools_actions(interface_t *interface, int posX, int posY)
     }
 }
 
-void interface_level_actions(interface_t *interface, int posX, int posY)
+void interface_level_actions(interface_t *interface, int posX, int posY, int restore)
 {
+    // ncurses_stop();
+    // printf("Detect id: %d, selection %d, couleur %d\n", tab[posY][posX], interface->selection, interface->current_color);
+
     int draw = 0; // boolean to draw or not the gate/key/... wich have multiple color
     switch (interface->selection)
     {
@@ -346,13 +382,13 @@ void interface_level_actions(interface_t *interface, int posX, int posY)
         updateEntity(interface, posX, posY, 0);
         break;
     case Block:
-        if (!insertEntityID(posX, posY, 1, 1, ID_BLOCK))
+        if ((!insertEntityID(posX, posY, 1, 1, ID_BLOCK) && restore == 0) || restore == 1)
         {
             window_mvaddch_col(interface->win_level, posY, posX, CYAN, ' ' | A_REVERSE);
         }
         break;
     case Ladder:
-        if (!insertEntityID(posX, posY, 3, 1, ID_LADDER))
+        if ((!insertEntityID(posX, posY, 3, 1, ID_LADDER) && restore == 0) || restore == 1)
         {
             window_mvaddch_col(interface->win_level, posY, posX, YELLOW, ' ' | ACS_LTEE);
             window_mvaddch_col(interface->win_level, posY, posX + 1, YELLOW, ' ' | ACS_HLINE);
@@ -360,7 +396,7 @@ void interface_level_actions(interface_t *interface, int posX, int posY)
         }
         break;
     case Trap:
-        if (!insertEntityID(posX, posY, 1, 1, ID_TRAP))
+        if ((!insertEntityID(posX, posY, 1, 1, ID_TRAP) && restore == 0) || restore == 1)
         {
             window_mvaddch_col(interface->win_level, posY, posX, CYAN, '#' | A_REVERSE);
         }
@@ -369,25 +405,25 @@ void interface_level_actions(interface_t *interface, int posX, int posY)
         switch (interface->current_color)
         {
         case MAGENTA:
-            if (!insertEntityID(posX, posY, 1, 4, ID_PURPLE_GATE))
+            if ((!insertEntityID(posX, posY, 1, 4, ID_PURPLE_GATE) && restore == 0) || restore == 1)
             {
                 draw = 1;
             }
             break;
         case GREEN:
-            if (!insertEntityID(posX, posY, 1, 4, ID_GREEN_GATE))
+            if ((!insertEntityID(posX, posY, 1, 4, ID_GREEN_GATE) && restore == 0) || restore == 1)
             {
                 draw = 1;
             }
             break;
         case YELLOW:
-            if (!insertEntityID(posX, posY, 1, 4, ID_YELLOW_GATE))
+            if ((!insertEntityID(posX, posY, 1, 4, ID_YELLOW_GATE) && restore == 0) || restore == 1)
             {
                 draw = 1;
             }
             break;
         case BLUE:
-            if (!insertEntityID(posX, posY, 1, 4, ID_BLUE_GATE))
+            if ((!insertEntityID(posX, posY, 1, 4, ID_BLUE_GATE) && restore == 0) || restore == 1)
             {
                 draw = 1;
             }
@@ -407,25 +443,25 @@ void interface_level_actions(interface_t *interface, int posX, int posY)
         switch (interface->current_color)
         {
         case MAGENTA:
-            if (!insertEntityID(posX, posY, 1, 2, ID_PURPLE_KEY))
+            if ((!insertEntityID(posX, posY, 1, 2, ID_PURPLE_KEY) && restore == 0) || restore == 1)
             {
                 draw = 1;
             }
             break;
         case GREEN:
-            if (!insertEntityID(posX, posY, 1, 2, ID_GREEN_KEY))
+            if ((!insertEntityID(posX, posY, 1, 2, ID_GREEN_KEY) && restore == 0) || restore == 1)
             {
                 draw = 1;
             }
             break;
         case YELLOW:
-            if (!insertEntityID(posX, posY, 1, 2, ID_YELLOW_KEY))
+            if ((!insertEntityID(posX, posY, 1, 2, ID_YELLOW_KEY) && restore == 0) || restore == 1)
             {
                 draw = 1;
             }
             break;
         case BLUE:
-            if (!insertEntityID(posX, posY, 1, 2, ID_BLUE_KEY))
+            if ((!insertEntityID(posX, posY, 1, 2, ID_BLUE_KEY) && restore == 0) || restore == 1)
             {
                 draw = 1;
             }
@@ -446,55 +482,55 @@ void interface_level_actions(interface_t *interface, int posX, int posY)
             switch (nb_door)
             {
             case 1:
-                if (!insertEntityID(posX, posY, 3, 4, ID_PURPLE_DOOR1))
+                if ((!insertEntityID(posX, posY, 3, 4, ID_PURPLE_DOOR1) && restore == 0) || restore == 1)
                 {
                     draw = 1;
                 }
                 break;
             case 2:
-                if (!insertEntityID(posX, posY, 3, 4, ID_PURPLE_DOOR2))
+                if ((!insertEntityID(posX, posY, 3, 4, ID_PURPLE_DOOR2) && restore == 0) || restore == 1)
                 {
                     draw = 1;
                 }
                 break;
             case 3:
-                if (!insertEntityID(posX, posY, 3, 4, ID_PURPLE_DOOR3))
+                if ((!insertEntityID(posX, posY, 3, 4, ID_PURPLE_DOOR3) && restore == 0) || restore == 1)
                 {
                     draw = 1;
                 }
                 break;
             case 4:
-                if (!insertEntityID(posX, posY, 3, 4, ID_PURPLE_DOOR4))
+                if ((!insertEntityID(posX, posY, 3, 4, ID_PURPLE_DOOR4) && restore == 0) || restore == 1)
                 {
                     draw = 1;
                 }
                 break;
             case 5:
-                if (!insertEntityID(posX, posY, 3, 4, ID_PURPLE_DOOR5))
+                if ((!insertEntityID(posX, posY, 3, 4, ID_PURPLE_DOOR5) && restore == 0) || restore == 1)
                 {
                     draw = 1;
                 }
                 break;
             case 6:
-                if (!insertEntityID(posX, posY, 3, 4, ID_PURPLE_DOOR6))
+                if ((!insertEntityID(posX, posY, 3, 4, ID_PURPLE_DOOR6) && restore == 0) || restore == 1)
                 {
                     draw = 1;
                 }
                 break;
             case 7:
-                if (!insertEntityID(posX, posY, 3, 4, ID_PURPLE_DOOR7))
+                if ((!insertEntityID(posX, posY, 3, 4, ID_PURPLE_DOOR7) && restore == 0) || restore == 1)
                 {
                     draw = 1;
                 }
                 break;
             case 8:
-                if (!insertEntityID(posX, posY, 3, 4, ID_PURPLE_DOOR8))
+                if ((!insertEntityID(posX, posY, 3, 4, ID_PURPLE_DOOR8) && restore == 0) || restore == 1)
                 {
                     draw = 1;
                 }
                 break;
             case 9:
-                if (!insertEntityID(posX, posY, 3, 4, ID_PURPLE_DOOR9))
+                if ((!insertEntityID(posX, posY, 3, 4, ID_PURPLE_DOOR9) && restore == 0) || restore == 1)
                 {
                     draw = 1;
                 }
@@ -507,55 +543,55 @@ void interface_level_actions(interface_t *interface, int posX, int posY)
             switch (nb_door)
             {
             case 1:
-                if (!insertEntityID(posX, posY, 3, 4, ID_GREEN_DOOR1))
+                if ((!insertEntityID(posX, posY, 3, 4, ID_GREEN_DOOR1) && restore == 0) || restore == 1)
                 {
                     draw = 1;
                 }
                 break;
             case 2:
-                if (!insertEntityID(posX, posY, 3, 4, ID_GREEN_DOOR2))
+                if ((!insertEntityID(posX, posY, 3, 4, ID_GREEN_DOOR2) && restore == 0) || restore == 1)
                 {
                     draw = 1;
                 }
                 break;
             case 3:
-                if (!insertEntityID(posX, posY, 3, 4, ID_GREEN_DOOR3))
+                if ((!insertEntityID(posX, posY, 3, 4, ID_GREEN_DOOR3) && restore == 0) || restore == 1)
                 {
                     draw = 1;
                 }
                 break;
             case 4:
-                if (!insertEntityID(posX, posY, 3, 4, ID_GREEN_DOOR4))
+                if ((!insertEntityID(posX, posY, 3, 4, ID_GREEN_DOOR4) && restore == 0) || restore == 1)
                 {
                     draw = 1;
                 }
                 break;
             case 5:
-                if (!insertEntityID(posX, posY, 3, 4, ID_GREEN_DOOR5))
+                if ((!insertEntityID(posX, posY, 3, 4, ID_GREEN_DOOR5) && restore == 0) || restore == 1)
                 {
                     draw = 1;
                 }
                 break;
             case 6:
-                if (!insertEntityID(posX, posY, 3, 4, ID_GREEN_DOOR6))
+                if ((!insertEntityID(posX, posY, 3, 4, ID_GREEN_DOOR6) && restore == 0) || restore == 1)
                 {
                     draw = 1;
                 }
                 break;
             case 7:
-                if (!insertEntityID(posX, posY, 3, 4, ID_GREEN_DOOR7))
+                if ((!insertEntityID(posX, posY, 3, 4, ID_GREEN_DOOR7) && restore == 0) || restore == 1)
                 {
                     draw = 1;
                 }
                 break;
             case 8:
-                if (!insertEntityID(posX, posY, 3, 4, ID_GREEN_DOOR8))
+                if ((!insertEntityID(posX, posY, 3, 4, ID_GREEN_DOOR8) && restore == 0) || restore == 1)
                 {
                     draw = 1;
                 }
                 break;
             case 9:
-                if (!insertEntityID(posX, posY, 3, 4, ID_GREEN_DOOR9))
+                if ((!insertEntityID(posX, posY, 3, 4, ID_GREEN_DOOR9) && restore == 0) || restore == 1)
                 {
                     draw = 1;
                 }
@@ -568,55 +604,55 @@ void interface_level_actions(interface_t *interface, int posX, int posY)
             switch (nb_door)
             {
             case 1:
-                if (!insertEntityID(posX, posY, 3, 4, ID_YELLOW_DOOR1))
+                if ((!insertEntityID(posX, posY, 3, 4, ID_YELLOW_DOOR1) && restore == 0) || restore == 1)
                 {
                     draw = 1;
                 }
                 break;
             case 2:
-                if (!insertEntityID(posX, posY, 3, 4, ID_YELLOW_DOOR2))
+                if ((!insertEntityID(posX, posY, 3, 4, ID_YELLOW_DOOR2) && restore == 0) || restore == 1)
                 {
                     draw = 1;
                 }
                 break;
             case 3:
-                if (!insertEntityID(posX, posY, 3, 4, ID_YELLOW_DOOR3))
+                if ((!insertEntityID(posX, posY, 3, 4, ID_YELLOW_DOOR3) && restore == 0) || restore == 1)
                 {
                     draw = 1;
                 }
                 break;
             case 4:
-                if (!insertEntityID(posX, posY, 3, 4, ID_YELLOW_DOOR4))
+                if ((!insertEntityID(posX, posY, 3, 4, ID_YELLOW_DOOR4) && restore == 0) || restore == 1)
                 {
                     draw = 1;
                 }
                 break;
             case 5:
-                if (!insertEntityID(posX, posY, 3, 4, ID_YELLOW_DOOR5))
+                if ((!insertEntityID(posX, posY, 3, 4, ID_YELLOW_DOOR5) && restore == 0) || restore == 1)
                 {
                     draw = 1;
                 }
                 break;
             case 6:
-                if (!insertEntityID(posX, posY, 3, 4, ID_YELLOW_DOOR6))
+                if ((!insertEntityID(posX, posY, 3, 4, ID_YELLOW_DOOR6) && restore == 0) || restore == 1)
                 {
                     draw = 1;
                 }
                 break;
             case 7:
-                if (!insertEntityID(posX, posY, 3, 4, ID_YELLOW_DOOR7))
+                if ((!insertEntityID(posX, posY, 3, 4, ID_YELLOW_DOOR7) && restore == 0) || restore == 1)
                 {
                     draw = 1;
                 }
                 break;
             case 8:
-                if (!insertEntityID(posX, posY, 3, 4, ID_YELLOW_DOOR8))
+                if ((!insertEntityID(posX, posY, 3, 4, ID_YELLOW_DOOR8) && restore == 0) || restore == 1)
                 {
                     draw = 1;
                 }
                 break;
             case 9:
-                if (!insertEntityID(posX, posY, 3, 4, ID_YELLOW_DOOR9))
+                if ((!insertEntityID(posX, posY, 3, 4, ID_YELLOW_DOOR9) && restore == 0) || restore == 1)
                 {
                     draw = 1;
                 }
@@ -629,55 +665,55 @@ void interface_level_actions(interface_t *interface, int posX, int posY)
             switch (nb_door)
             {
             case 1:
-                if (!insertEntityID(posX, posY, 3, 4, ID_BLUE_DOOR1))
+                if ((!insertEntityID(posX, posY, 3, 4, ID_BLUE_DOOR1) && restore == 0) || restore == 1)
                 {
                     draw = 1;
                 }
                 break;
             case 2:
-                if (!insertEntityID(posX, posY, 3, 4, ID_BLUE_DOOR2))
+                if ((!insertEntityID(posX, posY, 3, 4, ID_BLUE_DOOR2) && restore == 0) || restore == 1)
                 {
                     draw = 1;
                 }
                 break;
             case 3:
-                if (!insertEntityID(posX, posY, 3, 4, ID_BLUE_DOOR3))
+                if ((!insertEntityID(posX, posY, 3, 4, ID_BLUE_DOOR3) && restore == 0) || restore == 1)
                 {
                     draw = 1;
                 }
                 break;
             case 4:
-                if (!insertEntityID(posX, posY, 3, 4, ID_BLUE_DOOR4))
+                if ((!insertEntityID(posX, posY, 3, 4, ID_BLUE_DOOR4) && restore == 0) || restore == 1)
                 {
                     draw = 1;
                 }
                 break;
             case 5:
-                if (!insertEntityID(posX, posY, 3, 4, ID_BLUE_DOOR5))
+                if ((!insertEntityID(posX, posY, 3, 4, ID_BLUE_DOOR5) && restore == 0) || restore == 1)
                 {
                     draw = 1;
                 }
                 break;
             case 6:
-                if (!insertEntityID(posX, posY, 3, 4, ID_BLUE_DOOR6))
+                if ((!insertEntityID(posX, posY, 3, 4, ID_BLUE_DOOR6) && restore == 0) || restore == 1)
                 {
                     draw = 1;
                 }
                 break;
             case 7:
-                if (!insertEntityID(posX, posY, 3, 4, ID_BLUE_DOOR7))
+                if ((!insertEntityID(posX, posY, 3, 4, ID_BLUE_DOOR7) && restore == 0) || restore == 1)
                 {
                     draw = 1;
                 }
                 break;
             case 8:
-                if (!insertEntityID(posX, posY, 3, 4, ID_BLUE_DOOR8))
+                if ((!insertEntityID(posX, posY, 3, 4, ID_BLUE_DOOR8) && restore == 0) || restore == 1)
                 {
                     draw = 1;
                 }
                 break;
             case 9:
-                if (!insertEntityID(posX, posY, 3, 4, ID_BLUE_DOOR9))
+                if ((!insertEntityID(posX, posY, 3, 4, ID_BLUE_DOOR9) && restore == 0) || restore == 1)
                 {
                     draw = 1;
                 }
@@ -701,7 +737,7 @@ void interface_level_actions(interface_t *interface, int posX, int posY)
         }
         break;
     case Exit:
-        if (!insertEntityID(posX, posY, 3, 4, ID_EXIT))
+        if ((!insertEntityID(posX, posY, 3, 4, ID_EXIT) && restore == 0) || restore == 1)
         {
             for (size_t i = 0; i < 3; i++)
             {
@@ -713,7 +749,7 @@ void interface_level_actions(interface_t *interface, int posX, int posY)
         }
         break;
     case Start:
-        if (!insertEntityID(posX, posY, 3, 4, ID_START))
+        if ((!insertEntityID(posX, posY, 3, 4, ID_START) && restore == 0) || restore == 1)
         {
             for (size_t i = 0; i < 3; i++)
             {
@@ -725,7 +761,7 @@ void interface_level_actions(interface_t *interface, int posX, int posY)
         }
         break;
     case Robot:
-        if (!insertEntityID(posX, posY, 3, 4, ID_ROBOT))
+        if ((!insertEntityID(posX, posY, 3, 4, ID_ROBOT) && restore == 0) || restore == 1)
         {
             window_mvaddch_col(interface->win_level, posY, posX, WHITE, ' ' | ACS_ULCORNER);
             window_mvaddch_col(interface->win_level, posY, posX + 1, WHITE, ' ' | ACS_BTEE);
@@ -742,7 +778,7 @@ void interface_level_actions(interface_t *interface, int posX, int posY)
         }
         break;
     case Probe:
-        if (!insertEntityID(posX, posY, 2, 3, ID_PROBE))
+        if ((!insertEntityID(posX, posY, 2, 3, ID_PROBE) && restore == 0) || restore == 1)
         {
             window_mvaddch_col(interface->win_level, posY, posX, WHITE, ' ' | ACS_LTEE);
             window_mvaddch_col(interface->win_level, posY, posX + 1, WHITE, ' ' | ACS_HLINE);
@@ -753,13 +789,13 @@ void interface_level_actions(interface_t *interface, int posX, int posY)
         }
         break;
     case Life:
-        if (!insertEntityID(posX, posY, 1, 1, ID_LIFE))
+        if ((!insertEntityID(posX, posY, 1, 1, ID_LIFE) && restore == 0) || restore == 1)
         {
             window_mvaddch_col(interface->win_level, posY, posX, RED, 'V');
         }
         break;
     case Bomb:
-        if (!insertEntityID(posX, posY, 1, 1, ID_BOMB))
+        if ((!insertEntityID(posX, posY, 1, 1, ID_BOMB) && restore == 0) || restore == 1)
         {
             window_mvaddch_col(interface->win_level, posY, posX, WHITE, 'o');
         }
@@ -783,7 +819,7 @@ void interface_actions(interface_t *interface, int c)
         }
         else if (window_getcoordinates(interface->win_level, mouseX, mouseY, &posX, &posY))
         {
-            interface_level_actions(interface, posX, posY);
+            interface_level_actions(interface, posX, posY, 0);
         }
         window_mvprintw_col(interface->win_infos, 1, 0, WHITE, "X : %d Y : %d\n", posX, posY);
         window_refresh(interface->win_infos);
@@ -817,7 +853,7 @@ int insertEntityID(int posX, int posY, int entity_WIDTH, int entity_HEIGHT, int 
         {
             if (tab[posY + i][posX + j] != 0)
             {
-                return -1;
+                return 1;
             }
         }
     }
@@ -831,18 +867,22 @@ int insertEntityID(int posX, int posY, int entity_WIDTH, int entity_HEIGHT, int 
     return 0;
 }
 
-void updateEntity(interface_t *interface, int posX, int posY, int action) // action {0 : delete, 1: restore}
+int updateEntity(interface_t *interface, int posX, int posY, int action) // action {0 : delete, 1: restore}
 {
     int bloc_width = 0;
     int bloc_height = 0;
     int prev_select = getEntityDetail(interface, tab, posX, posY, &bloc_width, &bloc_height, nb_door);
-    if (!action)
+    if (action == 0)
     {
         interface->selection = prev_select;
     }
     // tmp_pos : position du clic et pos : position de la tête du bloc
     int tmp_posX = posX;
     int tmp_posY = posY;
+    if (bloc_width == 0 || bloc_height == 0)
+    {
+        return -1;
+    }
     getHeadEntity(&posX, &posY, bloc_width, bloc_height);
 
     // ----- debug : entity information -----
@@ -853,24 +893,30 @@ void updateEntity(interface_t *interface, int posX, int posY, int action) // act
     // exit(0);
 
     // Supprimer/Restaurer toutes les cases de l'ID spécifié
-    for (int i = 0; i < bloc_height; i++)
+    if (action == 1) // restore
     {
-        for (int j = 0; j < bloc_width; j++)
+        if (tmp_posX == posX && tmp_posY == posY)
         {
-            if (action) // restore
-            {
-                if (tmp_posX != posX && tmp_posY != posY)
-                {
-                    interface_level_actions(interface, posX + j, posY + i);
-                }
-            }
-            else // delete
+            interface_level_actions(interface, posX, posY, 1);
+            return bloc_width - 1;
+        }
+        else
+        {
+            return -1;
+        }
+    }
+    else // delete
+    {
+        for (int i = 0; i < bloc_height; i++)
+        {
+            for (int j = 0; j < bloc_width; j++)
             {
                 tab[posY + i][posX + j] = 0;
                 window_mvaddch(interface->win_level, posY + i, posX + j, ' ');
             }
         }
     }
+    return -1;
 }
 
 void getHeadEntity(int *posX, int *posY, int bloc_width, int bloc_height)

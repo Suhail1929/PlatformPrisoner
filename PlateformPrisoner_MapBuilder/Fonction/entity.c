@@ -11,6 +11,9 @@ int getEntityDetail(interface_t *interface, int tab[20][60], int posX, int posY,
     int previous_selection = interface->selection;
     switch (tab[posY][posX])
     {
+    case ID_DELETE:
+        interface->selection = 500;
+        break;
     case ID_BLOCK:
         *bloc_width = 1, *bloc_height = 1;
         interface->selection = Block;
