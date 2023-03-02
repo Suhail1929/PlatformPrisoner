@@ -3,11 +3,28 @@
 #include "Fonction/fonction.h"
 #include "Couleur/couleur.h"
 #include "Window/window.h"
+#include "Data/data_table.h"
 #include "Interface/interface.h"
 
 int main()
 {
     interface_t *interface;
+    int fd = openFile("file.bin");
+    bloc_t *bloc = loadBloc(fd, 0);
+    if (bloc == NULL)
+    {
+        printf("Creation du Bloc\n");
+        bloc = initBloc();
+        saveBloc(fd, bloc);
+        level_t *level0 = initLevel();
+        addLevel(fd, bloc, level0);
+        updateBloc(fd, 0, bloc);
+    }
+    level_t *level0 = loadLevelById(fd, bloc, 0);
+    if (level0 == NULL)
+    {
+        level0 = initLevel();
+    }
 
     ncurses_init();
     ncurses_colors();
@@ -19,19 +36,25 @@ int main()
     refresh();
 
     // Creation de l'interface
-    interface = interface_create();
+    interface = interface_create(level0);
 
     int ch;
     while ((ch = getch()) != 27)
     {
-        interface_actions(interface, ch);
+        interface_actions(fd, level0, interface, ch);
     }
+    
+    // updateBloc(fd, 0, bloc);
     // Quitter le mode d'affichage ncurses
     ncurses_stop();
-
-    displayMapID();
+    // affichage du bloc pour vérifier
+    bloc = loadBloc(fd, 0);
+    displayBloc(fd, bloc);
     // supprimer l'interface
     interface_delete(&interface);
+
+    closeFile(fd);
+    free(bloc);
 
     return EXIT_SUCCESS;
 }

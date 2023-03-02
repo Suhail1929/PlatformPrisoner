@@ -14,8 +14,9 @@
 #define Probe 10
 #define Life 11
 #define Bomb 12
-#define LEVEL 16
-#define CLEAR 18
+#define LEVEL 15
+#define CLEAR 17
+#define SAVE 19
 
 #define HEIGHT 20
 #define WIDTH 60
@@ -30,11 +31,12 @@ typedef struct
     unsigned int current_color; // La couleur du gate sélectionné
 } interface_t;
 
-interface_t *interface_create();
+interface_t *interface_create(level_t *level);
+void update_win_level(interface_t *interface, level_t *level);
 void interface_delete(interface_t **interface);
 void interface_tools_update(interface_t *interface);
-void interface_tools_actions(interface_t *interface, int posX, int posY);
-void interface_actions(interface_t *interface, int c);
+void interface_tools_actions(int fd, level_t *level, interface_t *interface, int posX, int posY);
+void interface_actions(int fd, level_t *level, interface_t *interface, int c);
 void interface_level_actions(interface_t *interface, int posX, int posY, int restore);
 void outliner(interface_t *interface);
 int insertEntityID(int posX, int posY, int largeur, int hauteur, int entityID);
@@ -42,4 +44,5 @@ int updateEntity(interface_t *interface, int posX, int posY, int action);
 void getHeadEntity(int *posX, int *posY, int bloc_width, int bloc_height);
 void clearMapID();
 void displayMapID();
+void clearInerface(interface_t *interface);
 #endif

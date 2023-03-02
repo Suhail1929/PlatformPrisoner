@@ -4,17 +4,18 @@
 #include "../Fonction/fonction.h"
 #include "../Couleur/couleur.h"
 #include "../Window/window.h"
+#include "../Data/data_table.h"
 #include "interface.h"
 #include "../Fonction/entity.h"
 #include <limits.h>
 
 int nb_door = 1;
 char level[15];
-int level_nb = 1;
+int level_nb = 0;
 int tab[HEIGHT][WIDTH];
 int compteurEntity = 0;
 
-interface_t *interface_create()
+interface_t *interface_create(level_t *level)
 {
     interface_t *result;
 
@@ -36,52 +37,7 @@ interface_t *interface_create()
     // default tab : empty
     // clearMapID();
 
-    for (int i = 0; i < HEIGHT; i++)
-    {
-        for (int j = 0; j < WIDTH; j++)
-        {
-            tab[i][j] = 0;
-        }
-    }
-    tab[0][1] = 41;
-    tab[0][2] = 41;
-
-    tab[1][1] = 41;
-    tab[1][2] = 41;
-
-    tab[2][1] = 41;
-    tab[2][2] = 41;
-
-    tab[3][1] = 41;
-    tab[3][2] = 41;
-
-    int tmp_decalage = 0;
-    for (int i = 0; i < HEIGHT; i++)
-    {
-        for (int j = 0; j < WIDTH; j++)
-        {
-            tmp_decalage = updateEntity(result, j, i, 1);
-            if (tmp_decalage != -1)
-            {
-                j += tmp_decalage;
-            }
-        }
-    }
-
-    // player
-    // window_mvaddch_col(result->win_level, 2, 32, RED, ' ' | A_REVERSE);
-    // window_mvaddch_col(result->win_level, 2, 31, RED, '-' | A_REVERSE);
-    // window_mvaddch_col(result->win_level, 3, 31, BLUE, ' ' | ACS_HLINE);
-    // window_mvaddch_col(result->win_level, 3, 32, BLUE, ' ' | ACS_PLUS);
-    // window_mvaddch_col(result->win_level, 3, 33, BLUE, ' ' | ACS_HLINE);
-    // window_mvaddch_col(result->win_level, 4, 31, BLUE, ' ' | ACS_ULCORNER);
-    // window_mvaddch_col(result->win_level, 4, 32, BLUE, ' ' | ACS_BTEE);
-    // window_mvaddch_col(result->win_level, 4, 33, BLUE, ' ' | ACS_URCORNER);
-    // window_mvaddch_col(result->win_level, 5, 31, BLUE, ' ' | ACS_VLINE);
-    // window_mvaddch_col(result->win_level, 5, 33, BLUE, ' ' | ACS_VLINE);
-
-    // outliner
-    // outliner(result);
+    update_win_level(result, level);
 
     window_refresh(result->win_level);
     // fenetre tools
@@ -95,6 +51,30 @@ interface_t *interface_create()
     return result;
 }
 
+void update_win_level(interface_t *interface, level_t *level)
+{
+    int i, j;
+    int tmp_decalage = 0;
+    for (i = 0; i < HEIGHT; i++)
+    {
+        for (j = 0; j < WIDTH; j++)
+        {
+            tab[i][j] = level->tab[i][j];
+        }
+    }
+
+    for (i = 0; i < HEIGHT; i++)
+    {
+        for (j = 0; j < WIDTH; j++)
+        {
+            tmp_decalage = updateEntity(interface, j, i, 1);
+            if (tmp_decalage != -1)
+            {
+                j += tmp_decalage;
+            }
+        }
+    }
+}
 void interface_delete(interface_t **interface)
 {
     window_delete(&(*interface)->win_infos);
@@ -104,7 +84,6 @@ void interface_delete(interface_t **interface)
     free(*interface);
     interface = NULL;
 }
-
 /**
  * Update palette window
  * @param[in,out] interface the interface
@@ -262,9 +241,9 @@ void interface_tools_update(interface_t *interface)
     {
         sprintf(level, "< 0%d >", level_nb);
     }
-    window_mvprintw_col(interface->win_tools, 16, 3, (interface->selection == LEVEL) ? YELLOW : WHITE, level);
-    window_mvprintw_col(interface->win_tools, 18, 2, (interface->selection == CLEAR) ? YELLOW : RED, "  CLEAR");
-
+    window_mvprintw_col(interface->win_tools, 15, 3, (interface->selection == LEVEL) ? YELLOW : WHITE, level);
+    window_mvprintw_col(interface->win_tools, 17, 2, (interface->selection == CLEAR) ? YELLOW : RED, "  CLEAR");
+    window_mvprintw_col(interface->win_tools, 19, 2, (interface->selection == SAVE) ? YELLOW : RED, "  SAVE");
     window_refresh(interface->win_tools);
 }
 
@@ -274,9 +253,9 @@ void interface_tools_update(interface_t *interface)
  * @param[in] posX X position of the click in the window
  * @param[in] posY Y position of the click in the window
  */
-void interface_tools_actions(interface_t *interface, int posX, int posY)
+void interface_tools_actions(int fd, level_t *level, interface_t *interface, int posX, int posY)
 {
-    if ((posY >= 0) && (posY <= 18))
+    if ((posY >= 0) && (posY <= 20))
     {
         switch (posY)
         {
@@ -347,21 +326,107 @@ void interface_tools_actions(interface_t *interface, int posX, int posY)
             break;
         case LEVEL:
             interface->selection = LEVEL;
-            if ((posX >= 3 && posX <= 4) && level_nb > 1)
+            if ((posX >= 3 && posX <= 4) && level_nb > 0)
             {
+                for (int i = 0; i < HEIGHT; i++)
+                {
+                    for (int j = 0; j < WIDTH; j++)
+                    {
+                        level->tab[i][j] = tab[i][j];
+                    }
+                }
+                level->id = level_nb;
+                bloc_t *bloc = loadBloc(fd, 0);
+                int offset = findLevel(fd, bloc, level_nb);
+                if (offset == -1)
+                {
+                    level->id = level_nb;
+                    addLevel(fd, bloc, level);
+                    updateBloc(fd, 0, bloc);
+                }
+                else
+                {
+                    updateLevel(fd, offset, level);
+                    updateBloc(fd, 0, bloc);
+                }
                 level_nb--;
+                level = loadLevelById(fd, bloc, level_nb);
+                if (level == NULL)
+                {
+                    clearInerface(interface);
+                    level = initLevel();
+                    level->id = level_nb;
+                    update_win_level(interface, level);
+                }
+                else
+                {
+                    clearInerface(interface);
+                    update_win_level(interface, level);
+                }
             }
             else if ((posX >= 8 && posX <= 9) && level_nb < 99)
             {
+                for (int i = 0; i < HEIGHT; i++)
+                {
+                    for (int j = 0; j < WIDTH; j++)
+                    {
+                        level->tab[i][j] = tab[i][j];
+                    }
+                }
+                level->id = level_nb;
+                bloc_t *bloc = loadBloc(fd, 0);
+                int offset = findLevel(fd, bloc, level_nb);
+                if (offset == -1)
+                {
+                    addLevel(fd, bloc, level);
+                    updateBloc(fd, 0, bloc);
+                }
+                else
+                {
+                    updateLevel(fd, offset, level);
+                    updateBloc(fd, 0, bloc);
+                }
                 level_nb++;
+                level = loadLevelById(fd, bloc, level_nb);
+                if (level == NULL)
+                {
+                    clearInerface(interface);
+                    level = initLevel();
+                    level->id = level_nb;
+                    update_win_level(interface, level);
+                }
+                else
+                {
+                    clearInerface(interface);
+                    update_win_level(interface, level);
+                }
             }
             break;
         case CLEAR:
-            interface->selection = CLEAR;
-            window_erase(interface->win_level);
-            clearMapID();
-            outliner(interface);
-            window_refresh(interface->win_level);
+            clearInerface(interface);
+            break;
+        case SAVE:
+            for (int i = 0; i < HEIGHT; i++)
+            {
+                for (int j = 0; j < WIDTH; j++)
+                {
+                    level->tab[i][j] = tab[i][j];
+                }
+            }
+            level->id = level_nb;
+            bloc_t *bloc = loadBloc(fd, 0);
+            int offset = findLevel(fd, bloc, level_nb);
+            if (offset == -1)
+            {
+                addLevel(fd, bloc, level);
+                updateBloc(fd, 0, bloc);
+            }
+            else
+            {
+                updateLevel(fd, offset, level);
+                updateBloc(fd, 0, bloc);
+            }
+            updateBloc(fd, 0, loadBloc(fd, 0));
             break;
         default:
             break;
@@ -806,7 +871,7 @@ void interface_level_actions(interface_t *interface, int posX, int posY, int res
     window_refresh(interface->win_level);
 }
 
-void interface_actions(interface_t *interface, int c)
+void interface_actions(int fd, level_t *level, interface_t *interface, int c)
 {
     int mouseX, mouseY, posX, posY;
 
@@ -815,7 +880,7 @@ void interface_actions(interface_t *interface, int c)
     {
         if (window_getcoordinates(interface->win_tools, mouseX, mouseY, &posX, &posY))
         {
-            interface_tools_actions(interface, posX, posY);
+            interface_tools_actions(fd, level, interface, posX, posY);
         }
         else if (window_getcoordinates(interface->win_level, mouseX, mouseY, &posX, &posY))
         {
@@ -987,8 +1052,24 @@ void clearMapID()
             tab[i][j] = 0;
         }
     }
+    for (int i = 0; i < HEIGHT; i++)
+    {
+        tab[i][0] = 1;
+        tab[i][WIDTH - 1] = 1;
+    }
+    for (int i = 0; i < WIDTH; i++)
+    {
+        tab[0][i] = 1;
+        tab[HEIGHT - 1][i] = 1;
+    }
 }
-
+void clearInerface(interface_t *interface)
+{
+    window_erase(interface->win_level);
+    clearMapID();
+    outliner(interface);
+    window_refresh(interface->win_level);
+}
 void displayMapID() // for debugging
 {
     for (int i = 0; i < HEIGHT; i++)
