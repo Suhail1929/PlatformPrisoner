@@ -10,17 +10,20 @@
 
 #include "data_table.h"
 
-void save_nb_level(int fd)
-{
-    lseek(fd, 0, SEEK_SET);
-    write(fd, &nb_level, sizeof(int));
-}
+/*
+ *  Function that load the level
+ *  @param fd : le descripteur de fichier
+ */
 
 void load_nb_level(int fd)
 {
     lseek(fd, 0, SEEK_SET);
     read(fd, &nb_level, sizeof(int));
 }
+
+/*
+ * Function that open a file
+ */
 
 int openFile(char *fileName)
 {
@@ -33,6 +36,9 @@ int openFile(char *fileName)
     return fd;
 }
 
+/*
+ *Function that close a file
+ */
 void closeFile(int fd)
 {
     if (close(fd) == -1)
@@ -42,6 +48,9 @@ void closeFile(int fd)
     }
 }
 
+/*
+ * Function that init a level
+ */
 level_t *initLevel()
 {
     level_t *level = malloc(sizeof(level_t));
@@ -74,6 +83,10 @@ level_t *initLevel()
     return level;
 }
 
+/*
+ * Function that init a bloc
+ */
+
 bloc_t *initBloc()
 {
     bloc_t *bloc = malloc(sizeof(bloc_t));
@@ -90,6 +103,13 @@ bloc_t *initBloc()
     bloc->bloc_next = -1;
     return bloc;
 }
+
+/*
+ * Function that save a level in a file and save the offset of the level in the bloc
+ * @param fd : the file descriptor
+ * @param bloc : the bloc
+ * @param level : the level
+ */
 
 void addLevel(int fd, bloc_t *bloc, level_t *level)
 {
@@ -151,7 +171,12 @@ void addLevel(int fd, bloc_t *bloc, level_t *level)
         updateBloc(fd, bloc->bloc_next, next_bloc);
     }
 }
-
+/*
+ * Function that update a level
+ * @param fd : the file descriptor
+ * @param offset : the offset of the level
+ * @param level : the level
+ */
 void updateLevel(int fd, off_t offset, level_t *level)
 {
     if (level == NULL)
@@ -172,7 +197,12 @@ void updateLevel(int fd, off_t offset, level_t *level)
         exit(EXIT_FAILURE);
     }
 }
-
+/*
+ * Function that delete a level
+ * @param fd : the file descriptor
+ * @param bloc : the bloc
+ * @param id : the id of the level
+ */
 void deleteLevel(int fd, bloc_t *bloc, int id)
 {
     if (fd == -1)
@@ -229,7 +259,11 @@ void deleteLevel(int fd, bloc_t *bloc, int id)
         return;
     }
 }
-
+/*
+ * Function that save a bloc in the file and return the offset
+ * @param fd : the file descriptor
+ * @param bloc : the bloc
+ */
 off_t saveBloc(int fd, bloc_t *bloc)
 {
     if (fd == -1)
@@ -266,7 +300,12 @@ off_t saveBloc(int fd, bloc_t *bloc)
 
     return offset;
 }
-
+/*
+ * Function that update a bloc
+ * @param fd : the file descriptor
+ * @param offset : the offset of the bloc
+ * @param bloc : the bloc
+ */
 void updateBloc(int fd, off_t offset, bloc_t *bloc)
 {
     if (fd == -1)
@@ -302,7 +341,11 @@ void updateBloc(int fd, off_t offset, bloc_t *bloc)
         exit(EXIT_FAILURE);
     }
 }
-
+/*
+ * Function that load a bloc
+ * @param fd : the file descriptor
+ * @param offset : the offset of the bloc
+ */
 bloc_t *loadBloc(int fd, off_t offset)
 {
     if (fd == -1)
@@ -341,7 +384,11 @@ bloc_t *loadBloc(int fd, off_t offset)
 
     return bloc;
 }
-
+/*
+ * Function that display a bloc
+ * @param fd : the file descriptor
+ * @param bloc : the bloc
+ */
 void displayBloc(int fd, bloc_t *bloc)
 {
     printf("nb_available_entry: %d\n", bloc->nb_available_entry);
@@ -369,7 +416,11 @@ void displayBloc(int fd, bloc_t *bloc)
         displayBloc(fd, next_bloc);
     }
 }
-
+/*
+ * Function that load a level
+ * @param fd : the file descriptor
+ * @param offset : the offset of the level
+ */
 level_t *loadLevel(int fd, off_t offset)
 {
     if (lseek(fd, offset, SEEK_SET) == -1)
@@ -399,6 +450,12 @@ level_t *loadLevel(int fd, off_t offset)
 
     return level;
 }
+/*
+ * Function that find a level in a bloc
+ * @param fd : the file descriptor
+ * @param Bloc : the bloc
+ * @param id : the id of the level
+ */
 off_t findLevel(int fd, bloc_t *Bloc, int id)
 {
     for (int i = 0; i < NB_LEVEL; i++)
@@ -433,6 +490,12 @@ off_t findLevel(int fd, bloc_t *Bloc, int id)
     }
     return -1;
 }
+/*
+ * Function that load a level by id
+ * @param fd : the file descriptor
+ * @param bloc : the bloc
+ * @param id : the id of the level
+ */
 level_t *loadLevelById(int fd, bloc_t *bloc, int id)
 {
     for (int i = 0; i < NB_LEVEL; i++)
@@ -477,7 +540,10 @@ level_t *loadLevelById(int fd, bloc_t *bloc, int id)
     // printf("le niveau n'existe pas \n");
     return NULL;
 }
-
+/*
+ * Function that display a level
+ * @param level : the level
+ */
 void displayLevel(level_t *level)
 {
     if (level != NULL)

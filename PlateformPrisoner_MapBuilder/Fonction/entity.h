@@ -1,3 +1,9 @@
+// author: Souhail MTARFI & Hayat RAHIM
+
+/*
+ * Enum representing the map
+ */
+
 enum Map
 {
     ID_DELETE = 0,

@@ -5,7 +5,16 @@
 #include "../Data/data_table.h"
 #include "../Interface/interface.h"
 #include "entity.h"
-
+/*
+ * function modify the entity in the map to use it for restore the map
+ * @param interface: the interface of the application
+ * @param tab : the map of the level
+ * @param posX : the position X of the entity
+ * @param posY : the position Y of the entity
+ * @param bloc_width : the width of the entity
+ * @param bloc_height : the height of the entity
+ * @param nb_door : the number of door of the entity
+ */
 int getEntityDetail(interface_t *interface, int tab[20][60], int posX, int posY, int *bloc_width, int *bloc_height, int *nb_door)
 {
     *nb_door = 1;

@@ -35,7 +35,7 @@ int main()
 
     refresh();
 
-    // Creation de l'interface
+    // Creation of the interface
     interface = interface_create(level0);
 
     int ch;
@@ -43,11 +43,9 @@ int main()
     {
         interface_actions(fd, level0, interface, ch);
     }
-    
-    // updateBloc(fd, 0, bloc);
-    // Quitter le mode d'affichage ncurses
+
     ncurses_stop();
-    // affichage du bloc pour vérifier
+    // display the bloc
     bloc = loadBloc(fd, 0);
     displayBloc(fd, bloc);
     // supprimer l'interface
@@ -55,6 +53,7 @@ int main()
 
     closeFile(fd);
     free(bloc);
+    free(level0);
 
     return EXIT_SUCCESS;
 }

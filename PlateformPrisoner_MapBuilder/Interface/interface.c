@@ -14,7 +14,10 @@ char level[15];
 int level_nb = 0;
 int tab[HEIGHT][WIDTH];
 int compteurEntity = 0;
-
+/*
+ * Function that create an interface
+ * @param level : the level
+ */
 interface_t *interface_create(level_t *level)
 {
     interface_t *result;
@@ -34,8 +37,6 @@ interface_t *interface_create(level_t *level)
 
     // fenetre coordonnées
     result->win_level = window_create(0, 0, 62, 22, "Level", FALSE);
-    // default tab : empty
-    // clearMapID();
 
     update_win_level(result, level);
 
@@ -50,7 +51,11 @@ interface_t *interface_create(level_t *level)
 
     return result;
 }
-
+/*
+ * Function that update the level window
+ * @param interface : the interface
+ * @param level : the level
+ */
 void update_win_level(interface_t *interface, level_t *level)
 {
     int i, j;
@@ -75,6 +80,10 @@ void update_win_level(interface_t *interface, level_t *level)
         }
     }
 }
+/*
+ * Function that update the tools window
+ * @param interface : the interface
+ */
 void interface_delete(interface_t **interface)
 {
     window_delete(&(*interface)->win_infos);
@@ -434,11 +443,15 @@ void interface_tools_actions(int fd, level_t *level, interface_t *interface, int
         interface_tools_update(interface);
     }
 }
-
+/*
+ * Function that implement the actions of the interface in level
+ * @param interface : the interface
+ * @param posX : the position X
+ * @param posY : the position Y
+ * @param restore : the restore
+ */
 void interface_level_actions(interface_t *interface, int posX, int posY, int restore)
 {
-    // ncurses_stop();
-    // printf("Detect id: %d, selection %d, couleur %d\n", tab[posY][posX], interface->selection, interface->current_color);
 
     int draw = 0; // boolean to draw or not the gate/key/... wich have multiple color
     switch (interface->selection)
@@ -870,7 +883,13 @@ void interface_level_actions(interface_t *interface, int posX, int posY, int res
     }
     window_refresh(interface->win_level);
 }
-
+/*
+ * Function that implement the actions of the interface
+ * @param interface : the interface
+ * @param c : the key pressed
+ * @param fd : the file descriptor
+ * @param level : the level
+ */
 void interface_actions(int fd, level_t *level, interface_t *interface, int c)
 {
     int mouseX, mouseY, posX, posY;
@@ -890,7 +909,10 @@ void interface_actions(int fd, level_t *level, interface_t *interface, int c)
         window_refresh(interface->win_infos);
     }
 }
-
+/*
+ * Function that draw the outliner
+ * @param interface : the interface
+ */
 void outliner(interface_t *interface)
 {
     for (int i = 0; i <= 59; i++)
@@ -908,7 +930,14 @@ void outliner(interface_t *interface)
         window_mvaddch_col(interface->win_level, i, 59, CYAN, ' ' | A_REVERSE);
     }
 }
-
+/*
+ * Function insert an entity ID in the map and return the entity ID
+ * @param posX : the position X
+ * @param posY : the position Y
+ * @param largeur : the width
+ * @param hauteur : the height
+ * @param entityID : the entity ID
+ */
 int insertEntityID(int posX, int posY, int entity_WIDTH, int entity_HEIGHT, int entityID)
 {
     // check if there is not already an entity
@@ -931,7 +960,12 @@ int insertEntityID(int posX, int posY, int entity_WIDTH, int entity_HEIGHT, int 
     }
     return 0;
 }
-
+/*
+ * Function update an entity ID in the map and return the entity ID
+ * @param posX : the position X
+ * @param posY : the position Y
+ * @param action : the action if == 0 delete the entity else update the entity
+ */
 int updateEntity(interface_t *interface, int posX, int posY, int action) // action {0 : delete, 1: restore}
 {
     int bloc_width = 0;
@@ -949,13 +983,6 @@ int updateEntity(interface_t *interface, int posX, int posY, int action) // acti
         return -1;
     }
     getHeadEntity(&posX, &posY, bloc_width, bloc_height);
-
-    // ----- debug : entity information -----
-    // ncurses_stop();
-    // printf("Detect id: %d, posX: %d, posY: %d\n", tab[posY][posX], tmp_posX, tmp_posY);
-    // printf("Head (posX, posY): (%d, %d)\n", posX, posY);
-    // printf("Detail (bloc_width, bloc_height): (%d, %d)\n", bloc_width, bloc_height);
-    // exit(0);
 
     // Supprimer/Restaurer toutes les cases de l'ID spécifié
     if (action == 1) // restore
@@ -983,7 +1010,13 @@ int updateEntity(interface_t *interface, int posX, int posY, int action) // acti
     }
     return -1;
 }
-
+/*
+ * Function that return the head of the entity
+ * @param posX : the position X
+ * @param posY : the position Y
+ * @param largeur : the width
+ * @param hauteur : the height
+ */
 void getHeadEntity(int *posX, int *posY, int bloc_width, int bloc_height)
 {
     // Récupérer l'ID du bloc
@@ -1005,9 +1038,6 @@ void getHeadEntity(int *posX, int *posY, int bloc_width, int bloc_height)
         nb_cells = (int)((compteurHeight - 1) / bloc_height) * bloc_height;
         // on descend de nb_cells case vers le bas et donc head_y prend la nouvelle valeur y de la position de la case.
         tmp_y = (*posY - compteurHeight + 1) + nb_cells;
-        // ncurses_stop();
-        // printf("nb_cells : %d, compteur Height : %d, PosY: %d, tmp_y,: %d\n", nb_cells, compteurHeight, posY, tmp_y);
-        // exit(0);
     }
     else
     {
@@ -1042,7 +1072,9 @@ void getHeadEntity(int *posX, int *posY, int bloc_width, int bloc_height)
     *posX = tmp_x;
     *posY = tmp_y;
 }
-
+/*
+ *Function that clear the map ID
+ */
 void clearMapID()
 {
     for (int i = 0; i < HEIGHT; i++)
@@ -1063,6 +1095,9 @@ void clearMapID()
         tab[HEIGHT - 1][i] = 1;
     }
 }
+/*
+ *Function that clear the interface
+ */
 void clearInerface(interface_t *interface)
 {
     window_erase(interface->win_level);
@@ -1070,6 +1105,9 @@ void clearInerface(interface_t *interface)
     outliner(interface);
     window_refresh(interface->win_level);
 }
+/*
+ *Function that display the map ID
+ */
 void displayMapID() // for debugging
 {
     for (int i = 0; i < HEIGHT; i++)
