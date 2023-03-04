@@ -1,12 +1,13 @@
 #include <stdlib.h>
 #include <ncurses.h>
 
-#include "../Fonction/fonction.h"
-#include "../Couleur/couleur.h"
-#include "../Window/window.h"
-#include "../Data/data_table.h"
+#include "fonction.h"
+#include "couleur.h"
+#include "window.h"
+#include "data_table.h"
 #include "interface.h"
-#include "../Fonction/entity.h"
+#include "entity.h"
+
 #include <limits.h>
 
 int nb_door = 1;

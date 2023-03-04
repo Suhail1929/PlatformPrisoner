@@ -1,0 +1,62 @@
+ ____  _       _    __                      ____       _                      
+|  _ \| | __ _| |_ / _| ___  _ __ _ __ ___ |  _ \ _ __(_)___  ___  _ __   ___  _ __ 
+| |_) | |/ _` | __| |_ / _ \| '__| '_ ` _ \| |_) | '__| / __|/ _ \| '_ \ / _ \| '__|
+|  __/| | (_| | |_|  _| (_) | |  | | | | | |  __/| |  | \__ \ (_) | | | |  __/| |   
+|_|   |_|\__,_|\__|_|  \___/|_|  |_| |_| |_|_|   |_|  |_|___/\___/|_| |_|\___||_|   
+
+Ce projet consiste en la création d'un jeu multi-joueurs en réseau et multi-threadé.
+Le but du jeu est de sortir d'un labyrinthe rempli de pièges avant les autres joueurs.
+
+==================== Comment lancer le jeu :
+
+1. Ouvrir un terminal dans le dossier du projet "Project_PlateformPrisoner".
+2. Compiler le jeu en entrant la commande "make" dans le terminal. Cette commande va créer un dossier "bin" contenant le jeu.
+Application : 
+    editor : Editeur de monde
+    client : Interface du joueur
+    server : Gestionnaire du jeu
+3. Lancer l'application en entrant la commande "./bin/<Application>" dans le terminal.
+
+==================== Makefile :
+
+Le fichier "makefile" contient les instructions pour compiler le jeu. Il contient plusieurs cibles, notamment :
+
+"make clean" : Pour nettoyer le projet, supprime les fichiers temporaires et objets créés lors de la compilation.
+!!! Cette commande ne doit pas être exécutée systématiquement avant chaque compilation si les dépendances ont été correctement spécifiées.
+
+"make depend" : Met à jour les dépendances entre les fichiers sources et headers.
+!!! La commande doit être exécutée à chaque ajout d'objet ou d'inclusion d'en-tête dans le projet.
+
+"make" : Compile le jeu, permet de compiler les programmes une fois que les dépendances ont été ajoutées.
+
+"make archive" : Sauvegarder le projet sous forme d'une archive au format ".tar.gz".
+Cette commande appelle la règle clean au préalable et l'archive est placée dans le répertoire parent. 
+Le nom de l'archive dépend du nom du projet et est suivi de la date du jour.
+
+==================== Structure du projet :
+
+Le dossier "bin" contient les exécutables et mondes du jeu.
+Les fichiers binaires elles contiennent les données des mondes de notre jeu.
+Le dossier "includes" contient les fichiers d'entête headers du projet.
+Le dossier "obj" contient les fichiers objets créés lors de la compilation.
+Le dossier "src" contient les fichiers sources du projet.
+
+==================== Fichiers importants :
+
+"editor.c" : L'éditeur de niveau qui permet de créer les mondes et les places dans un fichier binaire.
+"client.c" : L'interface utilisateur, qui va pouvoir s'amuser sur le jeu, créer ou rejoindre une partie en ligne.
+"server.c" : Le serveur contrôle tout, comme la gestion des connexions, la synchronisation des joueurs et le traitement des entrées.
+"interface.h" et "interface.c" : Les fichiers qui gèrent l'affichage ncurses du jeu.
+"entity.h" et "entity.c" : Les fichiers qui gèrent les entités du jeu (joueurs, ennemis, etc.).
+"data_table.h" et "data_table.c" : Les fichiers qui gèrent la structure des niveaux du jeu via des tables d'adresses.
+"fonction.h" et "fonction.c" : Les fichiers qui gèrent les fonctions associées à ncurses.
+"window.h" et "window.c" : Les fichiers qui gèrent les fenêtres et les événements du jeu.
+"couleur.h" et "couleur.c" : Les fichiers qui définissent les couleurs utilisées dans le jeu.
+
+==================== Bugs connus :
+
+lorsqu'on utilise les flèches gauche ou droite pour naviguer entre les niveaux dans l'éditeur, l'incrémentation ou la décrémentation se fait par deux au lieu d'un.
+
+==================== Remarques :
+
+Ce projet a été développé et testé sur un système MacOS et WSL (distributions Linux sur Windows).

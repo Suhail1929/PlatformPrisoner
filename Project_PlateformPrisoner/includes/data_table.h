@@ -113,7 +113,7 @@ void deleteLevel(int fd, bloc_t *Bloc, int id);
  * @param fd : the file descriptor
  * @param bloc : the bloc
  */
-void void displayBloc(int fd, bloc_t *bloc);
+void displayBloc(int fd, bloc_t *bloc);
 /*
  * Function that display a level
  * @param level : the level

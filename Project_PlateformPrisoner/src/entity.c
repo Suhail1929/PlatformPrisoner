@@ -1,9 +1,9 @@
 #include <ncurses.h>
 #include <stdlib.h>
-#include "../Couleur/couleur.h"
-#include "../Window/window.h"
-#include "../Data/data_table.h"
-#include "../Interface/interface.h"
+#include "couleur.h"
+#include "window.h"
+#include "data_table.h"
+#include "interface.h"
 #include "entity.h"
 /*
  * function modify the entity in the map to use it for restore the map

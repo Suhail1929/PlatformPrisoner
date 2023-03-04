@@ -563,5 +563,6 @@ void displayLevel(level_t *level)
             }
             printf("\n");
         }
+        printf("\n");
     }
 }
