@@ -2,8 +2,8 @@
 # MAIN CONFIGURATION
 #
 
-EXEC = editor #client #server
-OBJECTS = window.o interface.o fonction.o entity.o couleur.o data_table.o
+EXEC = editor client #server
+OBJECTS = window.o interface.o fonction.o entity.o couleur.o data_table.o interface_client.o
 PROJECT_NAME = PlateformPrisoner
 
 SRC_DIR = src
@@ -105,5 +105,10 @@ obj/entity.o: src/entity.c includes/couleur.h includes/window.h \
   includes/data_table.h includes/interface.h includes/entity.h
 obj/couleur.o: src/couleur.c includes/couleur.h
 obj/data_table.o: src/data_table.c includes/data_table.h
+obj/interface_client.o: src/interface_client.c includes/fonction.h \
+  includes/couleur.h includes/window.h includes/data_table.h \
+  includes/interface.h includes/entity.h
 obj/editor.o: src/editor.c includes/fonction.h includes/couleur.h \
   includes/window.h includes/data_table.h includes/interface.h
+obj/client.o: src/client.c includes/fonction.h includes/couleur.h \
+  includes/window.h includes/interface.h

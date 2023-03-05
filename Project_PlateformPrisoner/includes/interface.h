@@ -19,12 +19,17 @@
 #define CLEAR 17
 #define SAVE 19
 
+#define MENU 20
+#define CREER_PARTIE 21
+#define REJOINDRE_PARTIE 22
+
 #define HEIGHT 20
 #define WIDTH 60
 
 // Structure représentant l'interface de l'application
 typedef struct
 {
+    window_t *win_menu;         // La fenêtre du menu
     window_t *win_infos;        // La fenêtre d'informations
     window_t *win_level;        // La fenêtre du jeu
     window_t *win_tools;        // La fenêtre des outils
@@ -128,5 +133,15 @@ void displayMapID();
  *Function that clear the interface
  */
 void clearInerface(interface_t *interface);
+
+void interface_menu_actions(interface_t *interface, int ch);
+
+interface_t *interface_create_menu();
+
+void interface_menu_update(interface_t *interface, int posX, int posY);
+
+void interface_delete_menu(interface_t **interface);
+
+interface_t *interface_create_client();
 
 #endif
