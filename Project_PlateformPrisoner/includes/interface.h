@@ -2,22 +2,24 @@
 #ifndef _INTERFACE_
 #define _INTERFACE_
 
-#define Delete 0
-#define Block 1
-#define Ladder 2
-#define Trap 3
-#define Gate 4
-#define Key 5
-#define Door 6
-#define Exit 7
-#define Start 8
-#define Robot 9
-#define Probe 10
-#define Life 11
-#define Bomb 12
-#define LEVEL 15
-#define CLEAR 17
-#define SAVE 19
+#define ID_DELETE 0
+#define ID_BLOCK 1
+#define ID_LIFE 2
+#define ID_BOMB 3
+#define ID_TRAP 4
+#define ID_GATE 10
+#define ID_LADDER 5
+#define ID_KEY 20
+#define ID_PROBE 6
+#define ID_ROBOT 7
+#define ID_DOOR 3000
+#define ID_EXIT 8
+#define ID_START 9
+#define ID_PLAYER 40
+
+#define LEVEL 30 - 15
+#define CLEAR 31 - 14
+#define SAVE 32 - 13
 
 #define MENU 20
 #define CREER_PARTIE 21
@@ -26,10 +28,12 @@
 #define HEIGHT 20
 #define WIDTH 60
 
+extern int tab[HEIGHT][WIDTH];
+
 // Structure représentant l'interface de l'application
 typedef struct
 {
-    window_t *win_menu;         // La fenêtre du menu
+    window_t *win_hud;          // La fenêtre du HUD (Heads Up Display)
     window_t *win_infos;        // La fenêtre d'informations
     window_t *win_level;        // La fenêtre du jeu
     window_t *win_tools;        // La fenêtre des outils
@@ -51,7 +55,7 @@ interface_t *interface_create(level_t *level);
 void update_win_level(interface_t *interface, level_t *level);
 
 /*
- * Function that update the tools window
+ * Function that update the tools window  ###
  * @param interface : the interface
  */
 void interface_delete(interface_t **interface);
@@ -63,7 +67,7 @@ void interface_delete(interface_t **interface);
 void interface_tools_update(interface_t *interface);
 
 /*
- * Function that update the infos window
+ * Function that update the infos window ###
  * @param interface : the interface
  */
 void interface_tools_actions(int fd, level_t *level, interface_t *interface, int posX, int posY);
@@ -93,7 +97,7 @@ void interface_level_actions(interface_t *interface, int posX, int posY, int res
 void outliner(interface_t *interface);
 
 /*
- * Function insert an entity ID in the map and return the entity ID
+ * Function insert an entity ID in the map and return 0 if success or 1 if error
  * @param posX : the position X
  * @param posY : the position Y
  * @param largeur : the width
@@ -103,7 +107,7 @@ void outliner(interface_t *interface);
 int insertEntityID(int posX, int posY, int largeur, int hauteur, int entityID);
 
 /*
- * Function update an entity ID in the map and return the entity ID
+ * Function update an entity ID in the map and return a width to jump or -1 if error
  * @param posX : the position X
  * @param posY : the position Y
  * @param action : the action if == 0 delete the entity else update the entity
@@ -111,7 +115,7 @@ int insertEntityID(int posX, int posY, int largeur, int hauteur, int entityID);
 int updateEntity(interface_t *interface, int posX, int posY, int action);
 
 /*
- * Function that return the head of the entity
+ * Function that return the head of the entity ### Function?
  * @param posX : the position X
  * @param posY : the position Y
  * @param largeur : the width
@@ -120,28 +124,30 @@ int updateEntity(interface_t *interface, int posX, int posY, int action);
 void getHeadEntity(int *posX, int *posY, int bloc_width, int bloc_height);
 
 /*
- *Function that clear the map ID
+ *Function that clear the map ID ### Function?
  */
 void clearMapID();
 
 /*
- *Function that display the map ID
+ *Function that display the map ID ### Function?
  */
 void displayMapID();
 
 /*
- *Function that clear the interface
+ *Function that clear the interface ### Function?
  */
-void clearInerface(interface_t *interface);
+void clearInterface(interface_t *interface);
 
-void interface_menu_actions(interface_t *interface, int ch);
+void interface_hud_actions(interface_t *interface, int c);
 
-interface_t *interface_create_menu();
+interface_t *interface_create_game();
 
-void interface_menu_update(interface_t *interface, int posX, int posY);
+void interface_delete_game(interface_t **interface);
 
-void interface_delete_menu(interface_t **interface);
-
-interface_t *interface_create_client();
+/**
+ * Update Head-Up Display window
+ * @param[in,out] interface the interface
+ */
+void interface_hud_update(interface_t *interface);
 
 #endif

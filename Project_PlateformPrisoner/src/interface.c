@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <ncurses.h>
+#include <limits.h>
 
 #include "fonction.h"
 #include "couleur.h"
@@ -8,13 +9,12 @@
 #include "interface.h"
 #include "entity.h"
 
-#include <limits.h>
-
 int nb_door = 1;
 char level[15];
 int level_nb = 0;
 int tab[HEIGHT][WIDTH];
 int compteurEntity = 0;
+
 /*
  * Function that create an interface
  * @param level : the level
@@ -46,12 +46,13 @@ interface_t *interface_create(level_t *level)
     result->win_tools = window_create(62, 0, 15, 22, "Tools", FALSE);
 
     result->current_color = MAGENTA; // default color
-    result->selection = Block;       // default selection
+    result->selection = ID_BLOCK;    // default selection
     interface_tools_update(result);
     window_refresh(result->win_tools);
 
     return result;
 }
+
 /*
  * Function that update the level window
  * @param interface : the interface
@@ -64,9 +65,7 @@ void update_win_level(interface_t *interface, level_t *level)
     for (i = 0; i < HEIGHT; i++)
     {
         for (j = 0; j < WIDTH; j++)
-        {
             tab[i][j] = level->tab[i][j];
-        }
     }
 
     for (i = 0; i < HEIGHT; i++)
@@ -75,14 +74,13 @@ void update_win_level(interface_t *interface, level_t *level)
         {
             tmp_decalage = updateEntity(interface, j, i, 1);
             if (tmp_decalage != -1)
-            {
                 j += tmp_decalage;
-            }
         }
     }
 }
+
 /*
- * Function that update the tools window
+ * Function that update the tools window ###
  * @param interface : the interface
  */
 void interface_delete(interface_t **interface)
@@ -94,6 +92,7 @@ void interface_delete(interface_t **interface)
     free(*interface);
     interface = NULL;
 }
+
 /**
  * Update palette window
  * @param[in,out] interface the interface
@@ -102,7 +101,7 @@ void interface_tools_update(interface_t *interface)
 {
     window_erase(interface->win_tools);
 
-    if (interface->selection == Delete)
+    if (interface->selection == ID_DELETE)
     {
         window_printw_col(interface->win_tools, WHITE, ">");
         window_color(interface->win_tools, WHITE);
@@ -115,7 +114,7 @@ void interface_tools_update(interface_t *interface)
 
     window_printw(interface->win_tools, " Delete\n");
 
-    if (interface->selection == Block)
+    if (interface->selection == ID_BLOCK)
     {
         window_printw_col(interface->win_tools, WHITE, ">");
         window_color(interface->win_tools, WHITE);
@@ -128,7 +127,7 @@ void interface_tools_update(interface_t *interface)
 
     window_printw(interface->win_tools, " Block\n");
 
-    if (interface->selection == Ladder)
+    if (interface->selection == ID_LADDER)
     {
         window_printw_col(interface->win_tools, WHITE, ">");
         window_color(interface->win_tools, WHITE);
@@ -141,7 +140,7 @@ void interface_tools_update(interface_t *interface)
 
     window_printw(interface->win_tools, " Ladder\n");
 
-    if (interface->selection == Trap)
+    if (interface->selection == ID_TRAP)
     {
         window_printw_col(interface->win_tools, WHITE, ">");
         window_color(interface->win_tools, WHITE);
@@ -154,7 +153,7 @@ void interface_tools_update(interface_t *interface)
 
     window_printw(interface->win_tools, " Trap\n");
 
-    if (interface->selection == Gate)
+    if (interface->selection == ID_GATE)
     {
         window_printw_col(interface->win_tools, WHITE, ">");
         window_printw(interface->win_tools, " Gate\n");
@@ -171,7 +170,7 @@ void interface_tools_update(interface_t *interface)
     window_mvprintw_col(interface->win_tools, 4, 10, FD_YELLOW, " ");
     window_mvprintw_col(interface->win_tools, 4, 11, FD_BLUE, " \n");
 
-    if (interface->selection == Key)
+    if (interface->selection == ID_KEY)
     {
         window_printw_col(interface->win_tools, WHITE, ">");
         window_color(interface->win_tools, WHITE);
@@ -201,44 +200,46 @@ void interface_tools_update(interface_t *interface)
         break;
     }
 
-    window_printw_col(interface->win_tools, WHITE, (interface->selection == Door) ? ">" : " ");
-    window_color(interface->win_tools, (interface->selection == Door) ? WHITE : RED);
+    window_printw_col(interface->win_tools, WHITE, (interface->selection == ID_DOOR) ? ">" : " ");
+    window_color(interface->win_tools, (interface->selection == ID_DOOR) ? WHITE : RED);
 
-    // char Door_num[12];
-    // sprintf(Door_num, "  Door  %d\n", nb_door);
     window_printw(interface->win_tools, " Door  ");
     if (nb_door < 10)
     {
         window_printw_col(interface->win_tools, WHITE, "<0%d>\n", nb_door);
     }
+    else if (nb_door < 100)
+    {
+        window_printw_col(interface->win_tools, WHITE, "<%d>\n", nb_door);
+    }
 
-    window_printw_col(interface->win_tools, WHITE, (interface->selection == Exit) ? ">" : " ");
-    window_color(interface->win_tools, (interface->selection == Exit) ? WHITE : RED);
+    window_printw_col(interface->win_tools, WHITE, (interface->selection == ID_EXIT) ? ">" : " ");
+    window_color(interface->win_tools, (interface->selection == ID_EXIT) ? WHITE : RED);
 
     window_printw(interface->win_tools, " Exit\n");
 
-    window_printw_col(interface->win_tools, WHITE, (interface->selection == Start) ? ">" : " ");
-    window_color(interface->win_tools, (interface->selection == Start) ? WHITE : RED);
+    window_printw_col(interface->win_tools, WHITE, (interface->selection == ID_START) ? ">" : " ");
+    window_color(interface->win_tools, (interface->selection == ID_START) ? WHITE : RED);
 
     window_printw(interface->win_tools, " Start\n");
 
-    window_printw_col(interface->win_tools, WHITE, (interface->selection == Robot) ? ">" : " ");
-    window_color(interface->win_tools, (interface->selection == Robot) ? WHITE : RED);
+    window_printw_col(interface->win_tools, WHITE, (interface->selection == ID_ROBOT) ? ">" : " ");
+    window_color(interface->win_tools, (interface->selection == ID_ROBOT) ? WHITE : RED);
 
     window_printw(interface->win_tools, " Robot\n");
 
-    window_printw_col(interface->win_tools, WHITE, (interface->selection == Probe) ? ">" : " ");
-    window_color(interface->win_tools, (interface->selection == Probe) ? WHITE : RED);
+    window_printw_col(interface->win_tools, WHITE, (interface->selection == ID_PROBE) ? ">" : " ");
+    window_color(interface->win_tools, (interface->selection == ID_PROBE) ? WHITE : RED);
 
     window_printw(interface->win_tools, " Probe\n");
 
-    window_printw_col(interface->win_tools, WHITE, (interface->selection == Life) ? ">" : " ");
-    window_color(interface->win_tools, (interface->selection == Life) ? WHITE : RED);
+    window_printw_col(interface->win_tools, WHITE, (interface->selection == ID_LIFE) ? ">" : " ");
+    window_color(interface->win_tools, (interface->selection == ID_LIFE) ? WHITE : RED);
 
     window_printw(interface->win_tools, " Life\n");
 
-    window_printw_col(interface->win_tools, WHITE, (interface->selection == Bomb) ? ">" : " ");
-    window_color(interface->win_tools, (interface->selection == Bomb) ? WHITE : RED);
+    window_printw_col(interface->win_tools, WHITE, (interface->selection == ID_BOMB) ? ">" : " ");
+    window_color(interface->win_tools, (interface->selection == ID_BOMB) ? WHITE : RED);
 
     window_printw(interface->win_tools, " Bomb\n");
 
@@ -258,7 +259,7 @@ void interface_tools_update(interface_t *interface)
 }
 
 /**
- * Manage actions in the palette window.
+ * Manage actions in the palette window. ###
  * @param[in,out] interface the interface
  * @param[in] posX X position of the click in the window
  * @param[in] posY Y position of the click in the window
@@ -267,75 +268,75 @@ void interface_tools_actions(int fd, level_t *level, interface_t *interface, int
 {
     if ((posY >= 0) && (posY <= 20))
     {
+        // interface->selection = posY; fonctionne pas car les id ont été modifiés
         switch (posY)
         {
-        case Delete:
-            interface->selection = Delete;
+        case 0:
+            interface->selection = ID_DELETE;
             break;
-        case Block:
-            interface->selection = Block;
+        case 1:
+            interface->selection = ID_BLOCK;
             break;
-        case Ladder:
-            interface->selection = Ladder;
+        case 2:
+            interface->selection = ID_LADDER;
             break;
-        case Trap:
-            interface->selection = Trap;
+        case 3:
+            interface->selection = ID_TRAP;
             break;
-        case Gate:
-            switch (posX)
-            {
-            case 8:
-                interface->current_color = MAGENTA;
-                break;
-            case 9:
-                interface->current_color = GREEN;
-                break;
-            case 10:
-                interface->current_color = YELLOW;
-                break;
-            case 11:
-                interface->current_color = BLUE;
-                break;
-            }
-            if (posX < 8)
-            {
-                interface->selection = Gate;
-            }
+        case 4:
+            if (posX < 6)
+                interface->selection = ID_GATE;
             break;
-        case Key:
-            interface->selection = Key;
+        case 5:
+            interface->selection = ID_KEY;
             break;
-        case Door:
-            interface->selection = Door;
-            if (posX == 8 && nb_door > 1)
-            {
-                nb_door--;
-            }
-            else if (posX == 11 && nb_door < 9)
-            {
-                nb_door++;
-            }
+        case 6:
+            interface->selection = ID_DOOR;
             break;
-        case Exit:
-            interface->selection = Exit;
+        case 7:
+            interface->selection = ID_EXIT;
             break;
-        case Start:
-            interface->selection = Start;
+        case 8:
+            interface->selection = ID_START;
             break;
-        case Robot:
-            interface->selection = Robot;
+        case 9:
+            interface->selection = ID_ROBOT;
             break;
-        case Probe:
-            interface->selection = Probe;
+        case 10:
+            interface->selection = ID_PROBE;
             break;
-        case Life:
-            interface->selection = Life;
+        case 11:
+            interface->selection = ID_LIFE;
             break;
-        case Bomb:
-            interface->selection = Bomb;
+        case 12:
+            interface->selection = ID_BOMB;
             break;
-        case LEVEL:
+        case 15:
             interface->selection = LEVEL;
+            break;
+        case 17:
+            interface->selection = CLEAR;
+            break;
+        case 19:
+            interface->selection = SAVE;
+            break;
+        default:
+            break;
+        }
+        if (posY == 4) // ID_GATE
+        {
+            if (posX >= 8 && posX <= 11)
+                interface->current_color = posX - 7;
+        }
+        else if (posY == 6) // ID_DOOR
+        {
+            if (posX == 8 && nb_door > 1)
+                nb_door--;
+            else if (posX == 11 && nb_door < 99)
+                nb_door++;
+        }
+        else if (posY == 15) // LEVEL
+        {
             if ((posX >= 3 && posX <= 4) && level_nb > 0)
             {
                 for (int i = 0; i < HEIGHT; i++)
@@ -363,14 +364,14 @@ void interface_tools_actions(int fd, level_t *level, interface_t *interface, int
                 level = loadLevelById(fd, bloc, level_nb);
                 if (level == NULL)
                 {
-                    clearInerface(interface);
+                    clearInterface(interface);
                     level = initLevel();
                     level->id = level_nb;
                     update_win_level(interface, level);
                 }
                 else
                 {
-                    clearInerface(interface);
+                    clearInterface(interface);
                     update_win_level(interface, level);
                 }
             }
@@ -400,22 +401,24 @@ void interface_tools_actions(int fd, level_t *level, interface_t *interface, int
                 level = loadLevelById(fd, bloc, level_nb);
                 if (level == NULL)
                 {
-                    clearInerface(interface);
+                    clearInterface(interface);
                     level = initLevel();
                     level->id = level_nb;
                     update_win_level(interface, level);
                 }
                 else
                 {
-                    clearInerface(interface);
+                    clearInterface(interface);
                     update_win_level(interface, level);
                 }
             }
-            break;
-        case CLEAR:
-            clearInerface(interface);
-            break;
-        case SAVE:
+        }
+        else if (posY == 17) // CLEAR
+        {
+            clearInterface(interface);
+        }
+        else if (posY == 19) // SAVE
+        {
             for (int i = 0; i < HEIGHT; i++)
             {
                 for (int j = 0; j < WIDTH; j++)
@@ -437,13 +440,11 @@ void interface_tools_actions(int fd, level_t *level, interface_t *interface, int
                 updateBloc(fd, 0, bloc);
             }
             updateBloc(fd, 0, loadBloc(fd, 0));
-            break;
-        default:
-            break;
         }
         interface_tools_update(interface);
     }
 }
+
 /*
  * Function that implement the actions of the interface in level
  * @param interface : the interface
@@ -453,20 +454,18 @@ void interface_tools_actions(int fd, level_t *level, interface_t *interface, int
  */
 void interface_level_actions(interface_t *interface, int posX, int posY, int restore)
 {
-
-    int draw = 0; // boolean to draw or not the gate/key/... wich have multiple color
+    char charID[5];
+    int integerID;
     switch (interface->selection)
     {
-    case Delete:
+    case ID_DELETE:
         updateEntity(interface, posX, posY, 0);
         break;
-    case Block:
+    case ID_BLOCK:
         if ((!insertEntityID(posX, posY, 1, 1, ID_BLOCK) && restore == 0) || restore == 1)
-        {
             window_mvaddch_col(interface->win_level, posY, posX, CYAN, ' ' | A_REVERSE);
-        }
         break;
-    case Ladder:
+    case ID_LADDER:
         if ((!insertEntityID(posX, posY, 3, 1, ID_LADDER) && restore == 0) || restore == 1)
         {
             window_mvaddch_col(interface->win_level, posY, posX, YELLOW, ' ' | ACS_LTEE);
@@ -474,335 +473,41 @@ void interface_level_actions(interface_t *interface, int posX, int posY, int res
             window_mvaddch_col(interface->win_level, posY, posX + 2, YELLOW, ' ' | ACS_RTEE);
         }
         break;
-    case Trap:
+    case ID_TRAP:
         if ((!insertEntityID(posX, posY, 1, 1, ID_TRAP) && restore == 0) || restore == 1)
-        {
             window_mvaddch_col(interface->win_level, posY, posX, CYAN, '#' | A_REVERSE);
-        }
         break;
-    case Gate:
-        switch (interface->current_color)
-        {
-        case MAGENTA:
-            if ((!insertEntityID(posX, posY, 1, 4, ID_PURPLE_GATE) && restore == 0) || restore == 1)
-            {
-                draw = 1;
-            }
-            break;
-        case GREEN:
-            if ((!insertEntityID(posX, posY, 1, 4, ID_GREEN_GATE) && restore == 0) || restore == 1)
-            {
-                draw = 1;
-            }
-            break;
-        case YELLOW:
-            if ((!insertEntityID(posX, posY, 1, 4, ID_YELLOW_GATE) && restore == 0) || restore == 1)
-            {
-                draw = 1;
-            }
-            break;
-        case BLUE:
-            if ((!insertEntityID(posX, posY, 1, 4, ID_BLUE_GATE) && restore == 0) || restore == 1)
-            {
-                draw = 1;
-            }
-            break;
-        default:
-            break;
-        }
-        if (draw)
+    case 10 ... 14: // ID_GATE
+        if (!restore)
+            sprintf(charID, "%d%d", interface->selection / 10, interface->current_color);
+        integerID = atoi(charID);
+        if ((!insertEntityID(posX, posY, 1, 4, integerID) && restore == 0) || restore == 1)
         {
             for (size_t i = 0; i < 4; i++)
-            {
                 window_mvaddch_col(interface->win_level, posY + i, posX, interface->current_color, ' ' | ACS_PLUS);
-            }
         }
         break;
-    case Key:
-        switch (interface->current_color)
-        {
-        case MAGENTA:
-            if ((!insertEntityID(posX, posY, 1, 2, ID_PURPLE_KEY) && restore == 0) || restore == 1)
-            {
-                draw = 1;
-            }
-            break;
-        case GREEN:
-            if ((!insertEntityID(posX, posY, 1, 2, ID_GREEN_KEY) && restore == 0) || restore == 1)
-            {
-                draw = 1;
-            }
-            break;
-        case YELLOW:
-            if ((!insertEntityID(posX, posY, 1, 2, ID_YELLOW_KEY) && restore == 0) || restore == 1)
-            {
-                draw = 1;
-            }
-            break;
-        case BLUE:
-            if ((!insertEntityID(posX, posY, 1, 2, ID_BLUE_KEY) && restore == 0) || restore == 1)
-            {
-                draw = 1;
-            }
-            break;
-        default:
-            break;
-        }
-        if (draw)
+    case 20 ... 24: // ID_KEY
+        if (!restore)
+            sprintf(charID, "%d%d", interface->selection / 10, interface->current_color);
+        integerID = atoi(charID);
+        // interface->selection += interface->current_color; // mauvaise idée
+        if ((!insertEntityID(posX, posY, 1, 2, integerID) && restore == 0) || restore == 1)
         {
             window_mvaddch_col(interface->win_level, posY, posX, interface->current_color, ' ' | A_REVERSE);
             window_mvaddch_col(interface->win_level, posY + 1, posX, interface->current_color, ' ' | ACS_LLCORNER);
         }
         break;
-    case Door:
-        switch (interface->current_color)
+    case 3000 ... 3499: // ID_DOOR
+        if (!restore)
         {
-        case MAGENTA:
-            switch (nb_door)
-            {
-            case 1:
-                if ((!insertEntityID(posX, posY, 3, 4, ID_PURPLE_DOOR1) && restore == 0) || restore == 1)
-                {
-                    draw = 1;
-                }
-                break;
-            case 2:
-                if ((!insertEntityID(posX, posY, 3, 4, ID_PURPLE_DOOR2) && restore == 0) || restore == 1)
-                {
-                    draw = 1;
-                }
-                break;
-            case 3:
-                if ((!insertEntityID(posX, posY, 3, 4, ID_PURPLE_DOOR3) && restore == 0) || restore == 1)
-                {
-                    draw = 1;
-                }
-                break;
-            case 4:
-                if ((!insertEntityID(posX, posY, 3, 4, ID_PURPLE_DOOR4) && restore == 0) || restore == 1)
-                {
-                    draw = 1;
-                }
-                break;
-            case 5:
-                if ((!insertEntityID(posX, posY, 3, 4, ID_PURPLE_DOOR5) && restore == 0) || restore == 1)
-                {
-                    draw = 1;
-                }
-                break;
-            case 6:
-                if ((!insertEntityID(posX, posY, 3, 4, ID_PURPLE_DOOR6) && restore == 0) || restore == 1)
-                {
-                    draw = 1;
-                }
-                break;
-            case 7:
-                if ((!insertEntityID(posX, posY, 3, 4, ID_PURPLE_DOOR7) && restore == 0) || restore == 1)
-                {
-                    draw = 1;
-                }
-                break;
-            case 8:
-                if ((!insertEntityID(posX, posY, 3, 4, ID_PURPLE_DOOR8) && restore == 0) || restore == 1)
-                {
-                    draw = 1;
-                }
-                break;
-            case 9:
-                if ((!insertEntityID(posX, posY, 3, 4, ID_PURPLE_DOOR9) && restore == 0) || restore == 1)
-                {
-                    draw = 1;
-                }
-                break;
-            default:
-                break;
-            }
-            break;
-        case GREEN:
-            switch (nb_door)
-            {
-            case 1:
-                if ((!insertEntityID(posX, posY, 3, 4, ID_GREEN_DOOR1) && restore == 0) || restore == 1)
-                {
-                    draw = 1;
-                }
-                break;
-            case 2:
-                if ((!insertEntityID(posX, posY, 3, 4, ID_GREEN_DOOR2) && restore == 0) || restore == 1)
-                {
-                    draw = 1;
-                }
-                break;
-            case 3:
-                if ((!insertEntityID(posX, posY, 3, 4, ID_GREEN_DOOR3) && restore == 0) || restore == 1)
-                {
-                    draw = 1;
-                }
-                break;
-            case 4:
-                if ((!insertEntityID(posX, posY, 3, 4, ID_GREEN_DOOR4) && restore == 0) || restore == 1)
-                {
-                    draw = 1;
-                }
-                break;
-            case 5:
-                if ((!insertEntityID(posX, posY, 3, 4, ID_GREEN_DOOR5) && restore == 0) || restore == 1)
-                {
-                    draw = 1;
-                }
-                break;
-            case 6:
-                if ((!insertEntityID(posX, posY, 3, 4, ID_GREEN_DOOR6) && restore == 0) || restore == 1)
-                {
-                    draw = 1;
-                }
-                break;
-            case 7:
-                if ((!insertEntityID(posX, posY, 3, 4, ID_GREEN_DOOR7) && restore == 0) || restore == 1)
-                {
-                    draw = 1;
-                }
-                break;
-            case 8:
-                if ((!insertEntityID(posX, posY, 3, 4, ID_GREEN_DOOR8) && restore == 0) || restore == 1)
-                {
-                    draw = 1;
-                }
-                break;
-            case 9:
-                if ((!insertEntityID(posX, posY, 3, 4, ID_GREEN_DOOR9) && restore == 0) || restore == 1)
-                {
-                    draw = 1;
-                }
-                break;
-            default:
-                break;
-            }
-            break;
-        case YELLOW:
-            switch (nb_door)
-            {
-            case 1:
-                if ((!insertEntityID(posX, posY, 3, 4, ID_YELLOW_DOOR1) && restore == 0) || restore == 1)
-                {
-                    draw = 1;
-                }
-                break;
-            case 2:
-                if ((!insertEntityID(posX, posY, 3, 4, ID_YELLOW_DOOR2) && restore == 0) || restore == 1)
-                {
-                    draw = 1;
-                }
-                break;
-            case 3:
-                if ((!insertEntityID(posX, posY, 3, 4, ID_YELLOW_DOOR3) && restore == 0) || restore == 1)
-                {
-                    draw = 1;
-                }
-                break;
-            case 4:
-                if ((!insertEntityID(posX, posY, 3, 4, ID_YELLOW_DOOR4) && restore == 0) || restore == 1)
-                {
-                    draw = 1;
-                }
-                break;
-            case 5:
-                if ((!insertEntityID(posX, posY, 3, 4, ID_YELLOW_DOOR5) && restore == 0) || restore == 1)
-                {
-                    draw = 1;
-                }
-                break;
-            case 6:
-                if ((!insertEntityID(posX, posY, 3, 4, ID_YELLOW_DOOR6) && restore == 0) || restore == 1)
-                {
-                    draw = 1;
-                }
-                break;
-            case 7:
-                if ((!insertEntityID(posX, posY, 3, 4, ID_YELLOW_DOOR7) && restore == 0) || restore == 1)
-                {
-                    draw = 1;
-                }
-                break;
-            case 8:
-                if ((!insertEntityID(posX, posY, 3, 4, ID_YELLOW_DOOR8) && restore == 0) || restore == 1)
-                {
-                    draw = 1;
-                }
-                break;
-            case 9:
-                if ((!insertEntityID(posX, posY, 3, 4, ID_YELLOW_DOOR9) && restore == 0) || restore == 1)
-                {
-                    draw = 1;
-                }
-                break;
-            default:
-                break;
-            }
-            break;
-        case BLUE:
-            switch (nb_door)
-            {
-            case 1:
-                if ((!insertEntityID(posX, posY, 3, 4, ID_BLUE_DOOR1) && restore == 0) || restore == 1)
-                {
-                    draw = 1;
-                }
-                break;
-            case 2:
-                if ((!insertEntityID(posX, posY, 3, 4, ID_BLUE_DOOR2) && restore == 0) || restore == 1)
-                {
-                    draw = 1;
-                }
-                break;
-            case 3:
-                if ((!insertEntityID(posX, posY, 3, 4, ID_BLUE_DOOR3) && restore == 0) || restore == 1)
-                {
-                    draw = 1;
-                }
-                break;
-            case 4:
-                if ((!insertEntityID(posX, posY, 3, 4, ID_BLUE_DOOR4) && restore == 0) || restore == 1)
-                {
-                    draw = 1;
-                }
-                break;
-            case 5:
-                if ((!insertEntityID(posX, posY, 3, 4, ID_BLUE_DOOR5) && restore == 0) || restore == 1)
-                {
-                    draw = 1;
-                }
-                break;
-            case 6:
-                if ((!insertEntityID(posX, posY, 3, 4, ID_BLUE_DOOR6) && restore == 0) || restore == 1)
-                {
-                    draw = 1;
-                }
-                break;
-            case 7:
-                if ((!insertEntityID(posX, posY, 3, 4, ID_BLUE_DOOR7) && restore == 0) || restore == 1)
-                {
-                    draw = 1;
-                }
-                break;
-            case 8:
-                if ((!insertEntityID(posX, posY, 3, 4, ID_BLUE_DOOR8) && restore == 0) || restore == 1)
-                {
-                    draw = 1;
-                }
-                break;
-            case 9:
-                if ((!insertEntityID(posX, posY, 3, 4, ID_BLUE_DOOR9) && restore == 0) || restore == 1)
-                {
-                    draw = 1;
-                }
-                break;
-            default:
-                break;
-            }
-            break;
+            if (nb_door < 10)
+                sprintf(charID, "%d%d0%d", interface->selection / 1000, interface->current_color, nb_door);
+            else if (nb_door >= 10 && nb_door < 100)
+                sprintf(charID, "%d%d%d", interface->selection / 1000, interface->current_color, nb_door);
         }
-        if (draw)
+        integerID = atoi(charID);
+        if ((!insertEntityID(posX, posY, 3, 4, integerID) && restore == 0) || restore == 1)
         {
             for (size_t i = 0; i < 3; i++)
             {
@@ -811,11 +516,14 @@ void interface_level_actions(interface_t *interface, int posX, int posY, int res
                     window_mvaddch_col(interface->win_level, posY + j, posX + i, interface->current_color, ' ' | A_REVERSE);
                 }
             }
-            window_mvaddch(interface->win_level, posY, posX, '0');
-            window_mvaddch(interface->win_level, posY, posX + 1, "123456789"[nb_door - 1]);
+
+            sprintf(charID, "%d", nb_door / 10);
+            window_mvaddch(interface->win_level, posY, posX, charID[0]);
+            sprintf(charID, "%d", nb_door % 10);
+            window_mvaddch(interface->win_level, posY, posX + 1, charID[0]);
         }
         break;
-    case Exit:
+    case ID_EXIT:
         if ((!insertEntityID(posX, posY, 3, 4, ID_EXIT) && restore == 0) || restore == 1)
         {
             for (size_t i = 0; i < 3; i++)
@@ -827,7 +535,7 @@ void interface_level_actions(interface_t *interface, int posX, int posY, int res
             }
         }
         break;
-    case Start:
+    case ID_START:
         if ((!insertEntityID(posX, posY, 3, 4, ID_START) && restore == 0) || restore == 1)
         {
             for (size_t i = 0; i < 3; i++)
@@ -839,7 +547,7 @@ void interface_level_actions(interface_t *interface, int posX, int posY, int res
             }
         }
         break;
-    case Robot:
+    case ID_ROBOT:
         if ((!insertEntityID(posX, posY, 3, 4, ID_ROBOT) && restore == 0) || restore == 1)
         {
             window_mvaddch_col(interface->win_level, posY, posX, WHITE, ' ' | ACS_ULCORNER);
@@ -856,7 +564,7 @@ void interface_level_actions(interface_t *interface, int posX, int posY, int res
             window_mvaddch_col(interface->win_level, posY + 3, posX + 2, WHITE, ' ' | ACS_URCORNER);
         }
         break;
-    case Probe:
+    case ID_PROBE:
         if ((!insertEntityID(posX, posY, 2, 3, ID_PROBE) && restore == 0) || restore == 1)
         {
             window_mvaddch_col(interface->win_level, posY, posX, WHITE, ' ' | ACS_LTEE);
@@ -867,13 +575,13 @@ void interface_level_actions(interface_t *interface, int posX, int posY, int res
             window_mvaddch_col(interface->win_level, posY + 1, posX + 2, WHITE, ' ' | ACS_LRCORNER);
         }
         break;
-    case Life:
+    case ID_LIFE:
         if ((!insertEntityID(posX, posY, 1, 1, ID_LIFE) && restore == 0) || restore == 1)
         {
             window_mvaddch_col(interface->win_level, posY, posX, RED, 'V');
         }
         break;
-    case Bomb:
+    case ID_BOMB:
         if ((!insertEntityID(posX, posY, 1, 1, ID_BOMB) && restore == 0) || restore == 1)
         {
             window_mvaddch_col(interface->win_level, posY, posX, WHITE, 'o');
@@ -884,6 +592,7 @@ void interface_level_actions(interface_t *interface, int posX, int posY, int res
     }
     window_refresh(interface->win_level);
 }
+
 /*
  * Function that implement the actions of the interface
  * @param interface : the interface
@@ -910,6 +619,7 @@ void interface_actions(int fd, level_t *level, interface_t *interface, int c)
         window_refresh(interface->win_infos);
     }
 }
+
 /*
  * Function that draw the outliner
  * @param interface : the interface
@@ -931,8 +641,9 @@ void outliner(interface_t *interface)
         window_mvaddch_col(interface->win_level, i, 59, CYAN, ' ' | A_REVERSE);
     }
 }
+
 /*
- * Function insert an entity ID in the map and return the entity ID
+ * Function insert an entity ID in the map and return 0 if success or 1 if error
  * @param posX : the position X
  * @param posY : the position Y
  * @param largeur : the width
@@ -961,8 +672,9 @@ int insertEntityID(int posX, int posY, int entity_WIDTH, int entity_HEIGHT, int 
     }
     return 0;
 }
+
 /*
- * Function update an entity ID in the map and return the entity ID
+ * Function update an entity ID in the map and return a width to jump or -1 if error
  * @param posX : the position X
  * @param posY : the position Y
  * @param action : the action if == 0 delete the entity else update the entity
@@ -1011,6 +723,7 @@ int updateEntity(interface_t *interface, int posX, int posY, int action) // acti
     }
     return -1;
 }
+
 /*
  * Function that return the head of the entity
  * @param posX : the position X
@@ -1048,7 +761,6 @@ void getHeadEntity(int *posX, int *posY, int bloc_width, int bloc_height)
         }
         tmp_y++;
     }
-
     // parcours vers la gauche
     if ((*posX - bloc_width >= 0) && tab[tmp_y][*posX - bloc_width] == bloc_id)
     {
@@ -1073,6 +785,7 @@ void getHeadEntity(int *posX, int *posY, int bloc_width, int bloc_height)
     *posX = tmp_x;
     *posY = tmp_y;
 }
+
 /*
  *Function that clear the map ID
  */
@@ -1096,16 +809,18 @@ void clearMapID()
         tab[HEIGHT - 1][i] = 1;
     }
 }
+
 /*
  *Function that clear the interface
  */
-void clearInerface(interface_t *interface)
+void clearInterface(interface_t *interface)
 {
     window_erase(interface->win_level);
     clearMapID();
     outliner(interface);
     window_refresh(interface->win_level);
 }
+
 /*
  *Function that display the map ID
  */

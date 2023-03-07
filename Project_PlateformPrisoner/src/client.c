@@ -27,7 +27,7 @@ int main(int argc, char *argv[])
     system("clear");
     char nom_joueur[50];
     int choix = 0;
-    printf("Bonjour joueur, quel est votre pseudo ? ");
+    printf("Bonjour, quel est votre pseudo ? ");
     scanf("%s", nom_joueur);
     printf("\nBienvenue %s !\n\n", nom_joueur);
     printf("Appuyez sur Entrée pour continuer.\n");
@@ -75,26 +75,26 @@ int main(int argc, char *argv[])
     // int adresseIPServeur = atoi(argv[1]);
     // int portUDPServeur = atoi(argv[2]);
 
-    // interface_t *interface;
+    interface_t *interface;
 
-    // ncurses_init();
-    // ncurses_colors();
-    // palette();
-    // ncurses_init_mouse();
+    ncurses_init();
+    ncurses_colors();
+    palette();
+    ncurses_init_mouse();
 
     // Creation de l'interface
-    // interface = interface_create_menu();
+    interface = interface_create_game();
 
-    // int ch;
-    // while ((ch = getch()) != 27)
-    // {
-    //     interface_menu_actions(interface, ch);
-    // }
-    // // Quitter le mode d'affichage ncurses
-    // ncurses_stop();
+    int ch;
+    while ((ch = getch()) != 27)
+    {
+        interface_hud_actions(interface, ch);
+    }
+    // Quitter le mode d'affichage ncurses
+    ncurses_stop();
 
     // // supprimer l'interface
-    // interface_delete_menu(&interface);
+    interface_delete_game(&interface);
     return 0;
 }
 
@@ -122,7 +122,7 @@ char *afficher_salons()
     char **filenames = NULL; // tableau dynamique pour stocker les noms de fichier
     int num_files = 0;       // nombre de fichiers trouvés
 
-    dir = opendir(".");
+    dir = opendir("./bin");
     if (dir == NULL)
     {
         perror("Erreur lors de l'ouverture du répertoire");

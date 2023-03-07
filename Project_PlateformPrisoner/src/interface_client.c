@@ -17,103 +17,7 @@
 #define MENU_HEIGHT 27
 #define MENU_WIDTH 77
 
-interface_t *interface_create_menu()
-{
-    interface_t *result;
-
-    // Structure allocation
-    if ((result = malloc(sizeof(interface_t))) == NULL)
-    {
-        ncurses_stop();
-        perror("Erreur allocation interface");
-        exit(EXIT_FAILURE);
-    }
-
-    // fenetre Menu
-    result->win_menu = window_create(0, 0, MENU_WIDTH, MENU_HEIGHT, "Menu", FALSE);
-    window_color(result->win_menu, RED);
-
-    window_mvprintw(result->win_menu, MENU_HEIGHT / 2, (MENU_WIDTH / 2) - strlen("Créer une partie") / 2, "Créer une partie");
-    window_mvprintw(result->win_menu, MENU_HEIGHT / 2 + 1, (MENU_WIDTH / 2) - strlen("S'inscrire à une partie") / 2, "S'inscrire à une partie");
-    window_refresh(result->win_menu);
-
-    result->selection = MENU;
-
-    return result;
-}
-
-void interface_menu_actions(interface_t *interface, int ch)
-{
-    int mouseX, mouseY, posX, posY;
-    // Mouse management
-    if ((ch == KEY_MOUSE) && (mouse_getpos(&mouseX, &mouseY) == OK))
-    {
-        if (window_getcoordinates(interface->win_menu, mouseX, mouseY, &posX, &posY))
-        {
-            interface_menu_update(interface, posX, posY);
-            window_refresh(interface->win_menu);
-        }
-    }
-}
-
-void interface_menu_update(interface_t *interface, int posX, int posY)
-{
-    window_erase(interface->win_menu);
-
-    if (interface->selection == MENU)
-    {
-        if ((posY >= MENU_HEIGHT / 2) && (posY <= MENU_HEIGHT / 2 + 1))
-        {
-            switch (posY)
-            {
-            case MENU_HEIGHT / 2:
-                interface->selection = CREER_PARTIE;
-                break;
-            case MENU_HEIGHT / 2 + 1:
-                interface->selection = REJOINDRE_PARTIE;
-                break;
-            }
-        }
-        if (interface->selection == CREER_PARTIE)
-        {
-            window_mvprintw_col(interface->win_menu, MENU_HEIGHT / 2, (MENU_WIDTH / 2) - strlen("Créer une partie") / 2 - 2, WHITE, ">");
-            window_color(interface->win_menu, WHITE);
-        }
-        else
-            window_color(interface->win_menu, RED);
-
-        window_mvprintw(interface->win_menu, MENU_HEIGHT / 2, (MENU_WIDTH / 2) - strlen("Créer une partie") / 2, "Créer une partie");
-
-        if (interface->selection == REJOINDRE_PARTIE)
-        {
-            window_mvprintw_col(interface->win_menu, MENU_HEIGHT / 2 + 1, (MENU_WIDTH / 2) - strlen("S'inscrire à une partie") / 2 - 2, WHITE, ">");
-            window_color(interface->win_menu, WHITE);
-        }
-        else
-            window_color(interface->win_menu, RED);
-
-        window_mvprintw(interface->win_menu, MENU_HEIGHT / 2 + 1, (MENU_WIDTH / 2) - strlen("S'inscrire à une partie") / 2, "S'inscrire à une partie");
-    }
-    else if (interface->selection == CREER_PARTIE)
-    {
-        window_mvprintw(interface->win_menu, MENU_HEIGHT / 2 + 1, (MENU_WIDTH / 2) - strlen("BONJOURRRRRR") / 2, "BONJOURRRRRR");
-    }
-    else if (interface->selection == REJOINDRE_PARTIE)
-    {
-    }
-
-    window_refresh(interface->win_menu);
-}
-
-void interface_delete_menu(interface_t **interface)
-{
-    window_delete(&(*interface)->win_menu);
-
-    free(*interface);
-    interface = NULL;
-}
-
-interface_t *interface_create_client()
+interface_t *interface_create_game()
 {
     interface_t *result;
 
@@ -127,21 +31,81 @@ interface_t *interface_create_client()
 
     // fenetre informations
     result->win_infos = window_create(0, 22, 77, 5, "Informations", TRUE);
-    window_printw_col(result->win_infos, RED, "Appuyez sur 'ECHAP' pour quitter ");
+    window_printw_col(result->win_infos, RED, "Entrez sur 'ECHAP' pour quitter\n");
     window_refresh(result->win_infos);
 
     // fenetre coordonnées
     result->win_level = window_create(0, 0, 62, 22, "Level", FALSE);
+
     window_refresh(result->win_level);
-
     // fenetre tools
-    result->win_tools = window_create(62, 0, 15, 22, "Tools", FALSE);
-    window_refresh(result->win_tools);
+    result->win_hud = window_create(62, 0, 15, 22, "HUD", FALSE); // HUD : Heads Up Display
 
-    // interface_affiche(result);
-
-    // window_refresh(result->win_level);
-    // window_refresh(result->win_infos);
+    result->current_color = MAGENTA; // default color
+    result->selection = ID_BLOCK;    // default selection
+    interface_hud_update(result);
+    window_refresh(result->win_hud);
 
     return result;
+}
+
+void interface_hud_actions(interface_t *interface, int c)
+{
+    int mouseX, mouseY, posX, posY;
+    // Mouse management
+    if ((c == KEY_MOUSE) && (mouse_getpos(&mouseX, &mouseY) == OK))
+    {
+        if (window_getcoordinates(interface->win_hud, mouseX, mouseY, &posX, &posY))
+        {
+            interface_hud_update(interface);
+            window_refresh(interface->win_hud);
+        }
+    }
+}
+
+void interface_hud_update(interface_t *interface)
+{
+    window_erase(interface->win_hud);
+    window_mvprintw(interface->win_hud, 1, 1, "Key");
+
+    // for (int j = 0; j < player1.carac.player.nb_vie * 2; j += 2)
+    // {
+    //     objet key;
+    //     init_objet(&key, ID_KEY, 2 + j, 2);
+    //     key.carac.key.couleur = RED;
+    //     affichage_objet(key, key.y, key.x, interface->win_hud);
+    // }
+
+    window_mvprintw(interface->win_hud, 5, 1, "Lives");
+
+    // for (int i = 0; i < player1.carac.player.nb_vie; i++)
+    // {
+    //     objet life;
+    //     init_objet(&life, ID_LIFE, 2 + i, 7);
+    //     affichage_objet(life, life.y, life.x, interface->win_hud);
+    // }
+
+    window_mvprintw(interface->win_hud, 10, 1, "Bombs");
+
+    // for (int i = 0; i < player1.carac.player.nb_bomb; i++)
+    // {
+    //     objet bomb;
+    //     init_objet(&bomb, ID_BOMB, 2 + i, 11);
+    //     affichage_objet(bomb, bomb.y, bomb.x, interface->win_tools);
+    // }
+
+    window_mvprintw(interface->win_hud, 15, 1, "Levels");
+    // window_printw(interface->win_hud, " \n  %02d \n", nb_level);
+
+    window_refresh(interface->win_hud);
+}
+
+void interface_delete_game(interface_t **interface)
+{
+    window_delete(&(*interface)->win_infos);
+    window_delete(&(*interface)->win_level);
+    window_delete(&(*interface)->win_hud);
+
+    free(*interface);
+    interface = NULL;
 }

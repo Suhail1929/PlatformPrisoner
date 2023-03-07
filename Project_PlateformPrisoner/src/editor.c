@@ -6,10 +6,30 @@
 #include "data_table.h"
 #include "interface.h"
 
-int main()
+int main(int argc, char *argv[])
 {
+    // Check arguments
+    if (argc == 2)
+    {
+        // Load a file
+        if (argv[1] == NULL)
+        {
+            fprintf(stderr, "File '%s' does'nt exist.\n", argv[1]);
+            exit(EXIT_FAILURE);
+        }
+    }
+    else
+    {
+        // Bad arguments
+        fprintf(stderr, "Load a file:\n\t%s <file>\n\t\tfile: file to load if exist\n", argv[0]);
+        fprintf(stderr, "Create a new file:\n\t%s <file>\n\t\tfile: file to create if not exist\n", argv[0]);
+        exit(EXIT_FAILURE);
+    }
+
+    char path[100];
+    sprintf(path, "bin/%s.bin", argv[1]); // gestion d'erreur ?
     interface_t *interface;
-    int fd = openFile("file.bin");
+    int fd = openFile(path);
     bloc_t *bloc = loadBloc(fd, 0);
     if (bloc == NULL)
     {
