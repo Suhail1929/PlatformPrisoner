@@ -33,12 +33,12 @@ extern int tab[HEIGHT][WIDTH];
 // Structure représentant l'interface de l'application
 typedef struct
 {
-    window_t *win_hud;          // La fenêtre du HUD (Heads Up Display)
-    window_t *win_infos;        // La fenêtre d'informations
-    window_t *win_level;        // La fenêtre du jeu
-    window_t *win_tools;        // La fenêtre des outils
-    unsigned int selection;     // La position sélectionnée
-    unsigned int current_color; // La couleur du gate sélectionné
+    window_t *win_infos;            // La fenêtre d'informations ou HUD (Heads Up Display)
+    window_t *win_level;            // La fenêtre du jeu
+    window_t *win_tools;            // La fenêtre des outils
+    unsigned int selection;         // L'outil sélectionnée
+    unsigned int current_color;     // La couleur sélectionné
+    item_t tab_item[HEIGHT][WIDTH]; // Tableau d'items
 } interface_t;
 
 /*
@@ -138,11 +138,11 @@ void displayMapID();
  */
 void clearInterface(interface_t *interface);
 
+void creer_partie();
+char *afficher_salons();
+void convertToItem(interface_t *interface, level_t *level);
+interface_t *interface_create_game(char *path);
 void interface_hud_actions(interface_t *interface, int c);
-
-interface_t *interface_create_game();
-
-void interface_delete_game(interface_t **interface);
 
 /**
  * Update Head-Up Display window

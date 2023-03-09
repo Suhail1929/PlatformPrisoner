@@ -3,7 +3,7 @@
 #
 
 EXEC = editor client #server
-OBJECTS = window.o interface.o fonction.o entity.o couleur.o data_table.o interface_client.o
+OBJECTS = window.o interface.o fonction.o entity.o couleur.o data_table.o interface_client.o item.o
 PROJECT_NAME = PlateformPrisoner
 
 SRC_DIR = src

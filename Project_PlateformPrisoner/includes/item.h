@@ -37,4 +37,6 @@ typedef struct
     unsigned int height;
 } item_t; // item_t
 
+item_t init_item(unsigned int id, unsigned int x, unsigned int y, unsigned int width, unsigned int height);
+
 #endif // _ITEM_H_

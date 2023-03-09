@@ -6,6 +6,7 @@
 #include "couleur.h"
 #include "window.h"
 #include "data_table.h"
+#include "item.h"
 #include "interface.h"
 #include "entity.h"
 
@@ -53,15 +54,14 @@ interface_t *interface_create(level_t *level)
     return result;
 }
 
-/*
- * Function that update the level window
+/**
+ * @brief Update the map table with the current level
  * @param interface : the interface
  * @param level : the level
  */
 void update_win_level(interface_t *interface, level_t *level)
 {
-    int i, j;
-    int tmp_decalage = 0;
+    int i, j, tmp_decalage = 0;
     for (i = 0; i < HEIGHT; i++)
     {
         for (j = 0; j < WIDTH; j++)
@@ -673,8 +673,8 @@ int insertEntityID(int posX, int posY, int entity_WIDTH, int entity_HEIGHT, int 
     return 0;
 }
 
-/*
- * Function update an entity ID in the map and return a width to jump or -1 if error
+/**
+ * @brief Function update an entity ID in the map and return a width to jump or -1 if error
  * @param posX : the position X
  * @param posY : the position Y
  * @param action : the action if == 0 delete the entity else update the entity

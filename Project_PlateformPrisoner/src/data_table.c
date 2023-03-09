@@ -566,3 +566,56 @@ void displayLevel(level_t *level)
         printf("\n");
     }
 }
+
+int loadOrCreatefromFile(const char *path, bloc_t *bloc, level_t *level, int createIfNotExists)
+{
+    int fd = open(path, O_RDWR);
+    if (fd == -1 && createIfNotExists)
+    {
+        fd = open(path, O_CREAT | O_RDWR, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
+        if (fd == -1)
+        {
+            fprintf(stderr, "Error: Failed to create file %s : %s\n", path, strerror(errno));
+            exit(EXIT_FAILURE);
+        }
+
+        bloc = loadBloc(fd, 0);
+        if (bloc == NULL)
+        {
+            // Create a Bloc : Address Table
+            bloc = initBloc();
+            saveBloc(fd, bloc);
+            level = initLevel();
+            addLevel(fd, bloc, level);
+            updateBloc(fd, 0, bloc);
+        }
+        level = loadLevelById(fd, bloc, 0);
+        if (level == NULL)
+        {
+            level = initLevel();
+        }
+        return fd;
+    }
+    else if (fd == -1)
+    {
+        fprintf(stderr, "Error: Failed to load file %s : %s\n", path, strerror(errno));
+        return -1;
+    }
+
+    bloc = loadBloc(fd, 0);
+    if (bloc == NULL)
+    {
+        fprintf(stderr, "Error: Failed to load block from file %s\n", path);
+        closeFile(fd);
+        return -1;
+    }
+
+    level = loadLevelById(fd, bloc, 0);
+    if (level == NULL)
+    {
+        fprintf(stderr, "Error: Failed to load level from file %s\n", path);
+        closeFile(fd);
+        return -1;
+    }
+    return fd;
+}

@@ -4,7 +4,11 @@
 #include "couleur.h"
 #include "window.h"
 #include "data_table.h"
+#include "item.h"
 #include "interface.h"
+
+#define LOAD 0
+#define CREATE 1
 
 int main(int argc, char *argv[])
 {
@@ -29,6 +33,8 @@ int main(int argc, char *argv[])
     char path[100];
     sprintf(path, "bin/%s.bin", argv[1]); // gestion d'erreur ?
     interface_t *interface;
+
+    // Methode 1
     int fd = openFile(path);
     bloc_t *bloc = loadBloc(fd, 0);
     if (bloc == NULL)
@@ -36,15 +42,20 @@ int main(int argc, char *argv[])
         printf("Creation du Bloc\n");
         bloc = initBloc();
         saveBloc(fd, bloc);
-        level_t *level0 = initLevel();
-        addLevel(fd, bloc, level0);
+        level_t *level = initLevel();
+        addLevel(fd, bloc, level);
         updateBloc(fd, 0, bloc);
     }
-    level_t *level0 = loadLevelById(fd, bloc, 0);
-    if (level0 == NULL)
+    level_t *level = loadLevelById(fd, bloc, 0);
+    if (level == NULL)
     {
-        level0 = initLevel();
+        level = initLevel();
     }
+
+    // Methode 2
+    // bloc_t *bloc = NULL;
+    // level_t *level = NULL;
+    // int fd = loadOrCreatefromFile(path, bloc, level, LOAD);
 
     ncurses_init();
     ncurses_colors();
@@ -56,12 +67,12 @@ int main(int argc, char *argv[])
     refresh();
 
     // Creation of the interface
-    interface = interface_create(level0);
+    interface = interface_create(level);
 
     int ch;
     while ((ch = getch()) != 27)
     {
-        interface_actions(fd, level0, interface, ch);
+        interface_actions(fd, level, interface, ch);
     }
 
     ncurses_stop();
@@ -73,7 +84,7 @@ int main(int argc, char *argv[])
 
     closeFile(fd);
     free(bloc);
-    free(level0);
+    free(level);
 
     return EXIT_SUCCESS;
 }
