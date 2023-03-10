@@ -1,3 +1,4 @@
+#include <locale.h>
 #include <ncurses.h>
 #include <stdlib.h>
 #include "fonction.h"
@@ -57,10 +58,14 @@ int main(int argc, char *argv[])
     // level_t *level = NULL;
     // int fd = loadOrCreatefromFile(path, bloc, level, LOAD);
 
+    // ncurses initialisation
+    setlocale(LC_ALL, "");
     ncurses_init();
+    ncurses_init_mouse();
     ncurses_colors();
     palette();
-    ncurses_init_mouse();
+    clear();
+    refresh();
 
     wbkgd(stdscr, COLOR_PAIR(0));
 

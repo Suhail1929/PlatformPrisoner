@@ -235,25 +235,53 @@ void convertToItem(interface_t *interface, level_t *level)
             tmp_posX = j, tmp_posY = i;
             if (bloc_width == 0 || bloc_height == 0)
                 continue;
-            getHeadEntity(&tmp_posX, &tmp_posY, bloc_width, bloc_height);
+            getHeadEntity(tab, &tmp_posX, &tmp_posY, bloc_width, bloc_height);
             if (tmp_posX == j && tmp_posY == i)
             {
                 interface->tab_item[i][j] = init_item(tab[i][j], j, i, bloc_width, bloc_height);
-                j += bloc_width - 1;
+            }
+            else // ajout de pointeur vers l'item de tête
+            {
+                // si on ne peut pas ajouter de pointeur d'item dans le tab_item, on ajoute un next dans sa structure
+                // interface->tab_item[i][j] = init_item(tab[i][j], j, i, bloc_width, bloc_height);
+                // interface->tab_item[tmp_posY][tmp_posX].next = &interface->tab_item[i][j];
+
+                // DEBUG
+                // ncurses_stop();
+                // printf("ELSE bloc id : %d, bloc_width : %d, bloc_height : %d, position [%d][%d]\n", tab[i][j], bloc_width, bloc_height, i, j);
+                // interface_delete(&interface);
+                // exit(EXIT_FAILURE);
+                // interface->tab_item[i][j] = init_item(9, j, i, bloc_width, bloc_height);
             }
         }
     }
-    ncurses_stop();
     for (i = 0; i < HEIGHT; i++)
     {
         for (j = 0; j < WIDTH; j++)
         {
-            printf("%d ", interface->tab_item[i][j].id);
+            if (interface->tab_item[i][j].id != 0)
+            {
+                display_item(interface->win_level, interface->tab_item[i][j], j, i);
+            }
         }
-        printf("\n");
     }
-    interface_delete(&interface);
-    exit(EXIT_FAILURE);
+    // ncurses_stop();
+    // printf("TAB : \n");
+    // for (i = 0; i < HEIGHT; i++)
+    // {
+    //     for (j = 0; j < WIDTH; j++)
+    //         printf("%d ", tab[i][j]);
+    //     printf("\n");
+    // }
+    // printf("TAB ITEM : \n");
+    // for (i = 0; i < HEIGHT; i++)
+    // {
+    //     for (j = 0; j < WIDTH; j++)
+    //         printf("%d ", interface->tab_item[i][j].id);
+    //     printf("\n");
+    // }
+    // interface_delete(&interface);
+    // exit(EXIT_FAILURE);
 }
 
 void interface_hud_actions(interface_t *interface, int c)
@@ -275,33 +303,40 @@ void interface_hud_update(interface_t *interface)
     window_erase(interface->win_tools);
     window_mvprintw(interface->win_tools, 1, 1, "Key");
 
-    // for (int j = 0; j < player1.carac.player.nb_vie * 2; j += 2)
-    // {
-    //     objet key;
-    //     init_objet(&key, ID_KEY, 2 + j, 2);
-    //     key.carac.key.couleur = RED;
-    //     affichage_objet(key, key.y, key.x, interface->win_tools);
-    // }
+    // temporaire : player
+    item_t player = init_item(ID_PLAYER + 1, 2, 2, 3, 4);
 
-    window_mvprintw(interface->win_tools, 5, 1, "Lives");
+    // temporaire : pour afficher les clés
+    int color = 1;
+    for (int j = 0; j < player.properties.player.nb_life * 2; j += 2)
+    {
+        color++;
+        if (color > 4)
+            color = 1;
 
-    // for (int i = 0; i < player1.carac.player.nb_vie; i++)
-    // {
-    //     objet life;
-    //     init_objet(&life, ID_LIFE, 2 + i, 7);
-    //     affichage_objet(life, life.y, life.x, interface->win_tools);
-    // }
+        item_t key = init_item(ID_KEY + color, 2 + j, 3, 1, 2);
+        display_item(interface->win_tools, key, key.x, key.y);
+    }
+
+    window_mvprintw(interface->win_tools, 6, 1, "Lives");
+
+    // temporaire : pour afficher les vies
+    for (int i = 0; i < player.properties.player.nb_life; i++)
+    {
+        item_t life = init_item(ID_LIFE, 2 + i, 8, 1, 1);
+        display_item(interface->win_tools, life, life.x, life.y);
+    }
 
     window_mvprintw(interface->win_tools, 10, 1, "Bombs");
 
-    // for (int i = 0; i < player1.carac.player.nb_bomb; i++)
-    // {
-    //     objet bomb;
-    //     init_objet(&bomb, ID_BOMB, 2 + i, 11);
-    //     affichage_objet(bomb, bomb.y, bomb.x, interface->win_tools);
-    // }
+    // temporaire : pour afficher les bombes
+    for (int i = 0; i < player.properties.player.nb_bomb; i++)
+    {
+        item_t bomb = init_item(ID_BOMB, 2 + i, 12, 1, 1);
+        display_item(interface->win_tools, bomb, bomb.x, bomb.y);
+    }
 
-    window_mvprintw(interface->win_tools, 15, 1, "Levels");
+    window_mvprintw(interface->win_tools, 14, 1, "Levels");
     // window_printw(interface->win_tools, " \n  %02d \n", nb_level);
 
     window_refresh(interface->win_tools);

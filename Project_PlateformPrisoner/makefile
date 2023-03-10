@@ -98,17 +98,22 @@ archive: clean
 # DEPENDANCIES
 obj/window.o: src/window.c includes/window.h
 obj/interface.o: src/interface.c includes/fonction.h includes/couleur.h \
-  includes/window.h includes/data_table.h includes/interface.h \
-  includes/entity.h
+  includes/window.h includes/data_table.h includes/item.h \
+  includes/interface.h includes/entity.h
 obj/fonction.o: src/fonction.c includes/fonction.h
 obj/entity.o: src/entity.c includes/couleur.h includes/window.h \
-  includes/data_table.h includes/interface.h includes/entity.h
+  includes/data_table.h includes/item.h includes/interface.h \
+  includes/entity.h
 obj/couleur.o: src/couleur.c includes/couleur.h
 obj/data_table.o: src/data_table.c includes/data_table.h
 obj/interface_client.o: src/interface_client.c includes/fonction.h \
   includes/couleur.h includes/window.h includes/data_table.h \
-  includes/interface.h includes/entity.h
+  includes/item.h includes/interface.h includes/entity.h
+obj/item.o: src/item.c includes/couleur.h includes/interface.h \
+  includes/item.h
 obj/editor.o: src/editor.c includes/fonction.h includes/couleur.h \
-  includes/window.h includes/data_table.h includes/interface.h
+  includes/window.h includes/data_table.h includes/item.h \
+  includes/interface.h
 obj/client.o: src/client.c includes/fonction.h includes/couleur.h \
-  includes/window.h includes/interface.h
+  includes/window.h includes/data_table.h includes/item.h \
+  includes/interface.h

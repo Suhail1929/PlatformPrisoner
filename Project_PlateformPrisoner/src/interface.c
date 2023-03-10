@@ -481,10 +481,12 @@ void interface_level_actions(interface_t *interface, int posX, int posY, int res
         if (!restore)
             sprintf(charID, "%d%d", interface->selection / 10, interface->current_color);
         integerID = atoi(charID);
-        if ((!insertEntityID(posX, posY, 1, 4, integerID) && restore == 0) || restore == 1)
+        // if ((!insertEntityID(posX, posY, 1, 4, integerID) && restore == 0) || restore == 1)
+        if ((!insertEntityID(posX, posY, 1, 1, integerID) && restore == 0) || restore == 1)
         {
-            for (size_t i = 0; i < 4; i++)
-                window_mvaddch_col(interface->win_level, posY + i, posX, interface->current_color, ' ' | ACS_PLUS);
+            // for (int i = 0; i < 4; i++)
+            //     window_mvaddch_col(interface->win_level, posY + i, posX, interface->current_color, ' ' | ACS_PLUS);
+            window_mvaddch_col(interface->win_level, posY, posX, interface->current_color, ' ' | ACS_PLUS);
         }
         break;
     case 20 ... 24: // ID_KEY
@@ -509,14 +511,9 @@ void interface_level_actions(interface_t *interface, int posX, int posY, int res
         integerID = atoi(charID);
         if ((!insertEntityID(posX, posY, 3, 4, integerID) && restore == 0) || restore == 1)
         {
-            for (size_t i = 0; i < 3; i++)
-            {
-                for (size_t j = 0; j < 4; j++)
-                {
+            for (int i = 0; i < 3; i++)
+                for (int j = 0; j < 4; j++)
                     window_mvaddch_col(interface->win_level, posY + j, posX + i, interface->current_color, ' ' | A_REVERSE);
-                }
-            }
-
             sprintf(charID, "%d", nb_door / 10);
             window_mvaddch(interface->win_level, posY, posX, charID[0]);
             sprintf(charID, "%d", nb_door % 10);
@@ -526,25 +523,17 @@ void interface_level_actions(interface_t *interface, int posX, int posY, int res
     case ID_EXIT:
         if ((!insertEntityID(posX, posY, 3, 4, ID_EXIT) && restore == 0) || restore == 1)
         {
-            for (size_t i = 0; i < 3; i++)
-            {
-                for (size_t j = 0; j < 4; j++)
-                {
+            for (int i = 0; i < 3; i++)
+                for (int j = 0; j < 4; j++)
                     window_mvaddch_col(interface->win_level, posY + j, posX + i, YELLOW, ' ' | A_REVERSE);
-                }
-            }
         }
         break;
     case ID_START:
         if ((!insertEntityID(posX, posY, 3, 4, ID_START) && restore == 0) || restore == 1)
         {
-            for (size_t i = 0; i < 3; i++)
-            {
-                for (size_t j = 0; j < 4; j++)
-                {
+            for (int i = 0; i < 3; i++)
+                for (int j = 0; j < 4; j++)
                     window_mvaddch_col(interface->win_level, posY + j, posX + i, MAGENTA, ' ' | A_REVERSE);
-                }
-            }
         }
         break;
     case ID_ROBOT:
@@ -577,15 +566,11 @@ void interface_level_actions(interface_t *interface, int posX, int posY, int res
         break;
     case ID_LIFE:
         if ((!insertEntityID(posX, posY, 1, 1, ID_LIFE) && restore == 0) || restore == 1)
-        {
             window_mvaddch_col(interface->win_level, posY, posX, RED, 'V');
-        }
         break;
     case ID_BOMB:
         if ((!insertEntityID(posX, posY, 1, 1, ID_BOMB) && restore == 0) || restore == 1)
-        {
             window_mvaddch_col(interface->win_level, posY, posX, WHITE, 'o');
-        }
         break;
     default:
         break;
@@ -695,7 +680,7 @@ int updateEntity(interface_t *interface, int posX, int posY, int action) // acti
     {
         return -1;
     }
-    getHeadEntity(&posX, &posY, bloc_width, bloc_height);
+    getHeadEntity(tab, &posX, &posY, bloc_width, bloc_height);
 
     // Supprimer/Restaurer toutes les cases de l'ID spécifié
     if (action == 1) // restore
@@ -731,21 +716,21 @@ int updateEntity(interface_t *interface, int posX, int posY, int action) // acti
  * @param largeur : the width
  * @param hauteur : the height
  */
-void getHeadEntity(int *posX, int *posY, int bloc_width, int bloc_height)
+void getHeadEntity(int tab_lvl[20][60], int *posX, int *posY, int bloc_width, int bloc_height)
 {
     // Récupérer l'ID du bloc
-    int bloc_id = tab[*posY][*posX];
+    int bloc_id = tab_lvl[*posY][*posX];
     // position de la case de départ sélectionnée
     int tmp_x = *posX;
     int tmp_y = *posY;
     int nb_cells = 0;
 
     // parcours vers le haut -----
-    if ((*posY - bloc_height >= 0) && tab[*posY - bloc_height][*posX] == bloc_id)
+    if ((*posY - bloc_height >= 0) && tab_lvl[*posY - bloc_height][*posX] == bloc_id)
     {
         // compteurHeight qui compte les cases au dessus tant que c'est le même bloc_id
         int compteurHeight = 0;
-        while ((*posY - compteurHeight >= 0) && tab[*posY - compteurHeight][*posX] == bloc_id)
+        while ((*posY - compteurHeight >= 0) && tab_lvl[*posY - compteurHeight][*posX] == bloc_id)
         {
             compteurHeight++;
         }
@@ -755,18 +740,18 @@ void getHeadEntity(int *posX, int *posY, int bloc_width, int bloc_height)
     }
     else
     {
-        while (tmp_y >= 0 && tab[tmp_y][tmp_x] == bloc_id)
+        while (tmp_y >= 0 && tab_lvl[tmp_y][tmp_x] == bloc_id)
         {
             tmp_y--;
         }
         tmp_y++;
     }
     // parcours vers la gauche
-    if ((*posX - bloc_width >= 0) && tab[tmp_y][*posX - bloc_width] == bloc_id)
+    if ((*posX - bloc_width >= 0) && tab_lvl[tmp_y][*posX - bloc_width] == bloc_id)
     {
         // compteurHeight qui compte les cases au dessus tant que c'est le même bloc_id
         int compteurWidth = 0;
-        while ((*posX - compteurWidth >= 0) && tab[*posY][*posX - compteurWidth] == bloc_id)
+        while ((*posX - compteurWidth >= 0) && tab_lvl[*posY][*posX - compteurWidth] == bloc_id)
         {
             compteurWidth++;
         }
@@ -776,7 +761,7 @@ void getHeadEntity(int *posX, int *posY, int bloc_width, int bloc_height)
     }
     else
     {
-        while (tmp_x >= 0 && tab[tmp_y][tmp_x] == bloc_id)
+        while (tmp_x >= 0 && tab_lvl[tmp_y][tmp_x] == bloc_id)
         {
             tmp_x--;
         }

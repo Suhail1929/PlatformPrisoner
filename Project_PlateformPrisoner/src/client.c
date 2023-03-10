@@ -1,3 +1,4 @@
+#include <locale.h>
 #include <ncurses.h>
 #include <stdlib.h>
 #include <string.h>
@@ -89,10 +90,14 @@ int main(int argc, char *argv[])
 
     interface_t *interface;
 
+    // ncurses initialisation
+    setlocale(LC_ALL, "");
     ncurses_init();
+    ncurses_init_mouse();
     ncurses_colors();
     palette();
-    ncurses_init_mouse();
+    clear();
+    refresh();
 
     // Creation de l'interface
     interface = interface_create_game(path);

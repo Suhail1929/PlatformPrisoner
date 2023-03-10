@@ -42,15 +42,12 @@ int getEntityDetail(interface_t *interface, int tab[20][60], int posX, int posY,
         interface->current_color = interface->selection % 10; // 2eme chiffre : couleur pour ID_PLAYER
         if (interface->selection > 3000)
             interface->current_color = (interface->selection / 100) % 10; // 2eme chiffre : couleur pour ID_DOOR
-        else
-            interface->current_color = interface->selection % 10; // 2eme chiffre : couleur pour ID_PLAYER
-    case 7 ... 9:                                                 // ID_ROBOT, ID_EXIT, ID_START
+    case 7 ... 9:                                                         // ID_ROBOT, ID_EXIT, ID_START
         *bloc_width = 3, *bloc_height = 4;
         break;
     case 21 ... 24:                                           // ID_KEY
         interface->current_color = interface->selection % 10; // 2eme chiffre : couleur
-        *bloc_width = 1,
-        *bloc_height = 2;
+        *bloc_width = 1, *bloc_height = 2;
         break;
     default: // ID_DELETE
         interface->selection = ID_DELETE;

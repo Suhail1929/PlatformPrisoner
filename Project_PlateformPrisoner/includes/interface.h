@@ -21,10 +21,6 @@
 #define CLEAR 31 - 14
 #define SAVE 32 - 13
 
-#define MENU 20
-#define CREER_PARTIE 21
-#define REJOINDRE_PARTIE 22
-
 #define HEIGHT 20
 #define WIDTH 60
 
@@ -121,7 +117,7 @@ int updateEntity(interface_t *interface, int posX, int posY, int action);
  * @param largeur : the width
  * @param hauteur : the height
  */
-void getHeadEntity(int *posX, int *posY, int bloc_width, int bloc_height);
+void getHeadEntity(int tab[20][60], int *posX, int *posY, int bloc_width, int bloc_height);
 
 /*
  *Function that clear the map ID ### Function?
