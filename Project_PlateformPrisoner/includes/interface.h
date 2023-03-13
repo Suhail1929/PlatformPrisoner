@@ -145,5 +145,6 @@ void interface_hud_actions(interface_t *interface, int c);
  * @param[in,out] interface the interface
  */
 void interface_hud_update(interface_t *interface);
+void interface_debug(int posX, int posY);
 
 #endif

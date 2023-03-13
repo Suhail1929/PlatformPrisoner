@@ -218,7 +218,6 @@ void convertToItem(interface_t *interface, level_t *level)
 {
     int i, j, tmp_posX, tmp_posY;
     int bloc_width = 0, bloc_height = 0, nb_door = 0;
-    int tab[HEIGHT][WIDTH];
 
     // get the integer tab from the file
     for (i = 0; i < HEIGHT; i++)
@@ -295,6 +294,7 @@ void interface_hud_actions(interface_t *interface, int c)
             interface_hud_update(interface);
             window_refresh(interface->win_tools);
         }
+        interface_debug(mouseX, mouseY);
     }
 }
 

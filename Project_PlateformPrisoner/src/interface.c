@@ -599,8 +599,9 @@ void interface_actions(int fd, level_t *level, interface_t *interface, int c)
         else if (window_getcoordinates(interface->win_level, mouseX, mouseY, &posX, &posY))
         {
             interface_level_actions(interface, posX, posY, 0);
+            window_mvprintw_col(interface->win_infos, 1, 0, WHITE, "X : %d Y : %d\n", posX, posY);
         }
-        window_mvprintw_col(interface->win_infos, 1, 0, WHITE, "X : %d Y : %d\n", posX, posY);
+        interface_debug(mouseX, mouseY);
         window_refresh(interface->win_infos);
     }
 }
@@ -825,5 +826,38 @@ void displayMapID() // for debugging
             }
         }
         printf("\n");
+    }
+}
+
+/**
+ * @brief Function that display the interface id for debugging
+ */
+void interface_debug(int posX, int posY)
+{
+    for (int i = 0; i < HEIGHT; i++)
+    {
+        for (int j = 0; j < WIDTH; j++)
+        {
+            if (tab[i][j] == ID_DELETE)
+            {
+                mvprintw(i + 1, j + 80, "%d", tab[i][j]);
+            }
+            else
+            {
+                int entier = tab[i][j];
+                while (entier >= 10)
+                {
+                    entier /= 10;
+                }
+                attron(COLOR_PAIR(MAGENTA));
+                mvprintw(i + 1, j + 80, "%d", entier);
+                attroff(COLOR_PAIR(MAGENTA));
+            }
+        }
+    }
+    if (posX >= 80 && posX < 140 && posY >= 1 && posY <= 20)
+    {
+        mvprintw(23, 80, "id : %d      ", tab[posY - 1][posX - 80]);
+        mvprintw(24, 80, "Position x: %d, y: %d      ", posX - 80, posY - 1);
     }
 }
