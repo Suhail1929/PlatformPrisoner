@@ -4,6 +4,7 @@
 #include "window.h"
 #include "data_table.h"
 #include "item.h"
+#include "liste.h"
 #include "interface.h"
 #include "entity.h"
 

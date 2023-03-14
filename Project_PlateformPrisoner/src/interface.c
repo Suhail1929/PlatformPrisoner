@@ -7,6 +7,7 @@
 #include "window.h"
 #include "data_table.h"
 #include "item.h"
+#include "liste.h"
 #include "interface.h"
 #include "entity.h"
 
@@ -85,10 +86,17 @@ void update_win_level(interface_t *interface, level_t *level)
  */
 void interface_delete(interface_t **interface)
 {
+    int h, w;
     window_delete(&(*interface)->win_infos);
     window_delete(&(*interface)->win_level);
     window_delete(&(*interface)->win_tools);
-
+    for (h = 0; h < HEIGHT; h++)
+    {
+        for (w = 0; w < WIDTH; w++)
+        {
+            detruire_liste(&(*interface)->tab_item[h][w]);
+        }
+    }
     free(*interface);
     interface = NULL;
 }
@@ -601,7 +609,7 @@ void interface_actions(int fd, level_t *level, interface_t *interface, int c)
             interface_level_actions(interface, posX, posY, 0);
             window_mvprintw_col(interface->win_infos, 1, 0, WHITE, "X : %d Y : %d\n", posX, posY);
         }
-        interface_debug(mouseX, mouseY);
+        interface_debug(interface, mouseX, mouseY);
         window_refresh(interface->win_infos);
     }
 }
@@ -832,7 +840,7 @@ void displayMapID() // for debugging
 /**
  * @brief Function that display the interface id for debugging
  */
-void interface_debug(int posX, int posY)
+void interface_debug(interface_t *interface, int posX, int posY)
 {
     for (int i = 0; i < HEIGHT; i++)
     {
@@ -857,7 +865,15 @@ void interface_debug(int posX, int posY)
     }
     if (posX >= 80 && posX < 140 && posY >= 1 && posY <= 20)
     {
-        mvprintw(23, 80, "id : %d      ", tab[posY - 1][posX - 80]);
+        if (interface->tab_item[posY - 1][posX - 80].tete == NULL)
+        {
+            mvprintw(23, 80, "dernier id ajouté : %d      ", interface->tab_item[posY - 1][posX - 80].tete->item->id);
+        }
+        else
+        {
+            mvprintw(23, 80, "dernier id ajouté : %d      ", tab[posY - 1][posX - 80]);
+        }
         mvprintw(24, 80, "Position x: %d, y: %d      ", posX - 80, posY - 1);
+        afficher_liste(interface->tab_item[posY - 1][posX - 80]);
     }
 }

@@ -12,6 +12,7 @@
 #include "window.h"
 #include "data_table.h"
 #include "item.h"
+#include "liste.h"
 #include "interface.h"
 
 int main(int argc, char *argv[])

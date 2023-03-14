@@ -29,12 +29,13 @@ extern int tab[HEIGHT][WIDTH];
 // Structure représentant l'interface de l'application
 typedef struct
 {
-    window_t *win_infos;            // La fenêtre d'informations ou HUD (Heads Up Display)
-    window_t *win_level;            // La fenêtre du jeu
-    window_t *win_tools;            // La fenêtre des outils
-    unsigned int selection;         // L'outil sélectionnée
-    unsigned int current_color;     // La couleur sélectionné
-    item_t tab_item[HEIGHT][WIDTH]; // Tableau d'items
+    window_t *win_infos;           // La fenêtre d'informations ou HUD (Heads Up Display)
+    window_t *win_level;           // La fenêtre du jeu
+    window_t *win_tools;           // La fenêtre des outils
+    unsigned int selection;        // L'outil sélectionnée
+    unsigned int current_color;    // La couleur sélectionné
+    liste tab_item[HEIGHT][WIDTH]; // Tableau de Liste de pointeur vers un items (pour l'instant aucun pointeur)
+    // ajouter une liste d'item, les pointeurs pointent vers les items de cette liste (contiendra les items original de la map)
 } interface_t;
 
 /*
@@ -145,6 +146,6 @@ void interface_hud_actions(interface_t *interface, int c);
  * @param[in,out] interface the interface
  */
 void interface_hud_update(interface_t *interface);
-void interface_debug(int posX, int posY);
+void interface_debug(interface_t *interface, int posX, int posY);
 
 #endif

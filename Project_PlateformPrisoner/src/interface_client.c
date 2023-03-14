@@ -15,6 +15,7 @@
 #include "window.h"
 #include "data_table.h"
 #include "item.h"
+#include "liste.h"
 #include "interface.h"
 #include "entity.h"
 
@@ -219,11 +220,14 @@ void convertToItem(interface_t *interface, level_t *level)
     int i, j, tmp_posX, tmp_posY;
     int bloc_width = 0, bloc_height = 0, nb_door = 0;
 
-    // get the integer tab from the file
+    // get the integer tab from the file + init all the list
     for (i = 0; i < HEIGHT; i++)
     {
         for (j = 0; j < WIDTH; j++)
+        {
             tab[i][j] = level->tab[i][j];
+            initialiser_liste(&interface->tab_item[i][j]);
+        }
     }
     // convert the integer tab to item tab by getting the head & details of each entity
     for (i = 0; i < HEIGHT; i++)
@@ -237,7 +241,10 @@ void convertToItem(interface_t *interface, level_t *level)
             getHeadEntity(tab, &tmp_posX, &tmp_posY, bloc_width, bloc_height);
             if (tmp_posX == j && tmp_posY == i)
             {
-                interface->tab_item[i][j] = init_item(tab[i][j], j, i, bloc_width, bloc_height);
+                // interface->tab_item[i][j] = init_item(tab[i][j], j, i, bloc_width, bloc_height);
+                item_t *item = init_item(tab[i][j], j, i, bloc_width, bloc_height);
+                cellule *cell = init_cellule(item);
+                inserer(&interface->tab_item[i][j], cell);
             }
             else // ajout de pointeur vers l'item de tête
             {
@@ -254,13 +261,21 @@ void convertToItem(interface_t *interface, level_t *level)
             }
         }
     }
+    // DEBUG
+    // item_t *item = init_item(ID_LIFE, 2, 2, 1, 1);
+    // cellule *cell = init_cellule(item);
+    // inserer(&interface->tab_item[2][2], cell);
     for (i = 0; i < HEIGHT; i++)
     {
         for (j = 0; j < WIDTH; j++)
         {
-            if (interface->tab_item[i][j].id != 0)
+            // if (interface->tab_item[i][j].id != 0)
+            // {
+            //     display_item(interface->win_level, interface->tab_item[i][j], j, i);
+            // }
+            if (interface->tab_item[i][j].tete != NULL)
             {
-                display_item(interface->win_level, interface->tab_item[i][j], j, i);
+                display_item(interface->win_level, *(interface->tab_item[i][j].tete->item), j, i);
             }
         }
     }
@@ -294,7 +309,7 @@ void interface_hud_actions(interface_t *interface, int c)
             interface_hud_update(interface);
             window_refresh(interface->win_tools);
         }
-        interface_debug(mouseX, mouseY);
+        interface_debug(interface, mouseX, mouseY);
     }
 }
 
@@ -304,7 +319,7 @@ void interface_hud_update(interface_t *interface)
     window_mvprintw(interface->win_tools, 1, 1, "Key");
 
     // temporaire : player
-    item_t player = init_item(ID_PLAYER + 1, 2, 2, 3, 4);
+    item_t player = *init_item(ID_PLAYER + 1, 2, 2, 3, 4);
 
     // temporaire : pour afficher les clés
     int color = 1;
@@ -314,7 +329,7 @@ void interface_hud_update(interface_t *interface)
         if (color > 4)
             color = 1;
 
-        item_t key = init_item(ID_KEY + color, 2 + j, 3, 1, 2);
+        item_t key = *init_item(ID_KEY + color, 2 + j, 3, 1, 2);
         display_item(interface->win_tools, key, key.x, key.y);
     }
 
@@ -323,7 +338,7 @@ void interface_hud_update(interface_t *interface)
     // temporaire : pour afficher les vies
     for (int i = 0; i < player.properties.player.nb_life; i++)
     {
-        item_t life = init_item(ID_LIFE, 2 + i, 8, 1, 1);
+        item_t life = *init_item(ID_LIFE, 2 + i, 8, 1, 1);
         display_item(interface->win_tools, life, life.x, life.y);
     }
 
@@ -332,7 +347,7 @@ void interface_hud_update(interface_t *interface)
     // temporaire : pour afficher les bombes
     for (int i = 0; i < player.properties.player.nb_bomb; i++)
     {
-        item_t bomb = init_item(ID_BOMB, 2 + i, 12, 1, 1);
+        item_t bomb = *init_item(ID_BOMB, 2 + i, 12, 1, 1);
         display_item(interface->win_tools, bomb, bomb.x, bomb.y);
     }
 

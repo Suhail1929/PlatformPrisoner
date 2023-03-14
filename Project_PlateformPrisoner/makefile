@@ -3,7 +3,7 @@
 #
 
 EXEC = editor client #server
-OBJECTS = window.o interface.o fonction.o entity.o couleur.o data_table.o interface_client.o item.o
+OBJECTS = window.o interface.o fonction.o entity.o couleur.o data_table.o interface_client.o item.o liste.o cellule.o
 PROJECT_NAME = PlateformPrisoner
 
 SRC_DIR = src
@@ -99,21 +99,28 @@ archive: clean
 obj/window.o: src/window.c includes/window.h
 obj/interface.o: src/interface.c includes/fonction.h includes/couleur.h \
   includes/window.h includes/data_table.h includes/item.h \
-  includes/interface.h includes/entity.h
+  includes/liste.h includes/cellule.h includes/interface.h \
+  includes/entity.h
 obj/fonction.o: src/fonction.c includes/fonction.h
 obj/entity.o: src/entity.c includes/couleur.h includes/window.h \
-  includes/data_table.h includes/item.h includes/interface.h \
-  includes/entity.h
+  includes/data_table.h includes/item.h includes/liste.h \
+  includes/cellule.h includes/interface.h includes/entity.h
 obj/couleur.o: src/couleur.c includes/couleur.h
 obj/data_table.o: src/data_table.c includes/data_table.h
 obj/interface_client.o: src/interface_client.c includes/fonction.h \
   includes/couleur.h includes/window.h includes/data_table.h \
-  includes/item.h includes/interface.h includes/entity.h
-obj/item.o: src/item.c includes/couleur.h includes/interface.h \
-  includes/item.h
+  includes/item.h includes/liste.h includes/cellule.h \
+  includes/interface.h includes/entity.h
+obj/item.o: src/item.c includes/couleur.h includes/window.h \
+  includes/item.h includes/liste.h includes/cellule.h \
+  includes/data_table.h includes/interface.h
+obj/liste.o: src/liste.c includes/window.h includes/item.h \
+  includes/cellule.h includes/liste.h
+obj/cellule.o: src/cellule.c includes/window.h includes/item.h \
+  includes/liste.h includes/cellule.h
 obj/editor.o: src/editor.c includes/fonction.h includes/couleur.h \
   includes/window.h includes/data_table.h includes/item.h \
-  includes/interface.h
+  includes/liste.h includes/cellule.h includes/interface.h
 obj/client.o: src/client.c includes/fonction.h includes/couleur.h \
   includes/window.h includes/data_table.h includes/item.h \
-  includes/interface.h
+  includes/liste.h includes/cellule.h includes/interface.h

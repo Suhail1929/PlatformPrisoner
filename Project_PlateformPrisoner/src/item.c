@@ -4,36 +4,36 @@
 #include "couleur.h"
 #include "window.h"
 #include "item.h"
+#include "liste.h"
 #include "data_table.h"
 #include "interface.h"
 
-item_t init_item(unsigned int id, unsigned int x, unsigned int y, unsigned int width, unsigned int height)
+item_t *init_item(unsigned int id, unsigned int x, unsigned int y, unsigned int width, unsigned int height)
 {
-    item_t item;
-    item.id = id;
-    item.x = x;
-    item.y = y;
-    item.width = width;
-    item.height = height;
+    item_t *item = (item_t *)malloc(sizeof(item_t));
+    item->id = id;
+    item->x = x;
+    item->y = y;
+    item->width = width;
+    item->height = height;
     // ajout des propriétés
     switch (id)
     {
     case 3101 ... 3499: // ID_DOOR(3) + color(1-4) + nb_door(01-99)
-        item.properties.door.nb_door = id % 100;
+        item->properties.door.nb_door = id % 100;
     case 11 ... 14: // ID_GATE
     case 21 ... 24: // ID_KEY
-        item.properties.color.color = id % 10;
+        item->properties.color.color = id % 10;
         break;
     case 41 ... 44: // ID_PLAYER
-        item.properties.player.nb_key = 0;
-        item.properties.player.nb_life = 5;
-        item.properties.player.nb_bomb = 3;
-        item.properties.player.color.color = id % 10;
+        item->properties.player.nb_key = 0;
+        item->properties.player.nb_life = 5;
+        item->properties.player.nb_bomb = 3;
+        item->properties.player.color.color = id % 10;
         break;
     default:
         break;
     }
-
     return item;
 }
 
@@ -82,7 +82,7 @@ void display_item(window_t *window, item_t item, int posX, int posY)
         window_mvaddch(window, posY, posX + 1, charID[0]);
         break;
     case 41 ... 44: // ID_PLAYER(4) + color(1-4)
-        // PLAYER
+        // PLAYER (ne pas oublier de dessiner le player et en fonction de sa direction + couleur)
         break;
     case ID_ROBOT:
         window_mvaddch_col(window, posY, posX, WHITE, ' ' | ACS_ULCORNER);
