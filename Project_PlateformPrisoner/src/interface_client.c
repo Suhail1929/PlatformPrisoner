@@ -230,6 +230,14 @@ void convertToItem(interface_t *interface, level_t *level)
         }
     }
     initialiser_liste(&interface->global_item);
+
+    // DEBUG
+    item_t *item = init_item(ID_PLAYER + 1, 46, 6, 3, 4);
+    cellule *cell = init_cellule(item);
+    item_t *p_item = item;
+    cellule *p_cell = init_cellule(p_item);
+    inserer(&interface->global_item, cell); // placer le robot dans la liste globale au début, pour le dessiner à la fin
+
     // convert the integer tab to item tab by getting the head & details of each entity
     for (i = 0; i < HEIGHT; i++)
     {
@@ -247,59 +255,27 @@ void convertToItem(interface_t *interface, level_t *level)
             cellule *p_cell = init_cellule(p_item);
             if (tmp_posX == j && tmp_posY == i)
             {
-                // interface->tab_item[i][j] = init_item(tab[i][j], j, i, bloc_width, bloc_height);
                 inserer(&interface->global_item, cell);      // ajout pour la tête
                 inserer(&interface->tab_item[i][j], p_cell); // ajout pointeur dans la map
             }
             else // ajout de pointeur vers l'item de tête
             {
                 inserer(&interface->tab_item[i][j], p_cell); // ajout pointeur dans la map
-                // DEBUG
-                // ncurses_stop();
-                // printf("ELSE bloc id : %d, bloc_width : %d, bloc_height : %d, position [%d][%d]\n", tab[i][j], bloc_width, bloc_height, i, j);
-                // interface_delete(&interface);
-                // exit(EXIT_FAILURE);
-                // interface->tab_item[i][j] = init_item(9, j, i, bloc_width, bloc_height);
             }
         }
     }
-    // DEBUG
-    item_t *item = init_item(ID_LIFE, 2, 2, 1, 1);
-    cellule *cell = init_cellule(item);
-    inserer(&interface->tab_item[2][2], cell);
-    display_item(interface->win_level, *(interface->global_item.tete->item), j, i);
-    // for (i = 0; i < HEIGHT; i++)
-    // {
-    //     for (j = 0; j < WIDTH; j++)
-    //     {
-    //         // if (interface->tab_item[i][j].id != 0)
-    //         // {
-    //         //     display_item(interface->win_level, interface->tab_item[i][j], j, i);
-    //         // }
-    //         if (interface->tab_item[i][j].tete != NULL)
-    //         {
-    //             display_item(interface->win_level, *(interface->tab_item[i][j].tete->item), j, i);
-    //             window_refresh(interface->win_level);
-    //         }
-    //     }
-    // }
-    // ncurses_stop();
-    // printf("TAB : \n");
-    // for (i = 0; i < HEIGHT; i++)
-    // {
-    //     for (j = 0; j < WIDTH; j++)
-    //         printf("%d ", tab[i][j]);
-    //     printf("\n");
-    // }
-    // printf("TAB ITEM : \n");
-    // for (i = 0; i < HEIGHT; i++)
-    // {
-    //     for (j = 0; j < WIDTH; j++)
-    //         printf("%d ", interface->tab_item[i][j].id);
-    //     printf("\n");
-    // }
-    // interface_delete(&interface);
-    // exit(EXIT_FAILURE);
+
+    inserer(&interface->tab_item[6][46], p_cell); // à insérer quand on a fini de placer les item de l'editeur
+
+    if (interface->global_item.tete != NULL)
+    {
+        cellule *itt_cell_global = interface->global_item.tete;
+        while (itt_cell_global != NULL)
+        {
+            display_item(interface->win_level, *(interface->tab_item[itt_cell_global->item->y][itt_cell_global->item->x].tete->item), itt_cell_global->item->x, itt_cell_global->item->y);
+            itt_cell_global = itt_cell_global->succ;
+        }
+    }
 }
 
 void interface_hud_actions(interface_t *interface, int c)

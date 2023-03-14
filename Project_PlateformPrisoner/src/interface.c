@@ -90,15 +90,6 @@ void interface_delete(interface_t **interface)
     window_delete(&(*interface)->win_level);
     window_delete(&(*interface)->win_tools);
     delete_all_list(&(*interface)->global_item, (*interface)->tab_item);
-    // delete_all_list(&(*interface));
-    // detruire_liste(&(*interface)->global_item);
-    // for (int h = 0; h < HEIGHT; h++)
-    // {
-    //     for (int w = 0; w < WIDTH; w++)
-    //     {
-    //         detruire_liste(&(*interface)->tab_item[h][w]);
-    //     }
-    // }
     free(*interface);
     interface = NULL;
 }

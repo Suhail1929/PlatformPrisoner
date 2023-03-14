@@ -21,6 +21,8 @@ item_t *init_item(unsigned int id, unsigned int x, unsigned int y, unsigned int 
     {
     case 3101 ... 3499: // ID_DOOR(3) + color(1-4) + nb_door(01-99)
         item->properties.door.nb_door = id % 100;
+        item->properties.door.color.color = (id / 100) % 10;
+        break;
     case 11 ... 14: // ID_GATE
     case 21 ... 24: // ID_KEY
         item->properties.color.color = id % 10;
@@ -82,7 +84,16 @@ void display_item(window_t *window, item_t item, int posX, int posY)
         window_mvaddch(window, posY, posX + 1, charID[0]);
         break;
     case 41 ... 44: // ID_PLAYER(4) + color(1-4)
-        // PLAYER (ne pas oublier de dessiner le player et en fonction de sa direction + couleur)
+        window_mvaddch_col(window, posY, posX + 1, item.properties.player.color.color, ' ' | A_REVERSE);
+        window_mvaddch_col(window, posY, posX, item.properties.player.color.color, '-' | A_REVERSE);
+        window_mvaddch_col(window, posY + 1, posX, item.properties.player.color.color, ' ' | ACS_HLINE);
+        window_mvaddch_col(window, posY + 1, posX + 1, item.properties.player.color.color, ' ' | ACS_PLUS);
+        window_mvaddch_col(window, posY + 1, posX + 2, item.properties.player.color.color, ' ' | ACS_HLINE);
+        window_mvaddch_col(window, posY + 2, posX, item.properties.player.color.color, ' ' | ACS_ULCORNER);
+        window_mvaddch_col(window, posY + 2, posX + 1, item.properties.player.color.color, ' ' | ACS_BTEE);
+        window_mvaddch_col(window, posY + 2, posX + 2, item.properties.player.color.color, ' ' | ACS_URCORNER);
+        window_mvaddch_col(window, posY + 3, posX, item.properties.player.color.color, ' ' | ACS_VLINE);
+        window_mvaddch_col(window, posY + 3, posX + 2, item.properties.player.color.color, ' ' | ACS_VLINE);
         break;
     case ID_ROBOT:
         window_mvaddch_col(window, posY, posX, WHITE, ' ' | ACS_ULCORNER);
