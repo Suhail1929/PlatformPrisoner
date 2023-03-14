@@ -20,7 +20,7 @@
 #include "entity.h"
 
 #include <limits.h>
-
+// int compteur = 0;
 void creer_partie()
 {
     system("clear");
@@ -229,6 +229,7 @@ void convertToItem(interface_t *interface, level_t *level)
             initialiser_liste(&interface->tab_item[i][j]);
         }
     }
+    initialiser_liste(&interface->global_item);
     // convert the integer tab to item tab by getting the head & details of each entity
     for (i = 0; i < HEIGHT; i++)
     {
@@ -239,19 +240,20 @@ void convertToItem(interface_t *interface, level_t *level)
             if (bloc_width == 0 || bloc_height == 0)
                 continue;
             getHeadEntity(tab, &tmp_posX, &tmp_posY, bloc_width, bloc_height);
+            item_t *item = init_item(tab[i][j], j, i, bloc_width, bloc_height);
+            cellule *cell = init_cellule(item);
+
+            item_t *p_item = item;
+            cellule *p_cell = init_cellule(p_item);
             if (tmp_posX == j && tmp_posY == i)
             {
                 // interface->tab_item[i][j] = init_item(tab[i][j], j, i, bloc_width, bloc_height);
-                item_t *item = init_item(tab[i][j], j, i, bloc_width, bloc_height);
-                cellule *cell = init_cellule(item);
-                inserer(&interface->tab_item[i][j], cell);
+                inserer(&interface->global_item, cell);      // ajout pour la tête
+                inserer(&interface->tab_item[i][j], p_cell); // ajout pointeur dans la map
             }
             else // ajout de pointeur vers l'item de tête
             {
-                // si on ne peut pas ajouter de pointeur d'item dans le tab_item, on ajoute un next dans sa structure
-                // interface->tab_item[i][j] = init_item(tab[i][j], j, i, bloc_width, bloc_height);
-                // interface->tab_item[tmp_posY][tmp_posX].next = &interface->tab_item[i][j];
-
+                inserer(&interface->tab_item[i][j], p_cell); // ajout pointeur dans la map
                 // DEBUG
                 // ncurses_stop();
                 // printf("ELSE bloc id : %d, bloc_width : %d, bloc_height : %d, position [%d][%d]\n", tab[i][j], bloc_width, bloc_height, i, j);
@@ -262,23 +264,25 @@ void convertToItem(interface_t *interface, level_t *level)
         }
     }
     // DEBUG
-    // item_t *item = init_item(ID_LIFE, 2, 2, 1, 1);
-    // cellule *cell = init_cellule(item);
-    // inserer(&interface->tab_item[2][2], cell);
-    for (i = 0; i < HEIGHT; i++)
-    {
-        for (j = 0; j < WIDTH; j++)
-        {
-            // if (interface->tab_item[i][j].id != 0)
-            // {
-            //     display_item(interface->win_level, interface->tab_item[i][j], j, i);
-            // }
-            if (interface->tab_item[i][j].tete != NULL)
-            {
-                display_item(interface->win_level, *(interface->tab_item[i][j].tete->item), j, i);
-            }
-        }
-    }
+    item_t *item = init_item(ID_LIFE, 2, 2, 1, 1);
+    cellule *cell = init_cellule(item);
+    inserer(&interface->tab_item[2][2], cell);
+    display_item(interface->win_level, *(interface->global_item.tete->item), j, i);
+    // for (i = 0; i < HEIGHT; i++)
+    // {
+    //     for (j = 0; j < WIDTH; j++)
+    //     {
+    //         // if (interface->tab_item[i][j].id != 0)
+    //         // {
+    //         //     display_item(interface->win_level, interface->tab_item[i][j], j, i);
+    //         // }
+    //         if (interface->tab_item[i][j].tete != NULL)
+    //         {
+    //             display_item(interface->win_level, *(interface->tab_item[i][j].tete->item), j, i);
+    //             window_refresh(interface->win_level);
+    //         }
+    //     }
+    // }
     // ncurses_stop();
     // printf("TAB : \n");
     // for (i = 0; i < HEIGHT; i++)
@@ -309,6 +313,16 @@ void interface_hud_actions(interface_t *interface, int c)
             interface_hud_update(interface);
             window_refresh(interface->win_tools);
         }
+
+        // DEBUG : pour supprimer tous les items après 10 actions
+        // if (compteur >= 10)
+        // {
+        //     delete_all_list(&interface->global_item, interface->tab_item);
+        // }
+        // else
+        // {
+        //     compteur++;
+        // }
         interface_debug(interface, mouseX, mouseY);
     }
 }

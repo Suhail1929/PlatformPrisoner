@@ -35,7 +35,7 @@ int getEntityDetail(interface_t *interface, int tab[20][60], int posX, int posY,
         *bloc_width = 3, *bloc_height = 1;
         break;
     case 6: // ID_PROBE
-        *bloc_width = 2, *bloc_height = 3;
+        *bloc_width = 3, *bloc_height = 2;
         break;
     case 3101 ... 3499:                                       // ID_DOOR(3) + color(1-4) + nb_door(01-99)
         *nb_door = interface->selection % 100;                // 2 derniers chiffres : nb_door

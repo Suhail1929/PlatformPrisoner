@@ -1,5 +1,7 @@
 {
     "files.associations": {
-        "ncurses.h": "c"
+        "ncurses.h": "c",
+        "interface.h": "c",
+        "limits.h": "c"
     }
 }

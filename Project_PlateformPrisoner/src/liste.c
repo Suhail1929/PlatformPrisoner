@@ -59,7 +59,7 @@ cellule *rechercher(liste l, int id)
     cellule *c = l.tete;
     if (l.tete == NULL)
     {
-        printf("liste vide\n");
+        // printf("liste vide\n");
     }
     else
     {
@@ -71,7 +71,7 @@ cellule *rechercher(liste l, int id)
     return c;
 }
 
-void supprimer(liste *l, cellule *c)
+void supprimer(liste *l, cellule *c, int deleteItem)
 {
     if (c != NULL)
     {
@@ -91,12 +91,17 @@ void supprimer(liste *l, cellule *c)
         {
             l->tete = c->pred;
         }
-        free(c->item);
+        if (deleteItem && c->item != NULL)
+        {
+            free(c->item);
+            c->item = NULL;
+        }
         free(c);
+        c = NULL;
     }
     else
     {
-        printf("cellule non existante\n");
+        // printf("cellule non existante\n");
     }
 }
 
@@ -104,6 +109,22 @@ void detruire_liste(liste *l)
 {
     while (l->tete != NULL)
     {
-        supprimer(l, l->tete);
+        supprimer(l, l->tete, DELETE_ITEM);
+    }
+}
+
+void delete_all_list(liste *l, liste (*l2)[60])
+{
+    while (l->tete != NULL)
+    {
+        item_t *item = l->tete->item;
+        for (int h = 0; h < item->height; h++)
+        {
+            for (int w = 0; w < item->width; w++)
+            {
+                supprimer(&l2[item->y + h][item->x + w], rechercher(l2[item->y + h][item->x + w], item->id), DELETE_CELL);
+            }
+        }
+        supprimer(l, l->tete, DELETE_ITEM);
     }
 }

@@ -86,17 +86,19 @@ void update_win_level(interface_t *interface, level_t *level)
  */
 void interface_delete(interface_t **interface)
 {
-    int h, w;
     window_delete(&(*interface)->win_infos);
     window_delete(&(*interface)->win_level);
     window_delete(&(*interface)->win_tools);
-    for (h = 0; h < HEIGHT; h++)
-    {
-        for (w = 0; w < WIDTH; w++)
-        {
-            detruire_liste(&(*interface)->tab_item[h][w]);
-        }
-    }
+    delete_all_list(&(*interface)->global_item, (*interface)->tab_item);
+    // delete_all_list(&(*interface));
+    // detruire_liste(&(*interface)->global_item);
+    // for (int h = 0; h < HEIGHT; h++)
+    // {
+    //     for (int w = 0; w < WIDTH; w++)
+    //     {
+    //         detruire_liste(&(*interface)->tab_item[h][w]);
+    //     }
+    // }
     free(*interface);
     interface = NULL;
 }
@@ -562,7 +564,7 @@ void interface_level_actions(interface_t *interface, int posX, int posY, int res
         }
         break;
     case ID_PROBE:
-        if ((!insertEntityID(posX, posY, 2, 3, ID_PROBE) && restore == 0) || restore == 1)
+        if ((!insertEntityID(posX, posY, 3, 2, ID_PROBE) && restore == 0) || restore == 1)
         {
             window_mvaddch_col(interface->win_level, posY, posX, WHITE, ' ' | ACS_LTEE);
             window_mvaddch_col(interface->win_level, posY, posX + 1, WHITE, ' ' | ACS_HLINE);
@@ -852,7 +854,15 @@ void interface_debug(interface_t *interface, int posX, int posY)
             }
             else
             {
-                int entier = tab[i][j];
+                int entier;
+                if (interface->tab_item[posY - 1][posX - 80].tete == NULL)
+                {
+                    entier = interface->tab_item[posY - 1][posX - 80].tete->item->id;
+                }
+                else
+                {
+                    entier = tab[i][j];
+                }
                 while (entier >= 10)
                 {
                     entier /= 10;
@@ -865,14 +875,18 @@ void interface_debug(interface_t *interface, int posX, int posY)
     }
     if (posX >= 80 && posX < 140 && posY >= 1 && posY <= 20)
     {
+        move(23, 80);
+        clrtoeol();
         if (interface->tab_item[posY - 1][posX - 80].tete == NULL)
         {
-            mvprintw(23, 80, "dernier id ajouté : %d      ", interface->tab_item[posY - 1][posX - 80].tete->item->id);
+            mvprintw(23, 80, "dernier id ajouté : %d", interface->tab_item[posY - 1][posX - 80].tete->item->id);
         }
         else
         {
-            mvprintw(23, 80, "dernier id ajouté : %d      ", tab[posY - 1][posX - 80]);
+            mvprintw(23, 80, "dernier id ajouté : %d", tab[posY - 1][posX - 80]);
         }
+        move(24, 80);
+        clrtoeol();
         mvprintw(24, 80, "Position x: %d, y: %d      ", posX - 80, posY - 1);
         afficher_liste(interface->tab_item[posY - 1][posX - 80]);
     }

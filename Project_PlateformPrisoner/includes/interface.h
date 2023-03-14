@@ -35,7 +35,7 @@ typedef struct
     unsigned int selection;        // L'outil sélectionnée
     unsigned int current_color;    // La couleur sélectionné
     liste tab_item[HEIGHT][WIDTH]; // Tableau de Liste de pointeur vers un items (pour l'instant aucun pointeur)
-    // ajouter une liste d'item, les pointeurs pointent vers les items de cette liste (contiendra les items original de la map)
+    liste global_item;             // Les pointeurs pointent vers les items de cette liste (contiendra les items original de la map)
 } interface_t;
 
 /*

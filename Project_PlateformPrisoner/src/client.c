@@ -114,5 +114,5 @@ int main(int argc, char *argv[])
     // // supprimer l'interface
     interface_delete(&interface);
     free(room_name);
-    return 0;
+    return EXIT_SUCCESS;
 }
