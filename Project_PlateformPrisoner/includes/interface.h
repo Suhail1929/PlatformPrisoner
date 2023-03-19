@@ -32,6 +32,7 @@ typedef struct
     window_t *win_infos;           // La fenêtre d'informations ou HUD (Heads Up Display)
     window_t *win_level;           // La fenêtre du jeu
     window_t *win_tools;           // La fenêtre des outils
+    window_t *win_debug;           // La fenêtre de debug
     unsigned int selection;        // L'outil sélectionnée
     unsigned int current_color;    // La couleur sélectionné
     liste tab_item[HEIGHT][WIDTH]; // Tableau de Liste de pointeur vers un items (pour l'instant aucun pointeur)

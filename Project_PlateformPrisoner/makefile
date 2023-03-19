@@ -29,8 +29,9 @@ OBJECTS_O = $(OBJECTS) $(EXEC_O)
 #
 
 CC = gcc
+GDBFLAGS = -g
 CCFLAGS_STD = -Wall -O3 -Werror
-CCFLAGS_DEBUG = -D _DEBUG_
+CCFLAGS_DEBUG = -D _DEBUG_ 
 CCFLAGS = $(CCFLAGS_STD)
 CCLIBS = -lncurses
 
@@ -48,7 +49,7 @@ all: msg $(addprefix $(OBJECTS_DIR)/,$(OBJECTS)) $(addprefix $(OBJECTS_DIR)/,$(E
 msg:
 	@echo "Create objects..."
 
-debug: CCFLAGS = $(CCFLAGS_STD) $(CCFLAGS_DEBUG)
+debug: CCFLAGS = $(CCFLAGS_STD) $(CCFLAGS_DEBUG) $(GDBFLAGS)
 debug: all
 
 #

@@ -7,7 +7,6 @@ typedef struct cellule cellule;
 struct cellule
 {
     item_t *item;
-    cellule *pred;
     cellule *succ;
 };
 

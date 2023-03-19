@@ -31,7 +31,7 @@ struct level_t
 typedef struct bloc_t bloc_t;
 struct bloc_t
 {
-    int nb_available_entry;
+    int nb_available_entry; // number of available entry
     off_t level[NB_LEVEL];
     off_t bloc_next;
 };

@@ -11,6 +11,5 @@ cellule *init_cellule(item_t *item)
     cellule *c = (cellule *)malloc(sizeof(cellule));
     c->item = item;
     c->succ = NULL;
-    c->pred = NULL;
     return c;
 }

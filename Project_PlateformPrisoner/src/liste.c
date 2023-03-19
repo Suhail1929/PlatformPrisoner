@@ -11,18 +11,20 @@ void initialiser_liste(liste *l)
     l->tete = NULL;
 }
 
+void detruire_liste(liste *l)
+{
+    while (l->tete != NULL)
+    {
+        cellule *c = l->tete;
+        l->tete = c->succ;
+        free(c->item);
+        free(c);
+    }
+}
+
 void inserer(liste *l, cellule *c)
 {
-    if (l->tete == NULL)
-    {
-        c->succ = NULL;
-    }
-    else
-    {
-        c->succ = l->tete;
-        l->tete->pred = c;
-    }
-    c->pred = NULL;
+    c->succ = l->tete;
     l->tete = c;
 }
 
@@ -73,44 +75,17 @@ cellule *rechercher(liste l, int id)
 
 void supprimer(liste *l, cellule *c, int deleteItem)
 {
-    if (c != NULL)
+    if (l->tete == c)
     {
-        if (c->pred != NULL)
-        {
-            c->pred->succ = c->succ;
-        }
-        else
-        {
-            l->tete = c->succ;
-        }
-        if (c->succ != NULL)
-        {
-            c->succ->pred = c->pred;
-        }
-        else
-        {
-            l->tete = c->pred;
-        }
-        if (deleteItem && c->item != NULL)
-        {
-            free(c->item);
-            c->item = NULL;
-        }
-        free(c);
-        c = NULL;
+        l->tete = c->succ;
     }
-    else
+    if (deleteItem && c->item != NULL)
     {
-        // printf("cellule non existante\n");
+        free(c->item);
+        c->item = NULL;
     }
-}
-
-void detruire_liste(liste *l)
-{
-    while (l->tete != NULL)
-    {
-        supprimer(l, l->tete, DELETE_ITEM);
-    }
+    free(c->item);
+    free(c);
 }
 
 void delete_all_list(liste *l, liste (*l2)[60])

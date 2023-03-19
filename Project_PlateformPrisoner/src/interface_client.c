@@ -171,8 +171,8 @@ interface_t *interface_create_game(char *path)
 
     // fenetre coordonnées
     result->win_level = window_create(0, 0, 62, 22, "Level", FALSE);
-
     window_refresh(result->win_level);
+
     // fenetre tools
     result->win_tools = window_create(62, 0, 15, 22, "HUD", FALSE); // HUD : Heads Up Display
 
@@ -180,6 +180,10 @@ interface_t *interface_create_game(char *path)
     result->selection = ID_BLOCK;    // default selection
     interface_hud_update(result);
     window_refresh(result->win_tools);
+
+    // fenetre debug
+    result->win_debug = window_create(80, 0, 62, 22, "DEBUG", FALSE);
+    window_refresh(result->win_debug);
 
     int fd = open(path, O_RDONLY);
     if (fd == -1)
