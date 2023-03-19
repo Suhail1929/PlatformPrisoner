@@ -89,7 +89,8 @@ void interface_delete(interface_t **interface)
     window_delete(&(*interface)->win_infos);
     window_delete(&(*interface)->win_level);
     window_delete(&(*interface)->win_tools);
-    delete_all_list(&(*interface)->global_item, (*interface)->tab_item);
+    delete_all_list(&(*interface)->global_item, (*interface)->tab_item); // delete all items and their pointers in tab_item
+    delete_all_list(&(*interface)->tab_player, (*interface)->tab_item);  // delete all players and their pointers in tab_item
     free(*interface);
     interface = NULL;
 }

@@ -36,6 +36,7 @@ typedef struct
     unsigned int current_color;    // La couleur sélectionné
     liste tab_item[HEIGHT][WIDTH]; // Tableau de Liste de pointeur vers un items (pour l'instant aucun pointeur)
     liste global_item;             // Les pointeurs pointent vers les items de cette liste (contiendra les items original de la map)
+    liste tab_player;              // Tableau de joueurs
 } interface_t;
 
 /*
@@ -139,8 +140,9 @@ void creer_partie();
 char *afficher_salons();
 void convertToItem(interface_t *interface, level_t *level);
 interface_t *interface_create_game(char *path);
-void interface_hud_actions(interface_t *interface, int c);
+void interface_game_actions(interface_t *interface, int c);
 
+void interface_game_update(interface_t *interface, int c);
 /**
  * Update Head-Up Display window
  * @param[in,out] interface the interface
@@ -148,4 +150,6 @@ void interface_hud_actions(interface_t *interface, int c);
 void interface_hud_update(interface_t *interface);
 void interface_debug(interface_t *interface, int posX, int posY);
 
+void init_player(interface_t *interface, int x, int y);
+void find_start(interface_t *interface);
 #endif

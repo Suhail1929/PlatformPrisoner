@@ -106,7 +106,7 @@ int main(int argc, char *argv[])
     int ch;
     while ((ch = getch()) != 27)
     {
-        interface_hud_actions(interface, ch);
+        interface_game_actions(interface, ch);
     }
     // Quitter le mode d'affichage ncurses
     ncurses_stop();

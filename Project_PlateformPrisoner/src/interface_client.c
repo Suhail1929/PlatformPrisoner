@@ -19,8 +19,8 @@
 #include "interface.h"
 #include "entity.h"
 
-#include <limits.h>
 // int compteur = 0;
+
 void creer_partie()
 {
     system("clear");
@@ -231,13 +231,6 @@ void convertToItem(interface_t *interface, level_t *level)
     }
     initialiser_liste(&interface->global_item);
 
-    // DEBUG
-    item_t *item = init_item(ID_PLAYER + 1, 46, 6, 3, 4);
-    cellule *cell = init_cellule(item);
-    item_t *p_item = item;
-    cellule *p_cell = init_cellule(p_item);
-    inserer(&interface->global_item, cell); // placer le robot dans la liste globale au début, pour le dessiner à la fin
-
     // convert the integer tab to item tab by getting the head & details of each entity
     for (i = 0; i < HEIGHT; i++)
     {
@@ -248,25 +241,36 @@ void convertToItem(interface_t *interface, level_t *level)
             if (bloc_width == 0 || bloc_height == 0)
                 continue;
             getHeadEntity(tab, &tmp_posX, &tmp_posY, bloc_width, bloc_height);
-            item_t *item = init_item(tab[i][j], j, i, bloc_width, bloc_height);
-            cellule *cell = init_cellule(item);
 
-            item_t *p_item = item;
-            cellule *p_cell = init_cellule(p_item);
+            // head : create the item, otherwise add pointer to the head item
             if (tmp_posX == j && tmp_posY == i)
             {
-                inserer(&interface->global_item, cell);      // ajout pour la tête
-                inserer(&interface->tab_item[i][j], p_cell); // ajout pointeur dans la map
-            }
-            else // ajout de pointeur vers l'item de tête
+                // item creation
+                item_t *item = init_item(tab[i][j], j, i, bloc_width, bloc_height);
+                inserer(&interface->global_item, init_cellule(item)); // ajout pour la tête
+
+                // pointer to the item
+                item_t *p_item = item;
+
+                for (int h = 0; h < item->height; h++)
+                {
+                    for (int w = 0; w < item->width; w++)
+                    {
+                        inserer(&interface->tab_item[item->y + h][item->x + w], init_cellule(p_item)); // add pointer to the item in the map
+                    }
+                }
+            } // already item placed, skip the bloc width
+            else
             {
-                inserer(&interface->tab_item[i][j], p_cell); // ajout pointeur dans la map
+                // j += bloc_width - 1; // A débugger !
             }
         }
     }
 
-    inserer(&interface->tab_item[6][46], p_cell); // à insérer quand on a fini de placer les item de l'editeur
+    // find the start and init the player
+    find_start(interface);
 
+    // display the game interface
     if (interface->global_item.tete != NULL)
     {
         cellule *itt_cell_global = interface->global_item.tete;
@@ -278,7 +282,47 @@ void convertToItem(interface_t *interface, level_t *level)
     }
 }
 
-void interface_hud_actions(interface_t *interface, int c)
+void interface_game_update(interface_t *interface, int c)
+{
+    /*
+    Temporaire : utilisation du tab pour déplacer le premier player
+    */
+    // item_t *player = interface->tab_player.tete->item;
+
+    // switch (c)
+    // {
+    // case KEY_UP:
+    //     if (player->y - 1 >= 0)
+    //     {
+    //         // do action
+    //     }
+    //     break;
+    // case KEY_DOWN:
+    //     if (player->y + 1 < HEIGHT)
+    //     {
+    //         // do action
+    //     }
+    //     break;
+    // case KEY_LEFT:
+    //     if (player->x - 1 >= 0)
+    //     {
+    //         // do action
+    //     }
+    //     break;
+    // case KEY_RIGHT:
+    //     if (player->x + 1 < WIDTH)
+    //     {
+    //         // do action
+    //     }
+    //     break;
+    // // case bombe
+    // default:
+    //     break;
+    // }
+    return;
+}
+
+void interface_game_actions(interface_t *interface, int c)
 {
     int mouseX, mouseY, posX, posY;
     // Mouse management
@@ -289,11 +333,18 @@ void interface_hud_actions(interface_t *interface, int c)
             interface_hud_update(interface);
             window_refresh(interface->win_tools);
         }
+        else if (c == KEY_MOUSE)
+        {
+            interface_game_update(interface, c);
+            window_mvprintw_col(interface->win_infos, 1, 0, WHITE, "Keyboard : %d", c);
+        }
+        // *à faire zZqQsSdD or left, right, up, down
 
         // DEBUG : pour supprimer tous les items après 10 actions
         // if (compteur >= 10)
         // {
         //     delete_all_list(&interface->global_item, interface->tab_item);
+        //     delete_all_list(&interface->tab_player, interface->tab_item);
         // }
         // else
         // {
@@ -345,4 +396,47 @@ void interface_hud_update(interface_t *interface)
     // window_printw(interface->win_tools, " \n  %02d \n", nb_level);
 
     window_refresh(interface->win_tools);
+}
+
+void init_player(interface_t *interface, int x, int y)
+{
+    // on initialise tab_player
+    initialiser_liste(&interface->tab_player);
+    // on y place le player
+    int id_player = 1;
+    item_t *player = init_item(ID_PLAYER + id_player, x, y, 3, 4);
+    inserer(&interface->tab_player, init_cellule(player));
+
+    // place des pointeurs vers le player dans la map d'item
+    item_t *p_player = player;
+    for (int h = 0; h < player->height; h++)
+    {
+        for (int w = 0; w < player->width; w++)
+        {
+            inserer(&interface->tab_item[player->y + h][player->x + w], init_cellule(p_player));
+        }
+    }
+}
+
+void find_start(interface_t *interface)
+{
+    // parcourir interface->global_item si on trouve ID_START on initialise le player
+    if (interface->global_item.tete != NULL)
+    {
+        cellule *itt_cell_global = interface->global_item.tete;
+        while (itt_cell_global != NULL)
+        {
+            if (itt_cell_global->item->id == ID_START)
+            {
+                // on initialise et place le player à la position du start
+                init_player(interface, itt_cell_global->item->x, itt_cell_global->item->y);
+                return;
+            }
+            itt_cell_global = itt_cell_global->succ;
+        }
+    }
+    // si on arrive ici, il n'y a pas de start
+    perror("The level doesn't have a start !\n");
+    ncurses_stop();
+    exit(EXIT_FAILURE);
 }
