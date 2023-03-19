@@ -840,66 +840,38 @@ void displayMapID() // for debugging
  */
 void interface_debug(interface_t *interface, int posX, int posY)
 {
-    for (int i = 0; i < HEIGHT; i++)
-    {
-        for (int j = 0; j < WIDTH; j++)
-        {
-            if (tab[i][j] == ID_DELETE)
-            {
-                window_mvprintw_col(interface->win_debug, i, j, WHITE, "%d", tab[i][j]);
-            }
-            else
-            {
-                int entier;
-                if (interface->tab_item[posY][posX].tete != NULL)
-                {
-                    entier = interface->tab_item[posY][posX].tete->item->id;
-                }
-                else
-                {
-                    entier = tab[i][j];
-                }
-                while (entier >= 10)
-                {
-                    entier /= 10;
-                }
-                window_mvprintw_col(interface->win_debug, i, j, MAGENTA, "%d", entier);
-            }
-        }
-    }
-    window_refresh(interface->win_debug);
-    // for (int i = 0; i < HEIGHT; i++)
-    // {
-    //     for (int j = 0; j < WIDTH; j++)
-    //     {
-    //         if (tab[i][j] == ID_DELETE)
-    //         {
-    //             mvprintw(i + 1, j + 80, "%d", tab[i][j]);
-    //         }
-    //         else
-    //         {
-    //             int entier;
-    //             if (interface->tab_item[posY - 1][posX - 80].tete != NULL)
-    //             {
-    //                 entier = interface->tab_item[posY - 1][posX - 80].tete->item->id;
-    //             }
-    //             else
-    //             {
-    //                 entier = tab[i][j];
-    //             }
-    //             while (entier >= 10)
-    //             {
-    //                 entier /= 10;
-    //             }
-    //             attron(COLOR_PAIR(MAGENTA));
-    //             mvprintw(i + 1, j + 80, "%d", entier);
-    //             attroff(COLOR_PAIR(MAGENTA));
-    //         }
-    //     }
-    // }
 
     if (posX >= 0 && posX < 60 && posY >= 0 && posY < 20)
     {
+        for (int i = 0; i < HEIGHT; i++)
+        {
+            for (int j = 0; j < WIDTH; j++)
+            {
+                if (tab[i][j] == ID_DELETE)
+                {
+                    window_mvprintw_col(interface->win_debug, i, j, WHITE, "%d", tab[i][j]);
+                }
+                else
+                {
+                    int entier;
+                    if (interface->tab_item[i][j].tete != NULL)
+                    {
+                        entier = interface->tab_item[i][j].tete->item->id;
+                    }
+                    else
+                    {
+                        entier = tab[i][j];
+                    }
+                    while (entier >= 10)
+                    {
+                        entier /= 10;
+                    }
+                    window_mvprintw_col(interface->win_debug, i, j, MAGENTA, "%d", entier);
+                }
+            }
+        }
+        window_refresh(interface->win_debug);
+
         move(23, 80);
         clrtoeol();
         if (interface->tab_item[posY][posX].tete != NULL)
