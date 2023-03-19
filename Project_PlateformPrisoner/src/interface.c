@@ -90,11 +90,12 @@ void update_win_level(interface_t *interface, level_t *level)
  */
 void interface_delete(interface_t **interface)
 {
+    delete_all_list(&(*interface)->global_item, (*interface)->tab_item); // delete all items and their pointers in tab_item
+    delete_all_list(&(*interface)->tab_player, (*interface)->tab_item);  // delete all players and their pointers in tab_item
     window_delete(&(*interface)->win_infos);
     window_delete(&(*interface)->win_level);
     window_delete(&(*interface)->win_tools);
-    delete_all_list(&(*interface)->global_item, (*interface)->tab_item); // delete all items and their pointers in tab_item
-    delete_all_list(&(*interface)->tab_player, (*interface)->tab_item);  // delete all players and their pointers in tab_item
+    window_delete(&(*interface)->win_debug);
     free(*interface);
     interface = NULL;
 }
@@ -606,8 +607,12 @@ void interface_actions(int fd, level_t *level, interface_t *interface, int c)
         {
             interface_level_actions(interface, posX, posY, 0);
             window_mvprintw_col(interface->win_infos, 1, 0, WHITE, "X : %d Y : %d\n", posX, posY);
+            interface_debug(interface, posX, posY);
         }
-        interface_debug(interface, mouseX, mouseY);
+        else if (window_getcoordinates(interface->win_debug, mouseX, mouseY, &posX, &posY))
+        {
+            interface_debug(interface, posX, posY);
+        }
         window_refresh(interface->win_infos);
     }
 }

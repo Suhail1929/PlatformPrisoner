@@ -75,17 +75,34 @@ cellule *rechercher(liste l, int id)
 
 void supprimer(liste *l, cellule *c, int deleteItem)
 {
-    if (l->tete == c)
+    if (c != NULL)
     {
-        l->tete = c->succ;
+        if (l->tete == c)
+        {
+            l->tete = c->succ;
+        }
+        else
+        {
+            cellule *tmp = l->tete;
+            while (tmp->succ != c)
+            {
+                tmp = tmp->succ;
+            }
+            tmp->succ = c->succ;
+        }
+
+        if (deleteItem && c->item != NULL)
+        {
+            free(c->item);
+            c->item = NULL;
+        }
+        free(c);
+        c = NULL;
     }
-    if (deleteItem && c->item != NULL)
+    else
     {
-        free(c->item);
-        c->item = NULL;
+        // printf("cellule non existante\n");
     }
-    free(c->item);
-    free(c);
 }
 
 void delete_all_list(liste *l, liste (*l2)[60])

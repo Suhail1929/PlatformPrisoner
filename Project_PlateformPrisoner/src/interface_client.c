@@ -242,7 +242,7 @@ void convertToItem(interface_t *interface, level_t *level)
         {
             getEntityDetail(interface, tab, j, i, &bloc_width, &bloc_height, &nb_door);
             tmp_posX = j, tmp_posY = i;
-            if (bloc_width == 0 || bloc_height == 0)
+            if (bloc_width == 0 || bloc_height == 0 || tab[i][j] == 0)
                 continue;
             getHeadEntity(tab, &tmp_posX, &tmp_posY, bloc_width, bloc_height);
 
@@ -270,6 +270,11 @@ void convertToItem(interface_t *interface, level_t *level)
             }
         }
     }
+
+    // Test debug : display mapID
+    // ncurses_stop();
+    // displayMapID();
+    // exit(EXIT_SUCCESS);
 
     // find the start and init the player
     find_start(interface);
@@ -332,15 +337,24 @@ void interface_game_actions(interface_t *interface, int c)
     // Mouse management
     if ((c == KEY_MOUSE) && (mouse_getpos(&mouseX, &mouseY) == OK))
     {
-        if (window_getcoordinates(interface->win_tools, mouseX, mouseY, &posX, &posY))
+        if (c == KEY_MOUSE)
+        {
+            interface_game_update(interface, c);
+            window_mvprintw_col(interface->win_infos, 1, 0, WHITE, "Keyboard : %d", c);
+        }
+        else if (window_getcoordinates(interface->win_tools, mouseX, mouseY, &posX, &posY))
         {
             interface_hud_update(interface);
             window_refresh(interface->win_tools);
         }
-        else if (c == KEY_MOUSE)
+
+        if (window_getcoordinates(interface->win_level, mouseX, mouseY, &posX, &posY))
         {
-            interface_game_update(interface, c);
-            window_mvprintw_col(interface->win_infos, 1, 0, WHITE, "Keyboard : %d", c);
+            interface_debug(interface, posX, posY);
+        }
+        else if (window_getcoordinates(interface->win_debug, mouseX, mouseY, &posX, &posY))
+        {
+            interface_debug(interface, posX, posY);
         }
         // *à faire zZqQsSdD or left, right, up, down
 
@@ -354,7 +368,6 @@ void interface_game_actions(interface_t *interface, int c)
         // {
         //     compteur++;
         // }
-        interface_debug(interface, mouseX, mouseY);
     }
 }
 
