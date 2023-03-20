@@ -3,7 +3,7 @@
 #ifndef __LISTE_H__
 #define __LISTE_H__
 #include "cellule.h"
-#define DELETE_CELL 0
+#define DELETE_POINTER 0
 #define DELETE_ITEM 1
 
 typedef struct liste liste;

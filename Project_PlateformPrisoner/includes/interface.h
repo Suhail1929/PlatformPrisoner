@@ -151,6 +151,7 @@ void interface_game_update(interface_t *interface, int c);
 void interface_hud_update(interface_t *interface);
 void interface_debug(interface_t *interface, int posX, int posY);
 
+int is_obstacle(interface_t *interface, item_t item, int new_y, int new_x);
 void init_player(interface_t *interface, int x, int y);
 void find_start(interface_t *interface);
 #endif

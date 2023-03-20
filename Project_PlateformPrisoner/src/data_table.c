@@ -10,6 +10,8 @@
 
 #include "data_table.h"
 
+int nb_level;
+
 /*
  *  Function that load the level
  *  @param fd : le descripteur de fichier
@@ -95,11 +97,11 @@ bloc_t *initBloc()
         fprintf(stderr, "Erreur lors de l'allocation de la mémoire pour le niveau : %s\n", strerror(errno));
         exit(EXIT_FAILURE);
     }
-    for (int i = 0; i < NB_LEVEL; i++)
+    for (int i = 0; i < MAX_LEVEL; i++)
     {
         bloc->level[i] = -1;
     }
-    bloc->nb_available_entry = NB_LEVEL;
+    bloc->nb_available_entry = MAX_LEVEL;
     bloc->bloc_next = -1;
     return bloc;
 }
@@ -131,7 +133,7 @@ void addLevel(int fd, bloc_t *bloc, level_t *level)
     }
     if (bloc->nb_available_entry != 0)
     {
-        for (int i = 0; i < NB_LEVEL; i++)
+        for (int i = 0; i < MAX_LEVEL; i++)
         {
             if (bloc->level[i] == -1)
             {
@@ -217,7 +219,7 @@ void deleteLevel(int fd, bloc_t *bloc, int id)
         exit(EXIT_FAILURE);
     }
 
-    for (int i = 0; i < NB_LEVEL; i++)
+    for (int i = 0; i < MAX_LEVEL; i++)
     {
         if (bloc->level[i] != -1)
         {
@@ -395,7 +397,7 @@ void displayBloc(int fd, bloc_t *bloc)
     printf("bloc_next: %ld\n", (long)bloc->bloc_next);
 
     printf("levels : \n");
-    for (int i = 0; i < NB_LEVEL; i++)
+    for (int i = 0; i < MAX_LEVEL; i++)
     {
         printf("Level %d -> %ld \n", i, (long)bloc->level[i]);
     }
@@ -458,7 +460,7 @@ level_t *loadLevel(int fd, off_t offset)
  */
 off_t findLevel(int fd, bloc_t *Bloc, int id)
 {
-    for (int i = 0; i < NB_LEVEL; i++)
+    for (int i = 0; i < MAX_LEVEL; i++)
     {
         if (Bloc->level[i] != -1)
         {
@@ -498,7 +500,7 @@ off_t findLevel(int fd, bloc_t *Bloc, int id)
  */
 level_t *loadLevelById(int fd, bloc_t *bloc, int id)
 {
-    for (int i = 0; i < NB_LEVEL; i++)
+    for (int i = 0; i < MAX_LEVEL; i++)
     {
         if (bloc->level[i] != -1)
         {

@@ -271,11 +271,6 @@ void convertToItem(interface_t *interface, level_t *level)
         }
     }
 
-    // Test debug : display mapID
-    // ncurses_stop();
-    // displayMapID();
-    // exit(EXIT_SUCCESS);
-
     // find the start and init the player
     find_start(interface);
 
@@ -291,58 +286,170 @@ void convertToItem(interface_t *interface, level_t *level)
     }
 }
 
+void undraw_item(interface_t *interface, item_t item)
+{
+    // check the list, and draw the item if it's the head
+    item_t *item_behind = NULL;
+    for (int h = 0; h < item.height; h++)
+    {
+        for (int w = 0; w < item.width; w++)
+        {
+            if (interface->tab_item[item.y + h][item.x + w].tete != NULL)
+            {
+                // METHODE 1
+                if (interface->tab_item[item.y + h][item.x + w].tete->succ != NULL)
+                {
+                    item_behind = interface->tab_item[item.y + h][item.x + w].tete->succ->item;
+                    if (item_behind != NULL)
+                    {
+                        display_item(interface->win_level, *item_behind, item_behind->x, item_behind->y);
+                    }
+                }
+                else
+                {
+                    window_mvaddch_col(interface->win_level, item.y + h, item.x + w, BLACK, ' ');
+                }
+            }
+            else
+            {
+                window_mvaddch_col(interface->win_level, item.y + h, item.x + w, BLACK, ' ');
+            }
+        }
+    }
+}
+
 void interface_game_update(interface_t *interface, int c)
 {
     /*
     Temporaire : utilisation du tab pour déplacer le premier player
     */
-    // item_t *player = interface->tab_player.tete->item;
+    item_t *item = interface->tab_player.tete->item;
 
-    // switch (c)
-    // {
-    // case KEY_UP:
-    //     if (player->y - 1 >= 0)
-    //     {
-    //         // do action
-    //     }
-    //     break;
-    // case KEY_DOWN:
-    //     if (player->y + 1 < HEIGHT)
-    //     {
-    //         // do action
-    //     }
-    //     break;
-    // case KEY_LEFT:
-    //     if (player->x - 1 >= 0)
-    //     {
-    //         // do action
-    //     }
-    //     break;
-    // case KEY_RIGHT:
-    //     if (player->x + 1 < WIDTH)
-    //     {
-    //         // do action
-    //     }
-    //     break;
-    // // case bombe
-    // default:
-    //     break;
-    // }
+    // For bottom and right, we must verify if the player bloc is not out of the map (because the head is on top left)
+    int obstacle = 0;
+    switch (c)
+    {
+    case 'z':
+    case KEY_UP:
+        if (item->y - 1 > 0)
+        {
+            obstacle += is_obstacle(interface, *item, item->y - 1, item->x);
+            if (!obstacle) // any obstacle, shift the item pointer
+            {
+                // remove the item display from the map
+                undraw_item(interface, *item);
+
+                // shift the item pointer
+                for (int w = 0; w < item->width; w++)
+                {
+                    cellule *move_cell = rechercher(interface->tab_item[item->y + item->height - 1][item->x + w], item->id);
+                    inserer(&interface->tab_item[item->y - 1][item->x + w], init_cellule(move_cell->item));
+                    supprimer(&interface->tab_item[item->y + item->height - 1][item->x + w], rechercher(interface->tab_item[item->y + item->height - 1][item->x + w], item->id), DELETE_POINTER);
+                }
+                item->y--;
+            }
+        }
+        break;
+    case 'q':
+    case KEY_LEFT:
+        if (item->x - 1 > 0)
+        {
+            obstacle += is_obstacle(interface, *item, item->y, item->x - 1);
+            if (!obstacle) // any obstacle, shift the item pointer
+            {
+                // remove the item display from the map
+                undraw_item(interface, *item);
+
+                for (int h = 0; h < item->height; h++)
+                {
+                    cellule *move_cell = rechercher(interface->tab_item[item->y + h][item->x + item->width - 1], item->id);
+                    inserer(&interface->tab_item[item->y + h][item->x - 1], init_cellule(move_cell->item));
+                    supprimer(&interface->tab_item[item->y + h][item->x + item->width - 1], rechercher(interface->tab_item[item->y + h][item->x + item->width - 1], item->id), DELETE_POINTER);
+                }
+                item->x--;
+            }
+        }
+        break;
+    case 's':
+    case KEY_DOWN:
+        if (item->y + item->height + 1 <= HEIGHT)
+        {
+            obstacle += is_obstacle(interface, *item, item->y + 1, item->x);
+            if (!obstacle) // any obstacle, shift the item pointer
+            {
+                // remove the item display from the map
+                undraw_item(interface, *item);
+
+                for (int w = 0; w < item->width; w++)
+                {
+                    cellule *move_cell = rechercher(interface->tab_item[item->y][item->x + w], item->id);
+                    inserer(&interface->tab_item[item->y + item->height][item->x + w], init_cellule(move_cell->item));
+                    supprimer(&interface->tab_item[item->y][item->x + w], rechercher(interface->tab_item[item->y][item->x + w], item->id), DELETE_POINTER);
+                }
+                item->y++;
+            }
+        }
+        break;
+    case 'd':
+    case KEY_RIGHT:
+        if (item->x + item->width + 1 <= WIDTH)
+        {
+            obstacle += is_obstacle(interface, *item, item->y, item->x + 1);
+            if (!obstacle) // any obstacle, shift the item pointer
+            {
+                // remove the item display from the map
+                undraw_item(interface, *item);
+
+                // METHODE 1
+                for (int h = 0; h < item->height; h++)
+                {
+                    cellule *move_cell = rechercher(interface->tab_item[item->y + h][item->x], item->id);
+                    inserer(&interface->tab_item[item->y + h][item->x + item->width], init_cellule(move_cell->item));
+                    supprimer(&interface->tab_item[item->y + h][item->x], rechercher(interface->tab_item[item->y + h][item->x], item->id), DELETE_POINTER);
+                }
+                item->x++;
+
+                // METHODE 2
+                // for (int h = 0; h < item->height; h++)
+                //     for (int w = 0; w < item->width; w++)
+                //         supprimer(&interface->tab_item[item->y + h][item->x + w], rechercher(interface->tab_item[item->y + h][item->x + w], item->id), DELETE_POINTER);
+                // item->x++;
+                // for (int h = 0; h < item->height; h++)
+                //     for (int w = 0; w < item->width; w++)
+                //         inserer(&interface->tab_item[item->y + h][item->x + w], init_cellule(item));
+            }
+        }
+        break;
+    // case bombe
+    default:
+        break;
+    }
+
+    // PRINT PLAYER
+    display_item(interface->win_level, *item, item->x, item->y);
+
+    interface_debug(interface, item->x, item->y);
     return;
+}
+
+int is_obstacle(interface_t *interface, item_t item, int new_y, int new_x)
+{
+    // From item id do action
+    return 0;
 }
 
 void interface_game_actions(interface_t *interface, int c)
 {
     int mouseX, mouseY, posX, posY;
+
+    // Keyboard management
+    interface_game_update(interface, c);
+    window_mvprintw_col(interface->win_infos, 1, 0, WHITE, "Keyboard : %d", c);
+
     // Mouse management
     if ((c == KEY_MOUSE) && (mouse_getpos(&mouseX, &mouseY) == OK))
     {
-        if (c == KEY_MOUSE)
-        {
-            interface_game_update(interface, c);
-            window_mvprintw_col(interface->win_infos, 1, 0, WHITE, "Keyboard : %d", c);
-        }
-        else if (window_getcoordinates(interface->win_tools, mouseX, mouseY, &posX, &posY))
+        if (window_getcoordinates(interface->win_tools, mouseX, mouseY, &posX, &posY))
         {
             interface_hud_update(interface);
             window_refresh(interface->win_tools);

@@ -97,7 +97,7 @@ void supprimer(liste *l, cellule *c, int deleteItem)
             c->item = NULL;
         }
         free(c);
-        c = NULL;
+        // c = NULL;
     }
     else
     {
@@ -114,7 +114,7 @@ void delete_all_list(liste *l, liste (*l2)[60])
         {
             for (int w = 0; w < item->width; w++)
             {
-                supprimer(&l2[item->y + h][item->x + w], rechercher(l2[item->y + h][item->x + w], item->id), DELETE_CELL);
+                supprimer(&l2[item->y + h][item->x + w], rechercher(l2[item->y + h][item->x + w], item->id), DELETE_POINTER);
             }
         }
         supprimer(l, l->tete, DELETE_ITEM);

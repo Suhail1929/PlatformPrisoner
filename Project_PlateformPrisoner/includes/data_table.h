@@ -2,11 +2,9 @@
 #ifndef __DATA_TABLE_H__
 #define __DATA_TABLE_H__
 
-#define NB_LEVEL 5
+#define MAX_LEVEL 5
 #define HEIGHT 20
 #define WIDTH 60
-
-int nb_level;
 
 /**
  * @brief Structure that represent a level
@@ -32,7 +30,7 @@ typedef struct bloc_t bloc_t;
 struct bloc_t
 {
     int nb_available_entry; // number of available entry
-    off_t level[NB_LEVEL];
+    off_t level[MAX_LEVEL];
     off_t bloc_next;
 };
 

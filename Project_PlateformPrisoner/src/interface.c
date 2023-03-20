@@ -852,12 +852,9 @@ void interface_debug(interface_t *interface, int posX, int posY)
         {
             for (int j = 0; j < WIDTH; j++)
             {
-                if (tab[i][j] == ID_DELETE)
+                if (interface->tab_item[i][j].tete != NULL)
                 {
-                    window_mvprintw_col(interface->win_debug, i, j, WHITE, "%d", tab[i][j]);
-                }
-                else
-                {
+
                     int entier;
                     if (interface->tab_item[i][j].tete != NULL)
                     {
@@ -872,6 +869,10 @@ void interface_debug(interface_t *interface, int posX, int posY)
                         entier /= 10;
                     }
                     window_mvprintw_col(interface->win_debug, i, j, MAGENTA, "%d", entier);
+                }
+                else
+                {
+                    window_mvprintw_col(interface->win_debug, i, j, WHITE, "%d", ID_DELETE);
                 }
             }
         }
