@@ -40,13 +40,13 @@ typedef struct
     liste tab_player;              // Tableau de joueurs
 } interface_t;
 
-/*
+/**
  * Function that create an interface
  * @param level : the level
  */
 interface_t *interface_create(level_t *level);
 
-/*
+/**
  * Function that update the level window
  * @param interface : the interface
  * @param level : the level

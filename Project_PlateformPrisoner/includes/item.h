@@ -31,8 +31,8 @@ typedef struct
 {
     properties_t properties;
     unsigned int id;
-    unsigned int x;
-    unsigned int y;
+    int x;
+    int y;
     unsigned int width;
     unsigned int height;
 } item_t; // item_t

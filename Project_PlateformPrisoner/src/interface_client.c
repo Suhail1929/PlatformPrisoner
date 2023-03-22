@@ -331,7 +331,7 @@ void interface_game_update(interface_t *interface, int c)
     {
     case 'z':
     case KEY_UP:
-        if (item->y - 1 > 0)
+        if (item->y - 1 >= 0)
         {
             obstacle += is_obstacle(interface, *item, item->y - 1, item->x);
             if (!obstacle) // any obstacle, shift the item pointer
@@ -342,9 +342,13 @@ void interface_game_update(interface_t *interface, int c)
                 // shift the item pointer
                 for (int w = 0; w < item->width; w++)
                 {
-                    cellule *move_cell = rechercher(interface->tab_item[item->y + item->height - 1][item->x + w], item->id);
-                    inserer(&interface->tab_item[item->y - 1][item->x + w], init_cellule(move_cell->item));
-                    supprimer(&interface->tab_item[item->y + item->height - 1][item->x + w], rechercher(interface->tab_item[item->y + item->height - 1][item->x + w], item->id), DELETE_POINTER);
+                    if (item->y - 1 >= 0)
+                    {
+
+                        cellule *move_cell = rechercher(interface->tab_item[item->y + item->height - 1][item->x + w], item->id);
+                        inserer(&interface->tab_item[item->y - 1][item->x + w], init_cellule(move_cell->item));
+                        supprimer(&interface->tab_item[item->y + item->height - 1][item->x + w], rechercher(interface->tab_item[item->y + item->height - 1][item->x + w], item->id), DELETE_POINTER);
+                    }
                 }
                 item->y--;
             }
