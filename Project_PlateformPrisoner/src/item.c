@@ -19,6 +19,10 @@ item_t *init_item(unsigned int id, unsigned int x, unsigned int y, unsigned int 
     // ajout des propriétés
     switch (id)
     {
+    case 6:             // ID_PROBE
+    case 7:             // ID_ROBOT
+        item->etat = 1; // actif
+        break;
     case 3101 ... 3499: // ID_DOOR(3) + color(1-4) + nb_door(01-99)
         item->properties.door.nb_door = id % 100;
         item->properties.door.color.color = (id / 100) % 10;
@@ -32,6 +36,10 @@ item_t *init_item(unsigned int id, unsigned int x, unsigned int y, unsigned int 
         item->properties.player.nb_life = 5;
         item->properties.player.nb_bomb = 3;
         item->properties.player.color.color = id % 10;
+        for (int i = 0; i < 4; i++)
+        {
+            item->properties.player.key[i].color = 0;
+        }
         break;
     default:
         break;

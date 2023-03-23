@@ -2,6 +2,10 @@
     "files.associations": {
         "ncurses.h": "c",
         "interface.h": "c",
-        "limits.h": "c"
+        "limits.h": "c",
+        "__bit_reference": "c",
+        "bitset": "c",
+        "chrono": "c",
+        "unordered_map": "c"
     }
 }

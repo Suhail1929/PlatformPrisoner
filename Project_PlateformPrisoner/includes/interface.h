@@ -40,13 +40,13 @@ typedef struct
     liste tab_player;              // Tableau de joueurs
 } interface_t;
 
-/*
+/**
  * Function that create an interface
  * @param level : the level
  */
 interface_t *interface_create(level_t *level);
 
-/*
+/**
  * Function that update the level window
  * @param interface : the interface
  * @param level : the level
@@ -151,7 +151,8 @@ void interface_game_update(interface_t *interface, int c);
 void interface_hud_update(interface_t *interface);
 void interface_debug(interface_t *interface, int posX, int posY);
 
-int is_obstacle(interface_t *interface, item_t item, int new_y, int new_x);
+void chute_player(interface_t *interface, item_t *item);
+int is_obstacle(interface_t *interface, item_t *item, int new_y, int new_x, int check_side);
 void init_player(interface_t *interface, int x, int y);
 void find_start(interface_t *interface);
 #endif

@@ -18,6 +18,7 @@ typedef struct
     unsigned int nb_life;
     unsigned int nb_bomb;
     color_t color;
+    color_t key[4];
 } player_t; // player
 
 typedef union
@@ -31,10 +32,11 @@ typedef struct
 {
     properties_t properties;
     unsigned int id;
-    unsigned int x;
-    unsigned int y;
+    int x;
+    int y;
     unsigned int width;
     unsigned int height;
+    unsigned int etat;
 } item_t; // item_t
 
 item_t *init_item(unsigned int id, unsigned int x, unsigned int y, unsigned int width, unsigned int height);

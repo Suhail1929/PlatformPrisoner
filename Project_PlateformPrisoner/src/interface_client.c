@@ -19,6 +19,9 @@
 #include "interface.h"
 #include "entity.h"
 
+#define HORIZONTAL 1
+#define VERTICAL 2
+
 // int compteur = 0;
 
 void creer_partie()
@@ -178,8 +181,6 @@ interface_t *interface_create_game(char *path)
 
     result->current_color = MAGENTA; // default color
     result->selection = ID_BLOCK;    // default selection
-    interface_hud_update(result);
-    window_refresh(result->win_tools);
 
     // fenetre debug
     result->win_debug = window_create(80, 0, 62, 22, "DEBUG", FALSE);
@@ -215,6 +216,9 @@ interface_t *interface_create_game(char *path)
     free(bloc);
     free(level);
     closeFile(fd);
+
+    interface_hud_update(result);
+    window_refresh(result->win_tools);
 
     return result;
 }
@@ -331,30 +335,35 @@ void interface_game_update(interface_t *interface, int c)
     {
     case 'z':
     case KEY_UP:
-        if (item->y - 1 > 0)
+        if (item->id >= 40 && item->id < 50)
         {
-            obstacle += is_obstacle(interface, *item, item->y - 1, item->x);
-            if (!obstacle) // any obstacle, shift the item pointer
-            {
-                // remove the item display from the map
-                undraw_item(interface, *item);
 
-                // shift the item pointer
-                for (int w = 0; w < item->width; w++)
+            if (item->y - 1 >= 0)
+            {
+                obstacle += is_obstacle(interface, item, item->y - 1, item->x, HORIZONTAL);
+                if (!obstacle) // any obstacle, shift the item pointer
                 {
-                    cellule *move_cell = rechercher(interface->tab_item[item->y + item->height - 1][item->x + w], item->id);
-                    inserer(&interface->tab_item[item->y - 1][item->x + w], init_cellule(move_cell->item));
-                    supprimer(&interface->tab_item[item->y + item->height - 1][item->x + w], rechercher(interface->tab_item[item->y + item->height - 1][item->x + w], item->id), DELETE_POINTER);
+                    // remove the item display from the map
+                    undraw_item(interface, *item);
+
+                    // shift the item pointer
+                    for (int w = 0; w < item->width; w++)
+                    {
+                        cellule *move_cell = rechercher(interface->tab_item[item->y + item->height - 1][item->x + w], item->id);
+                        inserer(&interface->tab_item[item->y - 1][item->x + w], init_cellule(move_cell->item));
+                        supprimer(&interface->tab_item[item->y + item->height - 1][item->x + w], rechercher(interface->tab_item[item->y + item->height - 1][item->x + w], item->id), DELETE_POINTER);
+                    }
+                    item->y--;
                 }
-                item->y--;
             }
         }
         break;
     case 'q':
     case KEY_LEFT:
-        if (item->x - 1 > 0)
+
+        if (item->x - 1 >= 0)
         {
-            obstacle += is_obstacle(interface, *item, item->y, item->x - 1);
+            obstacle += is_obstacle(interface, item, item->y, item->x - 1, VERTICAL);
             if (!obstacle) // any obstacle, shift the item pointer
             {
                 // remove the item display from the map
@@ -369,24 +378,29 @@ void interface_game_update(interface_t *interface, int c)
                 item->x--;
             }
         }
+        // chute
+        chute_player(interface, item);
         break;
     case 's':
     case KEY_DOWN:
-        if (item->y + item->height + 1 <= HEIGHT)
+        if (item->id >= 40 && item->id < 50)
         {
-            obstacle += is_obstacle(interface, *item, item->y + 1, item->x);
-            if (!obstacle) // any obstacle, shift the item pointer
+            if (item->y + item->height + 1 <= HEIGHT)
             {
-                // remove the item display from the map
-                undraw_item(interface, *item);
-
-                for (int w = 0; w < item->width; w++)
+                obstacle += is_obstacle(interface, item, item->y + item->height, item->x, HORIZONTAL);
+                if (!obstacle) // any obstacle, shift the item pointer
                 {
-                    cellule *move_cell = rechercher(interface->tab_item[item->y][item->x + w], item->id);
-                    inserer(&interface->tab_item[item->y + item->height][item->x + w], init_cellule(move_cell->item));
-                    supprimer(&interface->tab_item[item->y][item->x + w], rechercher(interface->tab_item[item->y][item->x + w], item->id), DELETE_POINTER);
+                    // remove the item display from the map
+                    undraw_item(interface, *item);
+
+                    for (int w = 0; w < item->width; w++)
+                    {
+                        cellule *move_cell = rechercher(interface->tab_item[item->y][item->x + w], item->id);
+                        inserer(&interface->tab_item[item->y + item->height][item->x + w], init_cellule(move_cell->item));
+                        supprimer(&interface->tab_item[item->y][item->x + w], rechercher(interface->tab_item[item->y][item->x + w], item->id), DELETE_POINTER);
+                    }
+                    item->y++;
                 }
-                item->y++;
             }
         }
         break;
@@ -394,8 +408,8 @@ void interface_game_update(interface_t *interface, int c)
     case KEY_RIGHT:
         if (item->x + item->width + 1 <= WIDTH)
         {
-            obstacle += is_obstacle(interface, *item, item->y, item->x + 1);
-            if (!obstacle) // any obstacle, shift the item pointer
+            obstacle += is_obstacle(interface, item, item->y, item->x + item->width, VERTICAL);
+            if (obstacle == 0) // any obstacle, shift the item pointer
             {
                 // remove the item display from the map
                 undraw_item(interface, *item);
@@ -408,19 +422,18 @@ void interface_game_update(interface_t *interface, int c)
                     supprimer(&interface->tab_item[item->y + h][item->x], rechercher(interface->tab_item[item->y + h][item->x], item->id), DELETE_POINTER);
                 }
                 item->x++;
-
-                // METHODE 2
-                // for (int h = 0; h < item->height; h++)
-                //     for (int w = 0; w < item->width; w++)
-                //         supprimer(&interface->tab_item[item->y + h][item->x + w], rechercher(interface->tab_item[item->y + h][item->x + w], item->id), DELETE_POINTER);
-                // item->x++;
-                // for (int h = 0; h < item->height; h++)
-                //     for (int w = 0; w < item->width; w++)
-                //         inserer(&interface->tab_item[item->y + h][item->x + w], init_cellule(item));
             }
+            // chute
+            chute_player(interface, item);
         }
         break;
-    // case bombe
+    // space bar
+    case ' ':
+        if (item->properties.player.nb_bomb > 0)
+        {
+            item->properties.player.nb_bomb--;
+        }
+        break;
     default:
         break;
     }
@@ -432,10 +445,195 @@ void interface_game_update(interface_t *interface, int c)
     return;
 }
 
-int is_obstacle(interface_t *interface, item_t item, int new_y, int new_x)
+void chute_player(interface_t *interface, item_t *item)
 {
-    // From item id do action
-    return 0;
+    int nb_obstacle_under = 0, chute = 0;
+    int find_ladder = 0;
+    for (int w = 0; w < item->width; w++)
+    {
+        if (interface->tab_item[item->y + item->height][item->x + w].tete != NULL)
+        {
+            cellule *last_cell = interface->tab_item[item->y + item->height][item->x + w].tete;
+            while (last_cell->succ != NULL)
+                last_cell = last_cell->succ;
+            if (last_cell->item->id == ID_LADDER || last_cell->item->id == ID_BLOCK)
+            {
+                find_ladder = 1;
+                break;
+            }
+        }
+    }
+    if (find_ladder == 0)
+    {
+        do
+        {
+            nb_obstacle_under = is_obstacle(interface, item, item->y + item->height, item->x, HORIZONTAL);
+            if (nb_obstacle_under == 0)
+            {
+                interface_game_update(interface, 's');
+                chute++;
+            }
+        } while (nb_obstacle_under != 3);
+        // par la suite faire qu'il prenne des dégats par rapport au nombre de case qu'il a chuté
+        if (chute != 0)
+        {
+            if (item->properties.player.nb_life > 0)
+                item->properties.player.nb_life--;
+        }
+    }
+}
+
+int is_obstacle(interface_t *interface, item_t *item, int new_y, int new_x, int check_side)
+{
+    // Item <=> player, robot, probe
+    int obstacle = 0; // compteur d'obstacle
+    int nb_cell = 0;
+    int action = 0;
+
+    if (check_side == HORIZONTAL)
+        nb_cell = item->width;
+    else
+        nb_cell = item->height;
+
+    for (int tour = 0; tour < 2; tour++) // tour 0: verif si action + aucun obstacle, tour 1: action
+    {
+        obstacle = 0;
+        for (int n = 0; n < nb_cell; n++)
+        {
+            // Si liste non vide
+            if (interface->tab_item[(check_side == HORIZONTAL) ? new_y : new_y + n][(check_side == HORIZONTAL) ? new_x + n : new_x].tete != NULL)
+            {
+                int id_obstacle = interface->tab_item[(check_side == HORIZONTAL) ? new_y : new_y + n][(check_side == HORIZONTAL) ? new_x + n : new_x].tete->item->id;
+                switch (id_obstacle)
+                {
+                // STOP
+                case ID_BLOCK:
+                    obstacle++;
+                    break;
+
+                    // PASS + ACTION
+                case 11 ... 14: // ID_GATE
+                    if (action)
+                    {
+                        // faire -> open_gate(interface,item);
+                        if (item->properties.player.key[(id_obstacle % 10) - 1].color == 0)
+                        {
+                            obstacle++;
+                        }
+                    }
+                    action = 1;
+                    break;
+                case 21 ... 24: // ID_KEY
+                    if (action)
+                    {
+                        // add_key(interface,item);
+                        if (item->properties.player.nb_key <= 4)
+                        {
+                            if (item->properties.player.key[(id_obstacle % 10) - 1].color == 0)
+                            {
+                                item->properties.player.key[(id_obstacle % 10) - 1].color = id_obstacle;
+                                item->properties.player.nb_key++;
+                                window_refresh(interface->win_tools);
+                            }
+                        }
+                        break;
+                    }
+                    action = 1;
+                    break;
+                case 3101 ... 3199: // ID_DOOR
+                    break;
+                case ID_ROBOT:
+                case ID_PROBE:
+                    if (action)
+                    {
+                        // Si le robot ou la probe est actif : alors obstacle++ et dégats
+                        // Sinon pas d'obstacle et pas de dégats
+                        // Donc récupérer l'état du robot ou du probe touché
+
+                        // receive_damage(interface,item); , problème : enlève toute la vie du joueur
+                        if (item->properties.player.nb_life > 0)
+                        {
+                            item->properties.player.nb_life--;
+                            window_refresh(interface->win_tools);
+                        }
+                    }
+                    action = 1;
+                    break;
+                case ID_LIFE:
+                    if (action)
+                    {
+                        // faire -> add_life(interface,item);
+                        item->properties.player.nb_life = 5;
+                        // Envoyer un signal au thread life pour qu'il disparaisse un moment
+                        window_refresh(interface->win_tools);
+                        break;
+                    }
+                    action = 1;
+                    break;
+                case ID_BOMB:
+                    if (action)
+                    {
+                        // faire -> add_bombe(interface,item);
+                        item->properties.player.nb_bomb = 3;
+                        // Envoyer un signal au thread bombe pour qu'il disparaisse un moment
+                        window_refresh(interface->win_tools);
+                        break;
+                    }
+                    action = 1;
+                    break;
+                case ID_TRAP:
+                    if (action)
+                    {
+                        // Récup l'etat du trap
+                        // Si actif : alors aucun obstacle + pas d'affichage
+                        // Sinon obstacle++
+                    }
+                    obstacle++; // temporaire pour test
+                    action = 1;
+                    break; // temporaire
+
+                // PASS
+                case 41 ... 44: // ID_PLAYER
+                case ID_LADDER:
+                case ID_START:
+                case ID_EXIT:
+                    obstacle += ID_DELETE;
+                    break;
+                }
+            }
+            else
+            {
+                if (check_side == HORIZONTAL)
+                {
+                    // Si je monte
+                    if (new_y < item->y)
+                    {
+                        // Si liste non vide
+                        if (interface->tab_item[new_y + item->height][new_x + n].tete != NULL)
+                        {
+                            cellule *last_cell = interface->tab_item[new_y + item->height][new_x + n].tete;
+                            while (last_cell->succ != NULL)
+                                last_cell = last_cell->succ;
+
+                            if (last_cell->item->id == ID_LADDER)
+                                obstacle += ID_DELETE;
+                            else
+                                obstacle++;
+                        }
+                        else
+                        {
+                            obstacle++;
+                        }
+                    }
+                }
+                else
+                {
+                    obstacle += ID_DELETE;
+                }
+            }
+        }
+    }
+    return obstacle;
 }
 
 void interface_game_actions(interface_t *interface, int c)
@@ -449,11 +647,6 @@ void interface_game_actions(interface_t *interface, int c)
     // Mouse management
     if ((c == KEY_MOUSE) && (mouse_getpos(&mouseX, &mouseY) == OK))
     {
-        if (window_getcoordinates(interface->win_tools, mouseX, mouseY, &posX, &posY))
-        {
-            interface_hud_update(interface);
-            window_refresh(interface->win_tools);
-        }
 
         if (window_getcoordinates(interface->win_level, mouseX, mouseY, &posX, &posY))
         {
@@ -463,19 +656,10 @@ void interface_game_actions(interface_t *interface, int c)
         {
             interface_debug(interface, posX, posY);
         }
-        // *à faire zZqQsSdD or left, right, up, down
-
-        // DEBUG : pour supprimer tous les items après 10 actions
-        // if (compteur >= 10)
-        // {
-        //     delete_all_list(&interface->global_item, interface->tab_item);
-        //     delete_all_list(&interface->tab_player, interface->tab_item);
-        // }
-        // else
-        // {
-        //     compteur++;
-        // }
     }
+
+    interface_hud_update(interface);
+    window_refresh(interface->win_tools);
 }
 
 void interface_hud_update(interface_t *interface)
@@ -484,36 +668,38 @@ void interface_hud_update(interface_t *interface)
     window_mvprintw(interface->win_tools, 1, 1, "Key");
 
     // temporaire : player
-    item_t player = *init_item(ID_PLAYER + 1, 2, 2, 3, 4);
-
-    // temporaire : pour afficher les clés
-    int color = 1;
-    for (int j = 0; j < player.properties.player.nb_life * 2; j += 2)
+    if (interface->tab_player.tete != NULL)
     {
-        color++;
-        if (color > 4)
-            color = 1;
+        item_t *player = interface->tab_player.tete->item;
 
-        item_t key = *init_item(ID_KEY + color, 2 + j, 3, 1, 2);
-        display_item(interface->win_tools, key, key.x, key.y);
-    }
+        for (int i = 0; i < 4; i++)
+        {
+            // afficher les clé du player
+            if (player->properties.player.key[i].color != 0)
+            {
+                item_t *key = init_item(player->properties.player.key[i].color, 2 + (i * 2), 3, 1, 2);
+                display_item(interface->win_tools, *key, key->x, key->y);
+                free(key);
+            }
+        }
 
-    window_mvprintw(interface->win_tools, 6, 1, "Lives");
+        window_mvprintw(interface->win_tools, 6, 1, "Lives");
 
-    // temporaire : pour afficher les vies
-    for (int i = 0; i < player.properties.player.nb_life; i++)
-    {
-        item_t life = *init_item(ID_LIFE, 2 + i, 8, 1, 1);
-        display_item(interface->win_tools, life, life.x, life.y);
-    }
+        // temporaire : pour afficher les vies
+        for (int i = 0; i < player->properties.player.nb_life; i++)
+        {
+            item_t life = *init_item(ID_LIFE, 2 + i, 8, 1, 1);
+            display_item(interface->win_tools, life, life.x, life.y);
+        }
 
-    window_mvprintw(interface->win_tools, 10, 1, "Bombs");
+        window_mvprintw(interface->win_tools, 10, 1, "Bombs");
 
-    // temporaire : pour afficher les bombes
-    for (int i = 0; i < player.properties.player.nb_bomb; i++)
-    {
-        item_t bomb = *init_item(ID_BOMB, 2 + i, 12, 1, 1);
-        display_item(interface->win_tools, bomb, bomb.x, bomb.y);
+        // temporaire : pour afficher les bombes
+        for (int i = 0; i < player->properties.player.nb_bomb; i++)
+        {
+            item_t bomb = *init_item(ID_BOMB, 2 + i, 12, 1, 1);
+            display_item(interface->win_tools, bomb, bomb.x, bomb.y);
+        }
     }
 
     window_mvprintw(interface->win_tools, 14, 1, "Levels");
