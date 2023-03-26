@@ -23,6 +23,7 @@ item_t *init_item(unsigned int id, unsigned int x, unsigned int y, unsigned int 
     case 4:             // ID_TRAP
     case 6:             // ID_PROBE
     case 7:             // ID_ROBOT
+    case 50:            // ID_ACTIVE_BOMB
         item->etat = 1; // actif
         break;
     case 3101 ... 3499: // ID_DOOR(3) + color(1-4) + nb_door(01-99)
@@ -139,6 +140,9 @@ void display_item(window_t *window, item_t item, int posX, int posY)
     case 21 ... 24: // ID_KEY
         window_mvaddch_col(window, posY, posX, item.properties.color.color, ' ' | A_REVERSE);
         window_mvaddch_col(window, posY + 1, posX, item.properties.color.color, ' ' | ACS_LLCORNER);
+        break;
+    case ID_ACTIVE_BOMB:
+        window_mvaddch_col(window, posY, posX, RED, '@');
         break;
     default: // ID_DELETE
         window_mvaddch_col(window, posY, posX, BLACK, ' ');

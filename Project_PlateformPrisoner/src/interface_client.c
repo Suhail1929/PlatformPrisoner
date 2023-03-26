@@ -22,6 +22,8 @@
 #define HORIZONTAL 1
 #define VERTICAL 2
 
+int nb_active_bomb = 0;
+
 // int compteur = 0;
 
 void creer_partie()
@@ -271,6 +273,7 @@ void convertToItem(interface_t *interface, level_t *level)
             else
             {
                 // j += bloc_width - 1; // A débugger !
+                // BONUS : juste pour pas parourir les blocs déjà parcourus de l'item
             }
         }
     }
@@ -300,8 +303,11 @@ void undraw_item(interface_t *interface, item_t item)
         {
             if (interface->tab_item[item.y + h][item.x + w].tete != NULL)
             {
-                // METHODE 1
-                if (interface->tab_item[item.y + h][item.x + w].tete->succ != NULL)
+                if (interface->tab_item[item.y + h][item.x + w].tete->item->id == ID_ACTIVE_BOMB)
+                {
+                    display_item(interface->win_level, *interface->tab_item[item.y + h][item.x + w].tete->item, item.x + w, item.y + h);
+                }
+                else if (interface->tab_item[item.y + h][item.x + w].tete->succ != NULL)
                 {
                     item_behind = interface->tab_item[item.y + h][item.x + w].tete->succ->item;
                     if (item_behind != NULL)
@@ -432,6 +438,15 @@ void interface_game_update(interface_t *interface, int c)
         if (item->properties.player.nb_bomb > 0)
         {
             item->properties.player.nb_bomb--;
+            nb_active_bomb++;
+            // Create a new bomb item
+            item_t *bomb = init_item(ID_ACTIVE_BOMB, item->x + 1, item->y + 3, 1, 1);
+            // Add the bomb to the interface's tab_item array
+            inserer(&interface->global_item, init_cellule(bomb));
+            item_t *p_bomb = bomb;
+            inserer(&interface->tab_item[bomb->y][bomb->x], init_cellule(p_bomb)); // add pointer to the bomb
+            // Draw the bomb on the interface
+            undraw_item(interface, *item);
         }
         break;
     default:
@@ -440,6 +455,23 @@ void interface_game_update(interface_t *interface, int c)
 
     // PRINT PLAYER
     display_item(interface->win_level, *item, item->x, item->y);
+
+    if (nb_active_bomb > 0)
+    {
+        for (int w = 0; w < item->width; w++)
+        {
+            cellule *loop_cell = interface->tab_item[item->y + item->height - 1][item->x + w].tete;
+            while (loop_cell != NULL)
+            {
+                if (loop_cell->item->id == ID_ACTIVE_BOMB)
+                {
+                    display_item(interface->win_level, *loop_cell->item, loop_cell->item->x, loop_cell->item->y);
+                    break;
+                }
+                loop_cell = loop_cell->succ;
+            }
+        }
+    }
 
     interface_debug(interface, item->x, item->y);
     return;

@@ -16,6 +16,7 @@
 #define ID_EXIT 8
 #define ID_START 9
 #define ID_PLAYER 40
+#define ID_ACTIVE_BOMB 50
 
 #define LEVEL 30 - 15
 #define CLEAR 31 - 14
@@ -25,6 +26,14 @@
 #define WIDTH 60
 
 extern int tab[HEIGHT][WIDTH];
+
+typedef struct
+{
+    int id_door;
+    int nb_lvl_doorA;
+    int nb_lvl_doorB;
+    int x, y;
+} liste_door_t;
 
 // Structure représentant l'interface de l'application
 typedef struct
@@ -38,13 +47,15 @@ typedef struct
     liste tab_item[HEIGHT][WIDTH]; // Tableau de Liste de pointeur vers un items (pour l'instant aucun pointeur)
     liste global_item;             // Les pointeurs pointent vers les items de cette liste (contiendra les items original de la map)
     liste tab_player;              // Tableau de joueurs
+    liste_door_t tab_door;                // Tableau de portes
 } interface_t;
 
 /**
  * Function that create an interface
  * @param level : the level
  */
-interface_t *interface_create(level_t *level);
+interface_t *
+interface_create(level_t *level);
 
 /**
  * Function that update the level window
@@ -142,7 +153,7 @@ char *afficher_salons();
 void convertToItem(interface_t *interface, level_t *level);
 interface_t *interface_create_game(char *path);
 void interface_game_actions(interface_t *interface, int c);
-
+void draw_bomb(interface_t *interface, item_t item);
 void interface_game_update(interface_t *interface, int c);
 /**
  * Update Head-Up Display window
