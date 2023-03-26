@@ -16,9 +16,11 @@ item_t *init_item(unsigned int id, unsigned int x, unsigned int y, unsigned int 
     item->y = y;
     item->width = width;
     item->height = height;
+
     // ajout des propriétés
     switch (id)
     {
+    case 4:             // ID_TRAP
     case 6:             // ID_PROBE
     case 7:             // ID_ROBOT
         item->etat = 1; // actif
@@ -67,7 +69,14 @@ void display_item(window_t *window, item_t item, int posX, int posY)
         window_mvaddch_col(window, posY, posX, WHITE, 'o');
         break;
     case ID_TRAP:
-        window_mvaddch_col(window, posY, posX, CYAN, '#' | A_REVERSE);
+        if (item.etat == 1)
+        {
+            window_mvaddch_col(window, posY, posX, CYAN, '#' | A_REVERSE);
+        }
+        else
+        {
+            window_mvaddch_col(window, posY, posX, BLACK, ' ');
+        }
         break;
     case 5: // ID_LADDER
         window_mvaddch_col(window, posY, posX, YELLOW, ' ' | ACS_LTEE);

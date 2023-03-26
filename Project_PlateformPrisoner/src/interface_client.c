@@ -456,7 +456,7 @@ void chute_player(interface_t *interface, item_t *item)
             cellule *last_cell = interface->tab_item[item->y + item->height][item->x + w].tete;
             while (last_cell->succ != NULL)
                 last_cell = last_cell->succ;
-            if (last_cell->item->id == ID_LADDER || last_cell->item->id == ID_BLOCK)
+            if (last_cell->item->id == ID_LADDER || last_cell->item->id == ID_BLOCK || last_cell->item->id == ID_TRAP)
             {
                 find_ladder = 1;
                 break;
@@ -473,7 +473,7 @@ void chute_player(interface_t *interface, item_t *item)
                 interface_game_update(interface, 's');
                 chute++;
             }
-        } while (nb_obstacle_under != 3);
+        } while (nb_obstacle_under < 1);
         // par la suite faire qu'il prenne des dégats par rapport au nombre de case qu'il a chuté
         if (chute != 0)
         {
@@ -488,7 +488,7 @@ int is_obstacle(interface_t *interface, item_t *item, int new_y, int new_x, int 
     // Item <=> player, robot, probe
     int obstacle = 0; // compteur d'obstacle
     int nb_cell = 0;
-    int action = 0;
+    int action = 0, enemy_cell = 0;
 
     if (check_side == HORIZONTAL)
         nb_cell = item->width;
@@ -501,9 +501,10 @@ int is_obstacle(interface_t *interface, item_t *item, int new_y, int new_x, int 
         for (int n = 0; n < nb_cell; n++)
         {
             // Si liste non vide
-            if (interface->tab_item[(check_side == HORIZONTAL) ? new_y : new_y + n][(check_side == HORIZONTAL) ? new_x + n : new_x].tete != NULL)
+            cellule *new_cell = interface->tab_item[(check_side == HORIZONTAL) ? new_y : new_y + n][(check_side == HORIZONTAL) ? new_x + n : new_x].tete;
+            if (new_cell != NULL)
             {
-                int id_obstacle = interface->tab_item[(check_side == HORIZONTAL) ? new_y : new_y + n][(check_side == HORIZONTAL) ? new_x + n : new_x].tete->item->id;
+                int id_obstacle = new_cell->item->id;
                 switch (id_obstacle)
                 {
                 // STOP
@@ -544,20 +545,26 @@ int is_obstacle(interface_t *interface, item_t *item, int new_y, int new_x, int 
                     break;
                 case ID_ROBOT:
                 case ID_PROBE:
-                    if (action)
+                    if (new_cell->item->etat == 1)
                     {
-                        // Si le robot ou la probe est actif : alors obstacle++ et dégats
-                        // Sinon pas d'obstacle et pas de dégats
-                        // Donc récupérer l'état du robot ou du probe touché
-
-                        // receive_damage(interface,item); , problème : enlève toute la vie du joueur
-                        if (item->properties.player.nb_life > 0)
+                        if (action && tour > 0 && enemy_cell == 0)
                         {
-                            item->properties.player.nb_life--;
-                            window_refresh(interface->win_tools);
+                            // receive_damage(interface,item);
+                            if (item->properties.player.nb_life > 0)
+                            {
+                                item->properties.player.nb_life--;
+                                enemy_cell++;
+                                window_refresh(interface->win_tools);
+
+                                new_cell->item->etat = 0; // temporaire, doit être fait par une bombe
+                                // envoie signal au thread robot/probe
+                            }
                         }
+                        obstacle++;
+                        action = 1;
                     }
-                    action = 1;
+                    // Si le robot ou la probe est actif : alors obstacle++ et dégats
+                    // Sinon pas d'obstacle et pas de dégats
                     break;
                 case ID_LIFE:
                     if (action)
@@ -582,14 +589,15 @@ int is_obstacle(interface_t *interface, item_t *item, int new_y, int new_x, int 
                     action = 1;
                     break;
                 case ID_TRAP:
-                    if (action)
+                    if (new_cell->item->etat == 1)
                     {
-                        // Récup l'etat du trap
-                        // Si actif : alors aucun obstacle + pas d'affichage
-                        // Sinon obstacle++
+                        obstacle++; // temporaire pour test
+                        action = 1;
                     }
-                    obstacle++; // temporaire pour test
-                    action = 1;
+                    // Récup l'etat du trap
+                    // Si actif : alors aucun obstacle + pas d'affichage
+                    // Sinon obstacle++
+
                     break; // temporaire
 
                 // PASS
