@@ -33,7 +33,7 @@ GDBFLAGS = -g
 CCFLAGS_STD = -Wall -O3 -Werror
 CCFLAGS_DEBUG = -D _DEBUG_ 
 CCFLAGS = $(CCFLAGS_STD)
-CCLIBS = -lncurses
+CCLIBS = -lncurses -pthread
 
 #
 # RULES (must not change it)

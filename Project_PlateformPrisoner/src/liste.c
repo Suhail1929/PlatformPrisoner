@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <ncurses.h>
+#include <pthread.h>
 
 #include "window.h"
 #include "item.h"

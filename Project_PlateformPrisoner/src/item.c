@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <ncurses.h>
+#include <pthread.h>
 
 #include "couleur.h"
 #include "window.h"
@@ -148,5 +149,5 @@ void display_item(window_t *window, item_t item, int posX, int posY)
         window_mvaddch_col(window, posY, posX, BLACK, ' ');
         break;
     }
-    window_refresh(window);
+    // window_refresh(window); // 11
 }

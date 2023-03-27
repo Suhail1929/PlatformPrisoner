@@ -1,5 +1,6 @@
 #ifndef _ITEM_H_
 #define _ITEM_H_
+#include <pthread.h>
 
 typedef struct
 {
@@ -30,6 +31,8 @@ typedef union
 
 typedef struct
 {
+    pthread_cond_t cond;
+    pthread_t *thread;
     properties_t properties;
     unsigned int id;
     int x;

@@ -2,6 +2,7 @@
 
 #ifndef __LISTE_H__
 #define __LISTE_H__
+#include <pthread.h>
 #include "cellule.h"
 #define DELETE_POINTER 0
 #define DELETE_ITEM 1
@@ -10,6 +11,7 @@ typedef struct liste liste;
 struct liste
 {
     cellule *tete;
+    pthread_mutex_t mutex;
 };
 
 void initialiser_liste(liste *l);

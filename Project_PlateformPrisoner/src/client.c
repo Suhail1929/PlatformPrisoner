@@ -102,8 +102,8 @@ int main(int argc, char *argv[])
 
     // Creation de l'interface
     interface = interface_create_game(path);
-
     int ch;
+
     while ((ch = getch()) != 27)
     {
         interface_game_actions(interface, ch);

@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <ncurses.h>
 #include <limits.h>
+#include <pthread.h>
 
 #include "fonction.h"
 #include "couleur.h"
@@ -876,21 +877,21 @@ void interface_debug(interface_t *interface, int posX, int posY)
                 }
             }
         }
-        window_refresh(interface->win_debug);
-
-        move(23, 80);
-        clrtoeol();
-        if (interface->tab_item[posY][posX].tete != NULL)
-        {
-            mvprintw(23, 80, "dernier id ajouté : %d", interface->tab_item[posY][posX].tete->item->id);
-        }
-        else
-        {
-            mvprintw(23, 80, "dernier id ajouté : %d", tab[posY][posX]);
-        }
-        move(24, 80);
-        clrtoeol();
-        mvprintw(24, 80, "Position x: %d, y: %d      ", posX, posY);
-        afficher_liste(interface->tab_item[posY][posX]);
+        /*
+                move(23, 80);
+                clrtoeol();
+                if (interface->tab_item[posY][posX].tete != NULL)
+                {
+                    mvprintw(23, 80, "dernier id ajouté : %d", interface->tab_item[posY][posX].tete->item->id);
+                }
+                else
+                {
+                    mvprintw(23, 80, "dernier id ajouté : %d", tab[posY][posX]);
+                }
+                move(24, 80);
+                clrtoeol();
+                mvprintw(24, 80, "Position x: %d, y: %d      ", posX, posY);
+                afficher_liste(interface->tab_item[posY][posX]);
+                */
     }
 }

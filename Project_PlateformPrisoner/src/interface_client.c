@@ -9,6 +9,7 @@
 #include <sys/types.h>
 #include <dirent.h>
 #include <ctype.h>
+#include <pthread.h>
 
 #include "fonction.h"
 #include "couleur.h"
@@ -22,8 +23,8 @@
 #define HORIZONTAL 1
 #define VERTICAL 2
 
-int nb_active_bomb = 0;
-
+pthread_t affiche;
+int stop = 0;
 // int compteur = 0;
 
 void creer_partie()
@@ -172,11 +173,11 @@ interface_t *interface_create_game(char *path)
     // fenetre informations
     result->win_infos = window_create(0, 22, 77, 5, "Informations", TRUE);
     window_printw_col(result->win_infos, RED, "Entrez sur 'ECHAP' pour quitter\n");
-    window_refresh(result->win_infos);
+    // window_refresh(result->win_infos); // #1
 
     // fenetre coordonnées
     result->win_level = window_create(0, 0, 62, 22, "Level", FALSE);
-    window_refresh(result->win_level);
+    // window_refresh(result->win_level); // #2
 
     // fenetre tools
     result->win_tools = window_create(62, 0, 15, 22, "HUD", FALSE); // HUD : Heads Up Display
@@ -186,7 +187,7 @@ interface_t *interface_create_game(char *path)
 
     // fenetre debug
     result->win_debug = window_create(80, 0, 62, 22, "DEBUG", FALSE);
-    window_refresh(result->win_debug);
+    // window_refresh(result->win_debug); // #3
 
     int fd = open(path, O_RDONLY);
     if (fd == -1)
@@ -215,12 +216,28 @@ interface_t *interface_create_game(char *path)
 
     convertToItem(result, level);
 
+    // find the start and init the player
+    find_start(result);
+
+    // display the game interface
+    if (result->global_item.tete != NULL)
+    {
+        cellule *itt_cell_global = result->global_item.tete;
+        while (itt_cell_global != NULL)
+        {
+            display_item(result->win_level, *(result->tab_item[itt_cell_global->item->y][itt_cell_global->item->x].tete->item), itt_cell_global->item->x, itt_cell_global->item->y);
+            itt_cell_global = itt_cell_global->succ;
+        }
+    }
+
     free(bloc);
     free(level);
     closeFile(fd);
 
     interface_hud_update(result);
-    window_refresh(result->win_tools);
+    // window_refresh(result->win_tools); // #4
+
+    pthread_create(&affiche, NULL, routine_display, result);
 
     return result;
 }
@@ -246,6 +263,9 @@ void convertToItem(interface_t *interface, level_t *level)
     {
         for (j = 0; j < WIDTH; j++)
         {
+            // init mutex for each list
+            pthread_mutex_init(&interface->tab_item[i][j].mutex, NULL);
+
             getEntityDetail(interface, tab, j, i, &bloc_width, &bloc_height, &nb_door);
             tmp_posX = j, tmp_posY = i;
             if (bloc_width == 0 || bloc_height == 0 || tab[i][j] == 0)
@@ -257,7 +277,12 @@ void convertToItem(interface_t *interface, level_t *level)
             {
                 // item creation
                 item_t *item = init_item(tab[i][j], j, i, bloc_width, bloc_height);
+
+                pthread_mutex_lock(&interface->global_item.mutex);
                 inserer(&interface->global_item, init_cellule(item)); // ajout pour la tête
+                pthread_mutex_unlock(&interface->global_item.mutex);
+
+                init_thread_item(interface, item);
 
                 // pointer to the item
                 item_t *p_item = item;
@@ -266,30 +291,46 @@ void convertToItem(interface_t *interface, level_t *level)
                 {
                     for (int w = 0; w < item->width; w++)
                     {
+                        pthread_mutex_lock(&interface->tab_item[item->y + h][item->x + w].mutex);
                         inserer(&interface->tab_item[item->y + h][item->x + w], init_cellule(p_item)); // add pointer to the item in the map
+                        pthread_mutex_unlock(&interface->tab_item[item->y + h][item->x + w].mutex);
                     }
                 }
             } // already item placed, skip the bloc width
             else
             {
                 // j += bloc_width - 1; // A débugger !
-                // BONUS : juste pour pas parourir les blocs déjà parcourus de l'item
+                // BONUS, pour sauter les blocs déjà placés
             }
         }
     }
+}
 
-    // find the start and init the player
-    find_start(interface);
+void init_thread_item(interface_t *interface, item_t *item)
+{
+    pthread_cond_init(&item->cond, NULL);
 
-    // display the game interface
-    if (interface->global_item.tete != NULL)
+    switch (item->id)
     {
-        cellule *itt_cell_global = interface->global_item.tete;
-        while (itt_cell_global != NULL)
-        {
-            display_item(interface->win_level, *(interface->tab_item[itt_cell_global->item->y][itt_cell_global->item->x].tete->item), itt_cell_global->item->x, itt_cell_global->item->y);
-            itt_cell_global = itt_cell_global->succ;
-        }
+    case ID_ROBOT:
+        item->thread = (pthread_t *)malloc(sizeof(pthread_t));
+        // data_thread *robot_data = {interface, item};
+        data_thread *robot_data = malloc(sizeof(data_thread));
+        robot_data->interface = interface;
+        robot_data->item = item;
+
+        pthread_create(item->thread, NULL, routine_robot, (void *)robot_data);
+        break;
+    case ID_PROBE:
+        break;
+    case ID_LIFE:
+        break;
+    case ID_BOMB:
+        break;
+    case 41 ... 49: // ID_PLAYER
+        break;
+    default:
+        break;
     }
 }
 
@@ -303,11 +344,8 @@ void undraw_item(interface_t *interface, item_t item)
         {
             if (interface->tab_item[item.y + h][item.x + w].tete != NULL)
             {
-                if (interface->tab_item[item.y + h][item.x + w].tete->item->id == ID_ACTIVE_BOMB)
-                {
-                    display_item(interface->win_level, *interface->tab_item[item.y + h][item.x + w].tete->item, item.x + w, item.y + h);
-                }
-                else if (interface->tab_item[item.y + h][item.x + w].tete->succ != NULL)
+                // METHODE 1
+                if (interface->tab_item[item.y + h][item.x + w].tete->succ != NULL)
                 {
                     item_behind = interface->tab_item[item.y + h][item.x + w].tete->succ->item;
                     if (item_behind != NULL)
@@ -328,15 +366,11 @@ void undraw_item(interface_t *interface, item_t item)
     }
 }
 
-void interface_game_update(interface_t *interface, int c)
+int interface_game_update(interface_t *interface, item_t *item, int c)
 {
-    /*
-    Temporaire : utilisation du tab pour déplacer le premier player
-    */
-    item_t *item = interface->tab_player.tete->item;
-
     // For bottom and right, we must verify if the player bloc is not out of the map (because the head is on top left)
     int obstacle = 0;
+    int deplacement = -1;
     switch (c)
     {
     case 'z':
@@ -355,9 +389,16 @@ void interface_game_update(interface_t *interface, int c)
                     // shift the item pointer
                     for (int w = 0; w < item->width; w++)
                     {
+                        // cleanup à faire !
+                        pthread_mutex_lock(&interface->tab_item[item->y + item->height - 1][item->x + w].mutex);
+                        pthread_mutex_lock(&interface->tab_item[item->y - 1][item->x + w].mutex);
+
                         cellule *move_cell = rechercher(interface->tab_item[item->y + item->height - 1][item->x + w], item->id);
                         inserer(&interface->tab_item[item->y - 1][item->x + w], init_cellule(move_cell->item));
                         supprimer(&interface->tab_item[item->y + item->height - 1][item->x + w], rechercher(interface->tab_item[item->y + item->height - 1][item->x + w], item->id), DELETE_POINTER);
+
+                        pthread_mutex_unlock(&interface->tab_item[item->y - 1][item->x + w].mutex);
+                        pthread_mutex_unlock(&interface->tab_item[item->y + item->height - 1][item->x + w].mutex);
                     }
                     item->y--;
                 }
@@ -366,10 +407,14 @@ void interface_game_update(interface_t *interface, int c)
         break;
     case 'q':
     case KEY_LEFT:
-
+    case 0:
         if (item->x - 1 >= 0)
         {
             obstacle += is_obstacle(interface, item, item->y, item->x - 1, VERTICAL);
+            if (item->id == ID_ROBOT && obstacle > 0)
+            {
+                deplacement = 1; // robot : turn to the right
+            }
             if (!obstacle) // any obstacle, shift the item pointer
             {
                 // remove the item display from the map
@@ -377,15 +422,25 @@ void interface_game_update(interface_t *interface, int c)
 
                 for (int h = 0; h < item->height; h++)
                 {
+                    // cleanup à faire !
+                    pthread_mutex_lock(&interface->tab_item[item->y + h][item->x + item->width - 1].mutex);
+                    pthread_mutex_lock(&interface->tab_item[item->y + h][item->x - 1].mutex);
+
                     cellule *move_cell = rechercher(interface->tab_item[item->y + h][item->x + item->width - 1], item->id);
                     inserer(&interface->tab_item[item->y + h][item->x - 1], init_cellule(move_cell->item));
                     supprimer(&interface->tab_item[item->y + h][item->x + item->width - 1], rechercher(interface->tab_item[item->y + h][item->x + item->width - 1], item->id), DELETE_POINTER);
+
+                    pthread_mutex_unlock(&interface->tab_item[item->y + h][item->x - 1].mutex);
+                    pthread_mutex_unlock(&interface->tab_item[item->y + h][item->x + item->width - 1].mutex);
                 }
                 item->x--;
             }
         }
         // chute
-        chute_player(interface, item);
+        if (item->id != ID_ROBOT || item->id != ID_PROBE)
+        {
+            chute_player(interface, item);
+        }
         break;
     case 's':
     case KEY_DOWN:
@@ -401,9 +456,16 @@ void interface_game_update(interface_t *interface, int c)
 
                     for (int w = 0; w < item->width; w++)
                     {
+                        // cleanup à faire !
+                        pthread_mutex_lock(&interface->tab_item[item->y][item->x + w].mutex);
+                        pthread_mutex_lock(&interface->tab_item[item->y + item->height][item->x + w].mutex);
+
                         cellule *move_cell = rechercher(interface->tab_item[item->y][item->x + w], item->id);
                         inserer(&interface->tab_item[item->y + item->height][item->x + w], init_cellule(move_cell->item));
                         supprimer(&interface->tab_item[item->y][item->x + w], rechercher(interface->tab_item[item->y][item->x + w], item->id), DELETE_POINTER);
+
+                        pthread_mutex_unlock(&interface->tab_item[item->y + item->height][item->x + w].mutex);
+                        pthread_mutex_unlock(&interface->tab_item[item->y][item->x + w].mutex);
                     }
                     item->y++;
                 }
@@ -412,10 +474,15 @@ void interface_game_update(interface_t *interface, int c)
         break;
     case 'd':
     case KEY_RIGHT:
+    case 1:
         if (item->x + item->width + 1 <= WIDTH)
         {
             obstacle += is_obstacle(interface, item, item->y, item->x + item->width, VERTICAL);
-            if (obstacle == 0) // any obstacle, shift the item pointer
+            if (item->id == ID_ROBOT && obstacle > 0)
+            {
+                deplacement = 0;
+            }
+            else if (obstacle == 0) // any obstacle, shift the item pointer
             {
                 // remove the item display from the map
                 undraw_item(interface, *item);
@@ -423,14 +490,24 @@ void interface_game_update(interface_t *interface, int c)
                 // METHODE 1
                 for (int h = 0; h < item->height; h++)
                 {
+                    // cleanup à faire !
+                    pthread_mutex_lock(&interface->tab_item[item->y + h][item->x].mutex);
+                    pthread_mutex_lock(&interface->tab_item[item->y + h][item->x + item->width].mutex);
+
                     cellule *move_cell = rechercher(interface->tab_item[item->y + h][item->x], item->id);
                     inserer(&interface->tab_item[item->y + h][item->x + item->width], init_cellule(move_cell->item));
                     supprimer(&interface->tab_item[item->y + h][item->x], rechercher(interface->tab_item[item->y + h][item->x], item->id), DELETE_POINTER);
+
+                    pthread_mutex_unlock(&interface->tab_item[item->y + h][item->x + item->width].mutex);
+                    pthread_mutex_unlock(&interface->tab_item[item->y + h][item->x].mutex);
                 }
                 item->x++;
             }
             // chute
-            chute_player(interface, item);
+            if (item->id != ID_ROBOT || item->id != ID_PROBE)
+            {
+                chute_player(interface, item);
+            }
         }
         break;
     // space bar
@@ -438,43 +515,25 @@ void interface_game_update(interface_t *interface, int c)
         if (item->properties.player.nb_bomb > 0)
         {
             item->properties.player.nb_bomb--;
-            nb_active_bomb++;
-            // Create a new bomb item
-            item_t *bomb = init_item(ID_ACTIVE_BOMB, item->x + 1, item->y + 3, 1, 1);
-            // Add the bomb to the interface's tab_item array
-            inserer(&interface->global_item, init_cellule(bomb));
-            item_t *p_bomb = bomb;
-            inserer(&interface->tab_item[bomb->y][bomb->x], init_cellule(p_bomb)); // add pointer to the bomb
-            // Draw the bomb on the interface
-            undraw_item(interface, *item);
         }
         break;
     default:
         break;
     }
 
-    // PRINT PLAYER
+    // PRINT PLAYER, ROBOT, PROBE
     display_item(interface->win_level, *item, item->x, item->y);
 
-    if (nb_active_bomb > 0)
+    if (item->id == ID_ROBOT || item->id == ID_PROBE)
     {
-        for (int w = 0; w < item->width; w++)
-        {
-            cellule *loop_cell = interface->tab_item[item->y + item->height - 1][item->x + w].tete;
-            while (loop_cell != NULL)
-            {
-                if (loop_cell->item->id == ID_ACTIVE_BOMB)
-                {
-                    display_item(interface->win_level, *loop_cell->item, loop_cell->item->x, loop_cell->item->y);
-                    break;
-                }
-                loop_cell = loop_cell->succ;
-            }
-        }
+        if (deplacement != -1)
+            return deplacement;
+        else
+            return c;
     }
 
     interface_debug(interface, item->x, item->y);
-    return;
+    return obstacle;
 }
 
 void chute_player(interface_t *interface, item_t *item)
@@ -502,7 +561,7 @@ void chute_player(interface_t *interface, item_t *item)
             nb_obstacle_under = is_obstacle(interface, item, item->y + item->height, item->x, HORIZONTAL);
             if (nb_obstacle_under == 0)
             {
-                interface_game_update(interface, 's');
+                interface_game_update(interface, item, 's');
                 chute++;
             }
         } while (nb_obstacle_under < 1);
@@ -532,6 +591,7 @@ int is_obstacle(interface_t *interface, item_t *item, int new_y, int new_x, int 
         obstacle = 0;
         for (int n = 0; n < nb_cell; n++)
         {
+            pthread_mutex_lock(&interface->tab_item[(check_side == HORIZONTAL) ? new_y : new_y + n][(check_side == HORIZONTAL) ? new_x + n : new_x].mutex);
             // Si liste non vide
             cellule *new_cell = interface->tab_item[(check_side == HORIZONTAL) ? new_y : new_y + n][(check_side == HORIZONTAL) ? new_x + n : new_x].tete;
             if (new_cell != NULL)
@@ -566,7 +626,7 @@ int is_obstacle(interface_t *interface, item_t *item, int new_y, int new_x, int 
                             {
                                 item->properties.player.key[(id_obstacle % 10) - 1].color = id_obstacle;
                                 item->properties.player.nb_key++;
-                                window_refresh(interface->win_tools);
+                                // window_refresh(interface->win_tools); // #5
                             }
                         }
                         break;
@@ -586,7 +646,7 @@ int is_obstacle(interface_t *interface, item_t *item, int new_y, int new_x, int 
                             {
                                 item->properties.player.nb_life--;
                                 enemy_cell++;
-                                window_refresh(interface->win_tools);
+                                // window_refresh(interface->win_tools); // #6
 
                                 new_cell->item->etat = 0; // temporaire, doit être fait par une bombe
                                 // envoie signal au thread robot/probe
@@ -604,7 +664,7 @@ int is_obstacle(interface_t *interface, item_t *item, int new_y, int new_x, int 
                         // faire -> add_life(interface,item);
                         item->properties.player.nb_life = 5;
                         // Envoyer un signal au thread life pour qu'il disparaisse un moment
-                        window_refresh(interface->win_tools);
+                        // window_refresh(interface->win_tools); // #7
                         break;
                     }
                     action = 1;
@@ -615,7 +675,7 @@ int is_obstacle(interface_t *interface, item_t *item, int new_y, int new_x, int 
                         // faire -> add_bombe(interface,item);
                         item->properties.player.nb_bomb = 3;
                         // Envoyer un signal au thread bombe pour qu'il disparaisse un moment
-                        window_refresh(interface->win_tools);
+                        // window_refresh(interface->win_tools); // #8
                         break;
                     }
                     action = 1;
@@ -671,6 +731,7 @@ int is_obstacle(interface_t *interface, item_t *item, int new_y, int new_x, int 
                     obstacle += ID_DELETE;
                 }
             }
+            pthread_mutex_unlock(&interface->tab_item[(check_side == HORIZONTAL) ? new_y : new_y + n][(check_side == HORIZONTAL) ? new_x + n : new_x].mutex);
         }
     }
     return obstacle;
@@ -680,8 +741,13 @@ void interface_game_actions(interface_t *interface, int c)
 {
     int mouseX, mouseY, posX, posY;
 
+    /*
+    Temporaire : utilisation du tab pour déplacer le premier player
+    */
+    item_t *item = interface->tab_player.tete->item; // récup le bon item donné en paramètre à interface_game_actions
+
     // Keyboard management
-    interface_game_update(interface, c);
+    interface_game_update(interface, item, c);
     window_mvprintw_col(interface->win_infos, 1, 0, WHITE, "Keyboard : %d", c);
 
     // Mouse management
@@ -699,12 +765,12 @@ void interface_game_actions(interface_t *interface, int c)
     }
 
     interface_hud_update(interface);
-    window_refresh(interface->win_tools);
+    // window_refresh(interface->win_tools); // #9
 }
 
 void interface_hud_update(interface_t *interface)
 {
-    window_erase(interface->win_tools);
+    // window_erase(interface->win_tools); // #1
     window_mvprintw(interface->win_tools, 1, 1, "Key");
 
     // temporaire : player
@@ -745,7 +811,7 @@ void interface_hud_update(interface_t *interface)
     window_mvprintw(interface->win_tools, 14, 1, "Levels");
     // window_printw(interface->win_tools, " \n  %02d \n", nb_level);
 
-    window_refresh(interface->win_tools);
+    // window_refresh(interface->win_tools); // #10
 }
 
 void init_player(interface_t *interface, int x, int y)
@@ -789,4 +855,76 @@ void find_start(interface_t *interface)
     perror("The level doesn't have a start !\n");
     ncurses_stop();
     exit(EXIT_FAILURE);
+}
+
+void *routine_display(void *arg)
+{
+    interface_t *interface = (interface_t *)arg;
+    int status = pthread_detach(pthread_self());
+    if (status != 0)
+    {
+        perror("pthread_detach");
+        exit(EXIT_FAILURE);
+    }
+
+    while (1)
+    {
+
+        if (stop == 1)
+        {
+            ncurses_stop();                          // pour le teste
+            printf("J'ai quitte le thread display"); // pour le teste
+            exit(EXIT_FAILURE);                      // pour le teste
+            pthread_cancel(pthread_self());
+            pthread_testcancel();
+        }
+
+        window_erase(interface->win_tools);
+
+        // Met à jour le HUD
+        interface_hud_update(interface);
+
+        window_refresh(interface->win_infos);
+        window_refresh(interface->win_level);
+        window_refresh(interface->win_tools);
+        window_refresh(interface->win_debug);
+
+        usleep(10000);
+    }
+    return NULL;
+}
+
+void *routine_robot(void *arg)
+{
+    data_thread robot_data = *(data_thread *)arg;
+    interface_t *interface = robot_data.interface;
+    item_t *item = robot_data.item;
+
+    // ncurses_stop();
+    // printf("item.id = %d | item.x = %d | item.y = %d\n", item->id, item->x, item->y);
+    // exit(EXIT_FAILURE);
+
+    int deplacement = 1;
+
+    int status = pthread_detach(pthread_self());
+    if (status != 0)
+    {
+        perror("pthread_detach");
+        exit(EXIT_FAILURE);
+    }
+
+    while (1)
+    {
+        if (stop == 1)
+        {
+            pthread_cancel(pthread_self());
+            pthread_testcancel();
+        }
+
+        // Déplacement du robot
+        deplacement = interface_game_update(interface, item, deplacement);
+
+        usleep(200000);
+    }
+    return NULL;
 }
