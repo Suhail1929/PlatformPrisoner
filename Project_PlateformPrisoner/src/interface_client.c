@@ -25,6 +25,7 @@
 
 pthread_t affiche;
 int stop = 0;
+int nb_active_bomb = 0;
 // int compteur = 0;
 
 void creer_partie()
@@ -418,6 +419,7 @@ int interface_game_update(interface_t *interface, item_t *item, int c)
             if (!obstacle) // any obstacle, shift the item pointer
             {
                 // remove the item display from the map
+
                 undraw_item(interface, *item);
 
                 for (int h = 0; h < item->height; h++)
@@ -482,7 +484,7 @@ int interface_game_update(interface_t *interface, item_t *item, int c)
             {
                 deplacement = 0;
             }
-            else if (obstacle == 0) // any obstacle, shift the item pointer
+            if (obstacle == 0) // any obstacle, shift the item pointer
             {
                 // remove the item display from the map
                 undraw_item(interface, *item);
@@ -493,7 +495,6 @@ int interface_game_update(interface_t *interface, item_t *item, int c)
                     // cleanup à faire !
                     pthread_mutex_lock(&interface->tab_item[item->y + h][item->x].mutex);
                     pthread_mutex_lock(&interface->tab_item[item->y + h][item->x + item->width].mutex);
-
                     cellule *move_cell = rechercher(interface->tab_item[item->y + h][item->x], item->id);
                     inserer(&interface->tab_item[item->y + h][item->x + item->width], init_cellule(move_cell->item));
                     supprimer(&interface->tab_item[item->y + h][item->x], rechercher(interface->tab_item[item->y + h][item->x], item->id), DELETE_POINTER);
@@ -510,11 +511,20 @@ int interface_game_update(interface_t *interface, item_t *item, int c)
             }
         }
         break;
-    // space bar
+        // space bar
     case ' ':
         if (item->properties.player.nb_bomb > 0)
         {
             item->properties.player.nb_bomb--;
+            nb_active_bomb++;
+            // Create a new bomb item
+            item_t *bomb = init_item(ID_ACTIVE_BOMB, item->x + 1, item->y + 3, 1, 1);
+            // Add the bomb to the interface's tab_item array
+            inserer(&interface->global_item, init_cellule(bomb));
+            item_t *p_bomb = bomb;
+            inserer(&interface->tab_item[bomb->y][bomb->x], init_cellule(p_bomb)); // add pointer to the bomb
+            // Draw the bomb on the interface
+            undraw_item(interface, *item);
         }
         break;
     default:
@@ -523,6 +533,23 @@ int interface_game_update(interface_t *interface, item_t *item, int c)
 
     // PRINT PLAYER, ROBOT, PROBE
     display_item(interface->win_level, *item, item->x, item->y);
+
+    if (nb_active_bomb > 0)
+    {
+        for (int w = 0; w < item->width; w++)
+        {
+            cellule *loop_cell = interface->tab_item[item->y + item->height - 1][item->x + w].tete;
+            while (loop_cell != NULL)
+            {
+                if (loop_cell->item->id == ID_ACTIVE_BOMB)
+                {
+                    display_item(interface->win_level, *loop_cell->item, loop_cell->item->x, loop_cell->item->y);
+                    break;
+                }
+                loop_cell = loop_cell->succ;
+            }
+        }
+    }
 
     if (item->id == ID_ROBOT || item->id == ID_PROBE)
     {
@@ -922,8 +949,9 @@ void *routine_robot(void *arg)
         }
 
         // Déplacement du robot
+        pthread_mutex_lock(&interface->robots_mutex);
         deplacement = interface_game_update(interface, item, deplacement);
-
+        pthread_mutex_unlock(&interface->robots_mutex);
         usleep(200000);
     }
     return NULL;

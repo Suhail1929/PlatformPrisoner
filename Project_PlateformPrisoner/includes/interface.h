@@ -48,6 +48,7 @@ typedef struct
     liste global_item;             // Les pointeurs pointent vers les items de cette liste (contiendra les items original de la map)
     liste tab_player;              // Tableau de joueurs
     liste_door_t tab_door;         // Tableau de portes
+    pthread_mutex_t robots_mutex;  // Mutex pour les robots
 } interface_t;
 
 typedef struct data_thread
@@ -159,7 +160,6 @@ char *afficher_salons();
 void convertToItem(interface_t *interface, level_t *level);
 interface_t *interface_create_game(char *path);
 void interface_game_actions(interface_t *interface, int c);
-void draw_bomb(interface_t *interface, item_t item);
 
 void init_thread_item(interface_t *interface, item_t *item);
 // void undraw_item(interface_t *interface, item_t item);
