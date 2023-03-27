@@ -48,7 +48,6 @@ typedef struct
     liste global_item;             // Les pointeurs pointent vers les items de cette liste (contiendra les items original de la map)
     liste tab_player;              // Tableau de joueurs
     liste_door_t tab_door;         // Tableau de portes
-    pthread_mutex_t robots_mutex;  // Mutex pour les robots
 } interface_t;
 
 typedef struct data_thread
@@ -71,25 +70,25 @@ interface_create(level_t *level);
  */
 void update_win_level(interface_t *interface, level_t *level);
 
-/*
+/**
  * Function that update the tools window  ###
  * @param interface : the interface
  */
 void interface_delete(interface_t **interface);
 
-/*
+/**
  * Function that update the tools window
  * @param interface : the interface
  */
 void interface_tools_update(interface_t *interface);
 
-/*
+/**
  * Function that update the infos window ###
  * @param interface : the interface
  */
 void interface_tools_actions(int fd, level_t *level, interface_t *interface, int posX, int posY);
 
-/*
+/**
  * Function that implement the actions of the interface
  * @param interface : the interface
  * @param c : the key pressed
@@ -98,7 +97,7 @@ void interface_tools_actions(int fd, level_t *level, interface_t *interface, int
  */
 void interface_actions(int fd, level_t *level, interface_t *interface, int c);
 
-/*
+/**
  * Function that implement the actions of the interface in level
  * @param interface : the interface
  * @param posX : the position X
@@ -107,13 +106,13 @@ void interface_actions(int fd, level_t *level, interface_t *interface, int c);
  */
 void interface_level_actions(interface_t *interface, int posX, int posY, int restore);
 
-/*
+/**
  * Function that draw the outliner
  * @param interface : the interface
  */
 void outliner(interface_t *interface);
 
-/*
+/**
  * Function insert an entity ID in the map and return 0 if success or 1 if error
  * @param posX : the position X
  * @param posY : the position Y
@@ -123,7 +122,7 @@ void outliner(interface_t *interface);
  */
 int insertEntityID(int posX, int posY, int largeur, int hauteur, int entityID);
 
-/*
+/**
  * Function update an entity ID in the map and return a width to jump or -1 if error
  * @param posX : the position X
  * @param posY : the position Y
@@ -131,7 +130,7 @@ int insertEntityID(int posX, int posY, int largeur, int hauteur, int entityID);
  */
 int updateEntity(interface_t *interface, int posX, int posY, int action);
 
-/*
+/**
  * Function that return the head of the entity ### Function?
  * @param posX : the position X
  * @param posY : the position Y
@@ -178,5 +177,8 @@ void find_start(interface_t *interface);
 
 void *routine_display(void *arg);
 void *routine_robot(void *arg);
+void *routine_trap(void *arg);
+void *routine_robot(void *arg);
+void *routine_probe(void *arg);
 
 #endif
