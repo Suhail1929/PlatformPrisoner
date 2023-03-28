@@ -17,7 +17,7 @@
 #define ID_START 9
 #define ID_PLAYER 40
 #define ID_ACTIVE_BOMB 50
-#define ID_EXPLOSION 60
+#define ID_EXPLOSION 70
 
 #define LEVEL 30 - 15
 #define CLEAR 31 - 14
@@ -184,5 +184,6 @@ void *routine_trap(void *arg);
 void *routine_robot(void *arg);
 void *routine_probe(void *arg);
 void *routine_explosion(void *arg);
+void *routine_bonus(void *arg);
 
 #endif

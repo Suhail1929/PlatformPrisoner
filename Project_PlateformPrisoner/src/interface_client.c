@@ -338,6 +338,20 @@ void init_thread_item(interface_t *interface, item_t *item)
         pthread_create(item->thread, NULL, routine_probe, (void *)probe_data);
         break;
     case ID_LIFE:
+        item->thread = (pthread_t *)malloc(sizeof(pthread_t));
+        data_thread *life_data = malloc(sizeof(data_thread));
+        life_data->interface = interface;
+        life_data->item = item;
+
+        pthread_create(item->thread, NULL, routine_bonus, (void *)life_data);
+        break;
+    case ID_BOMB:
+        item->thread = (pthread_t *)malloc(sizeof(pthread_t));
+        data_thread *bomb_data = malloc(sizeof(data_thread));
+        bomb_data->interface = interface;
+        bomb_data->item = item;
+
+        pthread_create(item->thread, NULL, routine_bonus, (void *)bomb_data);
         break;
     case ID_ACTIVE_BOMB:
         item->thread = (pthread_t *)malloc(sizeof(pthread_t));
@@ -761,10 +775,15 @@ int is_obstacle(interface_t *interface, item_t *item, int new_y, int new_x, int 
                     }
                     if (action)
                     {
-                        // faire -> add_life(interface,item);
-                        item->properties.player.nb_life = 5;
-                        // Envoyer un signal au thread life pour qu'il disparaisse un moment
-                        // window_refresh(interface->win_tools); // #7
+                        if (new_cell->item->etat == 1)
+                        {
+                            if (item->properties.player.nb_life < 5)
+                            {
+                                item->properties.player.nb_life = 5;
+                                // send signal to thread life
+                                pthread_cond_signal(&new_cell->item->cond);
+                            }
+                        }
                         break;
                     }
                     action = 1;
@@ -776,10 +795,15 @@ int is_obstacle(interface_t *interface, item_t *item, int new_y, int new_x, int 
                     }
                     if (action)
                     {
-                        // faire -> add_bombe(interface,item);
-                        item->properties.player.nb_bomb = 3;
-                        // Envoyer un signal au thread bombe pour qu'il disparaisse un moment
-                        // window_refresh(interface->win_tools); // #8
+                        if (new_cell->item->etat == 1)
+                        {
+                            if (item->properties.player.nb_bomb < 3)
+                            {
+                                item->properties.player.nb_bomb = 3;
+                                // send signal to thread bomb
+                                pthread_cond_signal(&new_cell->item->cond);
+                            }
+                        }
                         break;
                     }
                     action = 1;
@@ -984,20 +1008,10 @@ void draw_explosion(interface_t *interface, item_t *item)
             {
                 pthread_mutex_lock(&interface->tab_item[new_y][new_x].mutex);
 
-                if (interface->tab_item[new_y][new_x].tete != NULL)
-                {
-                    if (interface->tab_item[new_y][new_x].tete->item->id == ID_DELETE)
-                    {
-                        item_t *explosion = init_item(ID_EXPLOSION, new_x, new_y, 1, 1);
-                        inserer(&interface->tab_item[new_y][new_x], init_cellule(explosion));
-                        free(explosion);
-                    }
-                }
-                else
+                if (interface->tab_item[new_y][new_x].tete == NULL)
                 {
                     item_t *explosion = init_item(ID_EXPLOSION, new_x, new_y, 1, 1);
                     inserer(&interface->tab_item[new_y][new_x], init_cellule(explosion));
-                    free(explosion);
                 }
 
                 pthread_mutex_unlock(&interface->tab_item[new_y][new_x].mutex);
@@ -1029,9 +1043,7 @@ void undraw_explosion(interface_t *interface, item_t *item)
                 {
                     if (rechercher(interface->tab_item[new_y][new_x], ID_EXPLOSION))
                     {
-                        item_t *explosion = init_item(ID_EXPLOSION, new_x, new_y, 1, 1);
-                        supprimer(&interface->tab_item[new_y][new_x], rechercher(interface->tab_item[new_y][new_x], ID_EXPLOSION), DELETE_POINTER);
-                        free(explosion);
+                        supprimer(&interface->tab_item[new_y][new_x], rechercher(interface->tab_item[new_y][new_x], ID_EXPLOSION), DELETE_ITEM);
                     }
                 }
 
@@ -1053,7 +1065,6 @@ void *routine_display(void *arg)
 
     while (1)
     {
-
         if (stop == 1)
         {
             ncurses_stop();                          // pour le teste
@@ -1071,11 +1082,7 @@ void *routine_display(void *arg)
             {
                 if (interface->tab_item[i][j].tete != NULL)
                 {
-                    if (interface->tab_item[i][j].tete->item->id == 60)
-                    {
-                        window_mvaddch_col(interface->win_level, i, j, RED, '@');
-                    }
-                    else
+                    if (interface->tab_item[i][j].tete->item->id == ID_EXPLOSION)
                     {
                         display_item(interface->win_level, *interface->tab_item[i][j].tete->item, interface->tab_item[i][j].tete->item->x, interface->tab_item[i][j].tete->item->y);
                     }
@@ -1083,31 +1090,31 @@ void *routine_display(void *arg)
             }
         }
 
-        // avec ça y'a un petit bug
-
-        // cellule *itt_cell = interface->global_item.tete;
-        // while (itt_cell != NULL)
-        // {
-        //     display_item(interface->win_level, *itt_cell->item, itt_cell->item->x, itt_cell->item->y);
-        //     itt_cell = itt_cell->succ;
-        // }
-        // cellule *itt_cell_player = interface->tab_player.tete;
-        // while (itt_cell_player != NULL)
-        // {
-        //     display_item(interface->win_level, *itt_cell_player->item, itt_cell_player->item->x, itt_cell_player->item->y);
-        //     itt_cell_player = itt_cell_player->succ;
-        // }
+        cellule *itt_cell = interface->global_item.tete;
+        while (itt_cell != NULL)
+        {
+            display_item(interface->win_level, *itt_cell->item, itt_cell->item->x, itt_cell->item->y);
+            itt_cell = itt_cell->succ;
+        }
+        cellule *itt_cell_player = interface->tab_player.tete;
+        while (itt_cell_player != NULL)
+        {
+            display_item(interface->win_level, *itt_cell_player->item, itt_cell_player->item->x, itt_cell_player->item->y);
+            itt_cell_player = itt_cell_player->succ;
+        }
         // Met à jour le HUD
         interface_hud_update(interface);
 
         window_refresh(interface->win_infos);
         window_refresh(interface->win_level);
         window_refresh(interface->win_tools);
+
+        interface_debug(interface, 0, 0);
         window_refresh(interface->win_debug);
 
         usleep(10000);
     }
-    return NULL;
+    pthread_exit(NULL);
 }
 
 void *routine_robot(void *arg)
@@ -1137,7 +1144,7 @@ void *routine_robot(void *arg)
         deplacement = interface_game_update(interface, item, deplacement);
         usleep(200000);
     }
-    return NULL;
+    pthread_exit(NULL);
 }
 
 void *routine_trap(void *arg)
@@ -1165,7 +1172,7 @@ void *routine_trap(void *arg)
         item->etat = (item->etat + 1) % 2;
         usleep(1000000);
     }
-    return NULL;
+    pthread_exit(NULL);
 }
 
 void *routine_probe(void *arg)
@@ -1192,7 +1199,7 @@ void *routine_probe(void *arg)
 
         usleep(100000);
     }
-    return NULL;
+    pthread_exit(NULL);
 }
 
 void *routine_explosion(void *arg)
@@ -1221,5 +1228,36 @@ void *routine_explosion(void *arg)
         undraw_explosion(interface, item);
         pthread_cancel(pthread_self());
     }
-    return NULL;
+    pthread_exit(NULL);
+}
+
+void *routine_bonus(void *arg)
+{
+    data_thread life_data = *(data_thread *)arg;
+    interface_t *interface = life_data.interface;
+    item_t *item = life_data.item;
+
+    int status = pthread_detach(pthread_self());
+    if (status != 0)
+    {
+        perror("pthread_detach");
+        exit(EXIT_FAILURE);
+    }
+
+    while (1)
+    {
+        if (stop == 1)
+        {
+            pthread_cancel(pthread_self());
+            pthread_testcancel();
+        }
+
+        pthread_mutex_lock(&interface->tab_item[item->y][item->x].mutex);
+        item->etat = 1;
+        pthread_cond_wait(&item->cond, &interface->tab_item[item->y][item->x].mutex);
+        item->etat = 0;
+        pthread_mutex_unlock(&interface->tab_item[item->y][item->x].mutex);
+        sleep(15);
+    }
+    pthread_exit(NULL);
 }

@@ -24,8 +24,10 @@ item_t *init_item(unsigned int id, unsigned int x, unsigned int y, unsigned int 
     case 4:             // ID_TRAP
     case 6:             // ID_PROBE
     case 7:             // ID_ROBOT
-    case 60:            // ID_EXPLOSION
+    case 70:            // ID_EXPLOSION
     case 50:            // ID_ACTIVE_BOMB
+    case 2:             // ID_LIFE
+    case 3:             // ID_BOMB
         item->etat = 1; // actif
         break;
     case 3101 ... 3499: // ID_DOOR(3) + color(1-4) + nb_door(01-99)
@@ -66,20 +68,22 @@ void display_item(window_t *window, item_t item, int posX, int posY)
         window_mvaddch_col(window, posY, posX, CYAN, ' ' | A_REVERSE);
         break;
     case ID_LIFE:
-        window_mvaddch_col(window, posY, posX, RED, 'V');
+        if (item.etat == 1)
+            window_mvaddch_col(window, posY, posX, RED, 'V');
+        else
+            window_mvaddch_col(window, posY, posX, BLACK, ' ');
         break;
     case ID_BOMB:
-        window_mvaddch_col(window, posY, posX, WHITE, 'o');
+        if (item.etat == 1)
+            window_mvaddch_col(window, posY, posX, WHITE, 'o');
+        else
+            window_mvaddch_col(window, posY, posX, BLACK, ' ');
         break;
     case ID_TRAP:
         if (item.etat == 1)
-        {
             window_mvaddch_col(window, posY, posX, CYAN, '#' | A_REVERSE);
-        }
         else
-        {
             window_mvaddch_col(window, posY, posX, BLACK, ' ');
-        }
         break;
     case 5: // ID_LADDER
         window_mvaddch_col(window, posY, posX, YELLOW, ' ' | ACS_LTEE);
@@ -146,9 +150,9 @@ void display_item(window_t *window, item_t item, int posX, int posY)
     case ID_ACTIVE_BOMB:
         window_mvaddch_col(window, posY, posX, RED, '@');
         break;
-    // case ID_EXPLOSION:
-    //     window_mvaddch_col(window, posY, posX, RED, ' ' | A_REVERSE);
-    //     break;
+    case ID_EXPLOSION:
+        window_mvaddch_col(window, posY, posX, WHITE, '#');
+        break;
     default: // ID_DELETE
         window_mvaddch_col(window, posY, posX, BLACK, ' ');
         break;
