@@ -17,6 +17,7 @@
 #define ID_START 9
 #define ID_PLAYER 40
 #define ID_ACTIVE_BOMB 50
+#define ID_EXPLOSION 60
 
 #define LEVEL 30 - 15
 #define CLEAR 31 - 14
@@ -174,11 +175,14 @@ void chute_player(interface_t *interface, item_t *item);
 int is_obstacle(interface_t *interface, item_t *item, int new_y, int new_x, int check_side);
 void init_player(interface_t *interface, int x, int y);
 void find_start(interface_t *interface);
+void draw_explosion(interface_t *interface, item_t *item);
+void undraw_explosion(interface_t *interface, item_t *item);
 
 void *routine_display(void *arg);
 void *routine_robot(void *arg);
 void *routine_trap(void *arg);
 void *routine_robot(void *arg);
 void *routine_probe(void *arg);
+void *routine_explosion(void *arg);
 
 #endif

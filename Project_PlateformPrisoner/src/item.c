@@ -24,6 +24,7 @@ item_t *init_item(unsigned int id, unsigned int x, unsigned int y, unsigned int 
     case 4:             // ID_TRAP
     case 6:             // ID_PROBE
     case 7:             // ID_ROBOT
+    case 60:            // ID_EXPLOSION
     case 50:            // ID_ACTIVE_BOMB
         item->etat = 1; // actif
         break;
@@ -145,6 +146,9 @@ void display_item(window_t *window, item_t item, int posX, int posY)
     case ID_ACTIVE_BOMB:
         window_mvaddch_col(window, posY, posX, RED, '@');
         break;
+    // case ID_EXPLOSION:
+    //     window_mvaddch_col(window, posY, posX, RED, ' ' | A_REVERSE);
+    //     break;
     default: // ID_DELETE
         window_mvaddch_col(window, posY, posX, BLACK, ' ');
         break;
