@@ -28,7 +28,7 @@ int stop = 0;
 int nb_active_bomb = 0;
 
 // int compteur = 0;
-pthread_mutex_t tab_item_mutex = PTHREAD_MUTEX_INITIALIZER;
+
 void creer_partie()
 {
     system("clear");
@@ -274,10 +274,6 @@ interface_t **interface_create_game(char *path, int *nb_interface)
 
 void pass_door(interface_t *interface, item_t *player, int door_id)
 {
-    ncurses_stop();
-    printf("Vous êtes passé par la porte %d (niveau %d).\n", door_id, interface->n_level);
-    exit(EXIT_FAILURE);
-
     if (door_id < 3100 && door_id > 3500)
     {
         printf("Erreur: l'identifiant de la porte est invalide.\n");
@@ -289,6 +285,9 @@ void pass_door(interface_t *interface, item_t *player, int door_id)
 
     if (door_A->x == door_B->x && door_A->y == door_B->y)
     {
+        // ncurses_stop();
+        // printf("if 1\n");
+        // exit(EXIT_FAILURE);
         if (door_A->properties.door.id_level == interface->n_level)
         {
             move_player_to_door(player, door_B, interface);
@@ -301,6 +300,9 @@ void pass_door(interface_t *interface, item_t *player, int door_id)
     }
     else if (player->x == door_A->x && player->y == door_A->y)
     {
+        // ncurses_stop();
+        // printf("if 2\n");
+        // exit(EXIT_FAILURE);
         move_player_to_door(player, door_B, interface);
         if (door_B->properties.door.id_level != interface->n_level)
         {
@@ -317,8 +319,8 @@ void pass_door(interface_t *interface, item_t *player, int door_id)
     }
     else
     {
-        ncurses_stop();
-        printf("Erreur: la porte avec l'identifiant %d est introuvable.\n", door_id);
+        // ncurses_stop();
+        // printf("Erreur: la porte avec l'identifiant %d est introuvable.\n", door_id);
         for (int i = 0; i < 99; i++)
         {
             if (tab_door[i].door_A != NULL || tab_door[i].door_B != NULL)
@@ -356,15 +358,15 @@ void move_player_to_door(item_t *player, item_t *destination, interface_t *inter
             for (int w = 0; w < player->width; w++)
             {
                 // cleanup à faire !
-                pthread_mutex_lock(&interface->tab_item[player->y + h][player->x + w].mutex);
-                pthread_mutex_lock(&interface->tab_item[destination->y + h][destination->x + w].mutex);
+                // //#pthread_mutex_lock(&interface->tab_item[player->y + h][player->x + w].mutex);
+                // //#pthread_mutex_lock(&interface->tab_item[destination->y + h][destination->x + w].mutex);
 
                 cellule *move_cell = rechercher(interface->tab_item[player->y + h][player->x + w], player->id);
                 inserer(&interface->tab_item[destination->y + h][destination->x + w], init_cellule(move_cell->item));
                 supprimer(&interface->tab_item[player->y + h][player->x + w], rechercher(interface->tab_item[player->y + h][player->x + w], player->id), DELETE_POINTER);
 
-                pthread_mutex_unlock(&interface->tab_item[destination->y + h][destination->x + w].mutex);
-                pthread_mutex_unlock(&interface->tab_item[player->y + h][player->x + w].mutex);
+                // //#pthread_mutex_unlock(&interface->tab_item[destination->y + h][destination->x + w].mutex);
+                // //#pthread_mutex_unlock(&interface->tab_item[player->y + h][player->x + w].mutex);
             }
         }
         player->y = destination->y;
@@ -383,9 +385,11 @@ void convertToItem(interface_t *interface, level_t *level)
         for (j = 0; j < WIDTH; j++)
         {
             tab[i][j] = level->tab[i][j];
+            pthread_mutex_init(&interface->tab_item[i][j].mutex, NULL);
             initialiser_liste(&interface->tab_item[i][j]);
         }
     }
+    pthread_mutex_init(&interface->global_item.mutex, NULL);
     initialiser_liste(&interface->global_item);
 
     // convert the integer tab to item tab by getting the head & details of each entity
@@ -393,9 +397,6 @@ void convertToItem(interface_t *interface, level_t *level)
     {
         for (j = 0; j < WIDTH; j++)
         {
-            // init mutex for each list
-            pthread_mutex_init(&interface->tab_item[i][j].mutex, NULL);
-
             getEntityDetail(interface, tab, j, i, &bloc_width, &bloc_height, &nb_door);
             tmp_posX = j, tmp_posY = i;
             if (bloc_width == 0 || bloc_height == 0 || tab[i][j] == 0)
@@ -440,9 +441,9 @@ void convertToItem(interface_t *interface, level_t *level)
                 {
                     for (int w = 0; w < item->width; w++)
                     {
-                        pthread_mutex_lock(&interface->tab_item[item->y + h][item->x + w].mutex);
+                        //#pthread_mutex_lock(&interface->tab_item[item->y + h][item->x + w].mutex);
                         inserer(&interface->tab_item[item->y + h][item->x + w], init_cellule(p_item)); // add pointer to the item in the map
-                        pthread_mutex_unlock(&interface->tab_item[item->y + h][item->x + w].mutex);
+                        //#pthread_mutex_unlock(&interface->tab_item[item->y + h][item->x + w].mutex);
                     }
                 }
             } // already item placed, skip the bloc width
@@ -581,15 +582,15 @@ int interface_game_update(interface_t *interface, item_t *item, int c)
                     for (int w = 0; w < item->width; w++)
                     {
                         // cleanup à faire !
-                        pthread_mutex_lock(&interface->tab_item[item->y + item->height - 1][item->x + w].mutex);
-                        pthread_mutex_lock(&interface->tab_item[item->y - 1][item->x + w].mutex);
+                        //#pthread_mutex_lock(&interface->tab_item[item->y + item->height - 1][item->x + w].mutex);
+                        // //#pthread_mutex_lock(&interface->tab_item[item->y - 1][item->x + w].mutex);
 
                         cellule *move_cell = rechercher(interface->tab_item[item->y + item->height - 1][item->x + w], item->id);
                         inserer(&interface->tab_item[item->y - 1][item->x + w], init_cellule(move_cell->item));
                         supprimer(&interface->tab_item[item->y + item->height - 1][item->x + w], rechercher(interface->tab_item[item->y + item->height - 1][item->x + w], item->id), DELETE_POINTER);
 
-                        pthread_mutex_unlock(&interface->tab_item[item->y - 1][item->x + w].mutex);
-                        pthread_mutex_unlock(&interface->tab_item[item->y + item->height - 1][item->x + w].mutex);
+                        // //#pthread_mutex_unlock(&interface->tab_item[item->y - 1][item->x + w].mutex);
+                        //#pthread_mutex_unlock(&interface->tab_item[item->y + item->height - 1][item->x + w].mutex);
                     }
                     item->y--;
 
@@ -626,15 +627,15 @@ int interface_game_update(interface_t *interface, item_t *item, int c)
                 for (int h = 0; h < item->height; h++)
                 {
                     // cleanup à faire !
-                    pthread_mutex_lock(&interface->tab_item[item->y + h][item->x + item->width - 1].mutex);
-                    pthread_mutex_lock(&interface->tab_item[item->y + h][item->x - 1].mutex);
+                    //#pthread_mutex_lock(&interface->tab_item[item->y + h][item->x + item->width - 1].mutex);
+                    // //#pthread_mutex_lock(&interface->tab_item[item->y + h][item->x - 1].mutex);
 
                     cellule *move_cell = rechercher(interface->tab_item[item->y + h][item->x + item->width - 1], item->id);
                     inserer(&interface->tab_item[item->y + h][item->x - 1], init_cellule(move_cell->item));
                     supprimer(&interface->tab_item[item->y + h][item->x + item->width - 1], rechercher(interface->tab_item[item->y + h][item->x + item->width - 1], item->id), DELETE_POINTER);
 
-                    pthread_mutex_unlock(&interface->tab_item[item->y + h][item->x - 1].mutex);
-                    pthread_mutex_unlock(&interface->tab_item[item->y + h][item->x + item->width - 1].mutex);
+                    // //#pthread_mutex_unlock(&interface->tab_item[item->y + h][item->x - 1].mutex);
+                    //#pthread_mutex_unlock(&interface->tab_item[item->y + h][item->x + item->width - 1].mutex);
                 }
                 item->x--;
 
@@ -671,15 +672,15 @@ int interface_game_update(interface_t *interface, item_t *item, int c)
                     for (int w = 0; w < item->width; w++)
                     {
                         // cleanup à faire !
-                        pthread_mutex_lock(&interface->tab_item[item->y][item->x + w].mutex);
-                        pthread_mutex_lock(&interface->tab_item[item->y + item->height][item->x + w].mutex);
+                        //#pthread_mutex_lock(&interface->tab_item[item->y][item->x + w].mutex);
+                        // //#pthread_mutex_lock(&interface->tab_item[item->y + item->height][item->x + w].mutex);
 
                         cellule *move_cell = rechercher(interface->tab_item[item->y][item->x + w], item->id);
                         inserer(&interface->tab_item[item->y + item->height][item->x + w], init_cellule(move_cell->item));
                         supprimer(&interface->tab_item[item->y][item->x + w], rechercher(interface->tab_item[item->y][item->x + w], item->id), DELETE_POINTER);
 
-                        pthread_mutex_unlock(&interface->tab_item[item->y + item->height][item->x + w].mutex);
-                        pthread_mutex_unlock(&interface->tab_item[item->y][item->x + w].mutex);
+                        // //#pthread_mutex_unlock(&interface->tab_item[item->y + item->height][item->x + w].mutex);
+                        //#pthread_mutex_unlock(&interface->tab_item[item->y][item->x + w].mutex);
                     }
                     item->y++;
                     if (item->id > ID_PLAYER && item->id < ID_PLAYER + 10 && (obstacle > 3100 && obstacle < 3500))
@@ -713,8 +714,8 @@ int interface_game_update(interface_t *interface, item_t *item, int c)
                 for (int h = 0; h < item->height; h++)
                 {
                     // cleanup à faire !
-                    pthread_mutex_lock(&interface->tab_item[item->y + h][item->x].mutex);
-                    // pthread_mutex_lock(&interface->tab_item[item->y + h][item->x + item->width].mutex);
+                    //#pthread_mutex_lock(&interface->tab_item[item->y + h][item->x].mutex);
+                    // //#pthread_mutex_lock(&interface->tab_item[item->y + h][item->x + item->width].mutex);
                     // if (obstacle > 3100 && obstacle < 3500)
                     // {
                     //     ncurses_stop();
@@ -725,17 +726,11 @@ int interface_game_update(interface_t *interface, item_t *item, int c)
                     inserer(&interface->tab_item[item->y + h][item->x + item->width], init_cellule(move_cell->item));
                     supprimer(&interface->tab_item[item->y + h][item->x], rechercher(interface->tab_item[item->y + h][item->x], item->id), DELETE_POINTER);
 
-                    // pthread_mutex_unlock(&interface->tab_item[item->y + h][item->x + item->width].mutex);
-                    pthread_mutex_unlock(&interface->tab_item[item->y + h][item->x].mutex);
+                    // //#pthread_mutex_unlock(&interface->tab_item[item->y + h][item->x + item->width].mutex);
+                    //#pthread_mutex_unlock(&interface->tab_item[item->y + h][item->x].mutex);
                 }
                 item->x++;
 
-                // if (obstacle > 3100 && obstacle < 3500)
-                // {
-                //     ncurses_stop();
-                //     printf(" id  \n");
-                //     exit(0);
-                // }
                 if (item->id > ID_PLAYER && item->id < ID_PLAYER + 10 && (obstacle > 3100 && obstacle < 3500))
                 {
                     pass_door(interface, item, obstacle);
@@ -758,7 +753,9 @@ int interface_game_update(interface_t *interface, item_t *item, int c)
             // Create a new bomb item
             item_t *bomb = init_item(ID_ACTIVE_BOMB, item->x + 1, item->y + 3, 1, 1);
             // Add the bomb to the interface's tab_item array
+            pthread_mutex_lock(&interface->global_item.mutex);
             inserer(&interface->global_item, init_cellule(bomb));
+            pthread_mutex_unlock(&interface->global_item.mutex);
             item_t *p_bomb = bomb;
             inserer(&interface->tab_item[bomb->y][bomb->x], init_cellule(p_bomb)); // add pointer to the bomb
                                                                                    // Draw the bomb on the interface
@@ -867,7 +864,7 @@ int is_obstacle(interface_t *interface, item_t *item, int new_y, int new_x, int 
         obstacle = 0;
         for (int n = 0; n < nb_cell; n++)
         {
-            pthread_mutex_lock(&interface->tab_item[(check_side == HORIZONTAL) ? new_y : new_y + n][(check_side == HORIZONTAL) ? new_x + n : new_x].mutex);
+            //#pthread_mutex_lock(&interface->tab_item[(check_side == HORIZONTAL) ? new_y : new_y + n][(check_side == HORIZONTAL) ? new_x + n : new_x].mutex);
             // Si liste non vide
             cellule *new_cell = interface->tab_item[(check_side == HORIZONTAL) ? new_y : new_y + n][(check_side == HORIZONTAL) ? new_x + n : new_x].tete;
             if (new_cell != NULL)
@@ -921,11 +918,13 @@ int is_obstacle(interface_t *interface, item_t *item, int new_y, int new_x, int 
                 case 3101 ... 3499: // ID_DOOR
                     if (item->id > ID_PLAYER && item->id < ID_PLAYER + 10)
                     {
-                        cellule *cell_player = interface->tab_item[item->y][item->x + item->width - 1].tete;
-                        while (cell_player->item->id != item->id)
-                            cell_player = cell_player->succ;
-                        if (cell_player->item->id == id_obstacle)
-                            return id_obstacle;
+                        if (new_cell->item->x == item->x + 1 || new_cell->item->x == item->x - 1)
+                        {
+                            if (new_cell->item->y == item->y)
+                            {
+                                return id_obstacle;
+                            }
+                        }
                     }
                     break;
                 case ID_ROBOT:
@@ -1049,7 +1048,7 @@ int is_obstacle(interface_t *interface, item_t *item, int new_y, int new_x, int 
                     obstacle += ID_DELETE;
                 }
             }
-            pthread_mutex_unlock(&interface->tab_item[(check_side == HORIZONTAL) ? new_y : new_y + n][(check_side == HORIZONTAL) ? new_x + n : new_x].mutex);
+            //#pthread_mutex_unlock(&interface->tab_item[(check_side == HORIZONTAL) ? new_y : new_y + n][(check_side == HORIZONTAL) ? new_x + n : new_x].mutex);
         }
     }
     return obstacle;
@@ -1062,7 +1061,9 @@ void interface_game_actions(interface_t *interface, int c)
     /*
     Temporaire : utilisation du tab pour déplacer le premier player
     */
+    pthread_mutex_lock(&interface->tab_player.mutex);
     item_t *item = interface->tab_player.tete->item; // récup le bon item donné en paramètre à interface_game_actions
+    pthread_mutex_unlock(&interface->tab_player.mutex);
 
     // Keyboard management
     interface_game_update(interface, item, c);
@@ -1092,6 +1093,7 @@ void interface_hud_update(interface_t *interface)
     window_mvprintw(interface->win_tools, 1, 1, "Key");
 
     // temporaire : player
+    pthread_mutex_lock(&interface->tab_player.mutex);
     if (interface->tab_player.tete != NULL)
     {
         item_t *player = interface->tab_player.tete->item;
@@ -1125,6 +1127,7 @@ void interface_hud_update(interface_t *interface)
             display_item(interface->win_tools, bomb, bomb.x, bomb.y);
         }
     }
+    pthread_mutex_unlock(&interface->tab_player.mutex);
 
     window_mvprintw(interface->win_tools, 14, 1, "Levels");
     // window_printw(interface->win_tools, " \n  %02d \n", nb_level);
@@ -1135,11 +1138,14 @@ void interface_hud_update(interface_t *interface)
 void init_player(interface_t *interface, int x, int y)
 {
     // on initialise tab_player
+    pthread_mutex_init(&interface->tab_player.mutex, NULL);
     initialiser_liste(&interface->tab_player);
     // on y place le player
     int id_player = 1;
     item_t *player = init_item(ID_PLAYER + id_player, x, y, 3, 4);
+    pthread_mutex_lock(&interface->tab_player.mutex);
     inserer(&interface->tab_player, init_cellule(player));
+    pthread_mutex_unlock(&interface->tab_player.mutex);
 
     // place des pointeurs vers le player dans la map d'item
     item_t *p_player = player;
@@ -1190,7 +1196,7 @@ void draw_explosion(interface_t *interface, item_t *item)
 
             if (new_x >= 0 && new_x < WIDTH && new_y >= 0 && new_y < HEIGHT)
             {
-                pthread_mutex_lock(&interface->tab_item[new_y][new_x].mutex);
+                //#pthread_mutex_lock(&interface->tab_item[new_y][new_x].mutex);
                 if (interface->tab_item[new_y][new_x].tete != NULL)
                 {
                     if (interface->tab_item[new_y][new_x].tete->item->id == ID_ROBOT || interface->tab_item[new_y][new_x].tete->item->id == ID_PROBE)
@@ -1204,7 +1210,7 @@ void draw_explosion(interface_t *interface, item_t *item)
                     inserer(&interface->tab_item[new_y][new_x], init_cellule(explosion));
                 }
 
-                pthread_mutex_unlock(&interface->tab_item[new_y][new_x].mutex);
+                //#pthread_mutex_unlock(&interface->tab_item[new_y][new_x].mutex);
             }
         }
     }
@@ -1214,9 +1220,9 @@ void undraw_explosion(interface_t *interface, item_t *item)
 {
     int x = item->x;
     int y = item->y;
-    pthread_mutex_lock(&interface->tab_item[y][x].mutex);
+    //#pthread_mutex_lock(&interface->tab_item[y][x].mutex);
     supprimer(&interface->tab_item[y][x], rechercher(interface->tab_item[y][x], ID_ACTIVE_BOMB), DELETE_ITEM);
-    pthread_mutex_unlock(&interface->tab_item[y][x].mutex);
+    //#pthread_mutex_unlock(&interface->tab_item[y][x].mutex);
     // on affiche les explosions
     for (int i = -2; i <= 2; i++)
     {
@@ -1227,7 +1233,7 @@ void undraw_explosion(interface_t *interface, item_t *item)
 
             if (new_x >= 0 && new_x < WIDTH && new_y >= 0 && new_y < HEIGHT)
             {
-                pthread_mutex_lock(&interface->tab_item[new_y][new_x].mutex);
+                //#pthread_mutex_lock(&interface->tab_item[new_y][new_x].mutex);
 
                 if (interface->tab_item[new_y][new_x].tete != NULL)
                 {
@@ -1237,7 +1243,7 @@ void undraw_explosion(interface_t *interface, item_t *item)
                     }
                 }
 
-                pthread_mutex_unlock(&interface->tab_item[new_y][new_x].mutex);
+                //#pthread_mutex_unlock(&interface->tab_item[new_y][new_x].mutex);
             }
         }
     }
@@ -1280,18 +1286,24 @@ void *routine_display(void *arg)
             }
         }
 
+        // pthread_mutex_lock(&interface->global_item.mutex);
         cellule *itt_cell = interface->global_item.tete;
         while (itt_cell != NULL)
         {
             display_item(interface->win_level, *itt_cell->item, itt_cell->item->x, itt_cell->item->y);
             itt_cell = itt_cell->succ;
         }
+        // pthread_mutex_unlock(&interface->global_item.mutex);
+
+        // pthread_mutex_lock(&interface->tab_player.mutex);
         cellule *itt_cell_player = interface->tab_player.tete;
         while (itt_cell_player != NULL)
         {
             display_item(interface->win_level, *itt_cell_player->item, itt_cell_player->item->x, itt_cell_player->item->y);
             itt_cell_player = itt_cell_player->succ;
         }
+        // pthread_mutex_unlock(&interface->tab_player.mutex);
+
         // Met à jour le HUD
         interface_hud_update(interface);
 
@@ -1453,11 +1465,11 @@ void *routine_bonus(void *arg)
             pthread_testcancel();
         }
 
-        pthread_mutex_lock(&interface->tab_item[item->y][item->x].mutex);
+        //#pthread_mutex_lock(&interface->tab_item[item->y][item->x].mutex);
         item->etat = 1;
         pthread_cond_wait(&item->cond, &interface->tab_item[item->y][item->x].mutex);
         item->etat = 0;
-        pthread_mutex_unlock(&interface->tab_item[item->y][item->x].mutex);
+        //#pthread_mutex_unlock(&interface->tab_item[item->y][item->x].mutex);
         sleep(15);
     }
     pthread_exit(NULL);
