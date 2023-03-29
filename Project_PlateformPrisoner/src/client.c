@@ -89,7 +89,8 @@ int main(int argc, char *argv[])
     char path[100];
     sprintf(path, "bin/%s.bin", room_name); // gestion d'erreur ?
 
-    interface_t *interface;
+    // interface_t *interface;
+    interface_t **all_interface = NULL;
 
     // ncurses initialisation
     setlocale(LC_ALL, "");
@@ -101,18 +102,25 @@ int main(int argc, char *argv[])
     refresh();
 
     // Creation de l'interface
-    interface = interface_create_game(path);
+    int nb_interface = 1;
+    all_interface = interface_create_game(path, &nb_interface);
     int ch;
 
     while ((ch = getch()) != 27)
     {
-        interface_game_actions(interface, ch);
+        // on donne au player l'interface dans lequel il se trouve, pour effectuer les actions
+        // pour le teste : 0
+        interface_game_actions(all_interface[0], ch);
     }
     // Quitter le mode d'affichage ncurses
     ncurses_stop();
 
     // // supprimer l'interface
-    interface_delete(&interface);
+    for (int i = 0; i < nb_interface; i++)
+    {
+        interface_delete(&all_interface[i]);
+    }
+
     free(room_name);
     return EXIT_SUCCESS;
 }

@@ -26,6 +26,7 @@
 pthread_t affiche;
 int stop = 0;
 int nb_active_bomb = 0;
+
 // int compteur = 0;
 pthread_mutex_t tab_item_mutex = PTHREAD_MUTEX_INITIALIZER;
 void creer_partie()
@@ -159,36 +160,9 @@ char *afficher_salons()
     return NULL;
 }
 
-interface_t *interface_create_game(char *path)
+interface_t **interface_create_game(char *path, int *nb_interface)
 {
-    interface_t *result;
-
-    // Structure allocation
-    if ((result = malloc(sizeof(interface_t))) == NULL)
-    {
-        ncurses_stop();
-        perror("Erreur allocation interface");
-        exit(EXIT_FAILURE);
-    }
-
-    // fenetre informations
-    result->win_infos = window_create(0, 22, 77, 5, "Informations", TRUE);
-    window_printw_col(result->win_infos, RED, "Entrez sur 'ECHAP' pour quitter\n");
-    // window_refresh(result->win_infos); // #1
-
-    // fenetre coordonnées
-    result->win_level = window_create(0, 0, 62, 22, "Level", FALSE);
-    // window_refresh(result->win_level); // #2
-
-    // fenetre tools
-    result->win_tools = window_create(62, 0, 15, 22, "HUD", FALSE); // HUD : Heads Up Display
-
-    result->current_color = MAGENTA; // default color
-    result->selection = ID_BLOCK;    // default selection
-
-    // fenetre debug
-    result->win_debug = window_create(80, 0, 62, 22, "DEBUG", FALSE);
-    // window_refresh(result->win_debug); // #3
+    interface_t **tab_interface = NULL;
 
     int fd = open(path, O_RDONLY);
     if (fd == -1)
@@ -198,49 +172,204 @@ interface_t *interface_create_game(char *path)
         exit(EXIT_FAILURE);
     }
 
-    bloc_t *bloc = loadBloc(fd, 0);
-    if (bloc == NULL)
+    bloc_t *block = loadBloc(fd, 0);
+    int count_nb_level = 0;
+    level_t *tab_levels = (level_t *)malloc(sizeof(level_t));
+    if (tab_levels == NULL)
     {
-        fprintf(stderr, "Error: Failed to load block from file %s\n", path);
-        closeFile(fd);
         ncurses_stop();
-        exit(EXIT_FAILURE);
-    }
-    level_t *level = loadLevelById(fd, bloc, 0);
-    if (level == NULL)
-    {
-        fprintf(stderr, "Error: Failed to load level from file %s\n", path);
-        closeFile(fd);
-        ncurses_stop();
+        perror("Erreur d'allocation pour tab_levels");
         exit(EXIT_FAILURE);
     }
 
-    convertToItem(result, level);
+    while (block != NULL)
+    {
+        if (block == NULL)
+        {
+            printf("block == NULL \n");
+            break;
+        }
 
-    // find the start and init the player
-    find_start(result);
+        for (int i = 0; i < 5; i++)
+        {
+            if (block->level[i] != -1)
+            {
+                level_t *newLevel = loadLevel(fd, block->level[i]);
+                tab_levels = (level_t *)realloc(tab_levels, sizeof(level_t) * (count_nb_level + 1));
+                if (tab_levels == NULL)
+                {
+                    ncurses_stop();
+                    perror("Erreur de reallocation pour tab_levels");
+                    exit(EXIT_FAILURE);
+                }
+                tab_levels[count_nb_level] = *newLevel;
+                count_nb_level++;
+            }
+        }
 
-    // display the game interface
-    // if (result->global_item.tete != NULL)
-    // {
-    //     cellule *itt_cell_global = result->global_item.tete;
-    //     while (itt_cell_global != NULL)
-    //     {
-    //         // display_item(result->win_level, *(result->tab_item[itt_cell_global->item->y][itt_cell_global->item->x].tete->item), itt_cell_global->item->x, itt_cell_global->item->y);
-    //         itt_cell_global = itt_cell_global->succ;
-    //     }
-    // }
+        if (block->bloc_next == -1)
+        {
+            break;
+        }
+        block = loadBloc(fd, block->bloc_next);
+    }
 
-    free(bloc);
-    free(level);
+    *nb_interface = count_nb_level;
+
+    if ((tab_interface = (interface_t **)malloc(sizeof(interface_t *) * count_nb_level)) == NULL)
+    {
+        ncurses_stop();
+        perror("Erreur allocation interface");
+        exit(EXIT_FAILURE);
+    }
+
+    for (int n_interface = 0; n_interface < count_nb_level; n_interface++)
+    {
+        if ((tab_interface[n_interface] = (interface_t *)malloc(sizeof(interface_t))) == NULL)
+        {
+            ncurses_stop();
+            perror("Erreur allocation interface");
+            exit(EXIT_FAILURE);
+        }
+
+        // niveau de l'interface
+        tab_interface[n_interface]->n_level = n_interface;
+
+        // fenetre informations
+        tab_interface[n_interface]->win_infos = window_create(0, 22, 77, 5, "Informations", TRUE);
+        window_printw_col(tab_interface[n_interface]->win_infos, RED, "Entrez sur 'ECHAP' pour quitter\n");
+
+        // fenetre coordonnées
+        tab_interface[n_interface]->win_level = window_create(0, 0, 62, 22, "Level", FALSE);
+
+        // fenetre tools
+        tab_interface[n_interface]->win_tools = window_create(62, 0, 15, 22, "HUD", FALSE); // HUD : Heads Up Display
+
+        tab_interface[n_interface]->current_color = MAGENTA; // default color
+        tab_interface[n_interface]->selection = ID_BLOCK;    // default selection
+
+        // fenetre debug
+        tab_interface[n_interface]->win_debug = window_create(80, 0, 62, 22, "DEBUG", FALSE);
+
+        convertToItem(tab_interface[n_interface], &tab_levels[n_interface]);
+    }
+
+    // find the start and init the player at first level
+    if (tab_interface[0]->n_level == 0)
+    {
+        find_start(tab_interface[0]);
+    }
+
+    free(block);
+    free(tab_levels);
+
     closeFile(fd);
 
-    interface_hud_update(result);
-    // window_refresh(result->win_tools); // #4
+    interface_hud_update(tab_interface[0]);
 
-    pthread_create(&affiche, NULL, routine_display, result);
+    pthread_create(&affiche, NULL, routine_display, tab_interface[0]);
 
-    return result;
+    return tab_interface;
+}
+
+void pass_door(interface_t *interface, item_t *player, int door_id)
+{
+    ncurses_stop();
+    printf("Vous êtes passé par la porte %d (niveau %d).\n", door_id, interface->n_level);
+    exit(EXIT_FAILURE);
+
+    if (door_id < 3100 && door_id > 3500)
+    {
+        printf("Erreur: l'identifiant de la porte est invalide.\n");
+        return;
+    }
+
+    item_t *door_A = tab_door[door_id % 100 - 1].door_A;
+    item_t *door_B = tab_door[door_id % 100 - 1].door_B;
+
+    if (door_A->x == door_B->x && door_A->y == door_B->y)
+    {
+        if (door_A->properties.door.id_level == interface->n_level)
+        {
+            move_player_to_door(player, door_B, interface);
+        }
+        else
+        {
+            move_player_to_door(player, door_A, interface);
+            change_interface(interface, door_A->properties.door.id_level);
+        }
+    }
+    else if (player->x == door_A->x && player->y == door_A->y)
+    {
+        move_player_to_door(player, door_B, interface);
+        if (door_B->properties.door.id_level != interface->n_level)
+        {
+            change_interface(interface, door_B->properties.door.id_level);
+        }
+    }
+    else if (player->x == door_B->x && player->y == door_B->y)
+    {
+        move_player_to_door(player, door_A, interface);
+        if (door_A->properties.door.id_level != interface->n_level)
+        {
+            change_interface(interface, door_A->properties.door.id_level);
+        }
+    }
+    else
+    {
+        ncurses_stop();
+        printf("Erreur: la porte avec l'identifiant %d est introuvable.\n", door_id);
+        for (int i = 0; i < 99; i++)
+        {
+            if (tab_door[i].door_A != NULL || tab_door[i].door_B != NULL)
+            {
+                printf("lvl door_A: %d (%d, %d)\n", tab_door[i].door_A->properties.door.id_level, tab_door[i].door_A->x, tab_door[i].door_A->y);
+                printf("lvl door_B: %d (%d, %d)\n", tab_door[i].door_B->properties.door.id_level, tab_door[i].door_B->x, tab_door[i].door_B->y);
+                printf("\n");
+            }
+        }
+        exit(EXIT_FAILURE);
+
+        return;
+    }
+}
+
+void change_interface(interface_t *interface, int new_level)
+{
+    // Implémentez la logique pour changer d'interface ici.
+}
+
+void move_player_to_door(item_t *player, item_t *destination, interface_t *interface)
+{
+
+    if (destination->properties.door.id_level != interface->n_level)
+    {
+        // déplacer l'item du player et ses pointeurs aussi.
+        // + changer d'interface
+        change_interface(interface, destination->properties.door.id_level);
+    }
+    else
+    {
+        // déplacer l'item du player et ses pointeurs aussi.
+        for (int h = 0; h < player->height; h++)
+        {
+            for (int w = 0; w < player->width; w++)
+            {
+                // cleanup à faire !
+                pthread_mutex_lock(&interface->tab_item[player->y + h][player->x + w].mutex);
+                pthread_mutex_lock(&interface->tab_item[destination->y + h][destination->x + w].mutex);
+
+                cellule *move_cell = rechercher(interface->tab_item[player->y + h][player->x + w], player->id);
+                inserer(&interface->tab_item[destination->y + h][destination->x + w], init_cellule(move_cell->item));
+                supprimer(&interface->tab_item[player->y + h][player->x + w], rechercher(interface->tab_item[player->y + h][player->x + w], player->id), DELETE_POINTER);
+
+                pthread_mutex_unlock(&interface->tab_item[destination->y + h][destination->x + w].mutex);
+                pthread_mutex_unlock(&interface->tab_item[player->y + h][player->x + w].mutex);
+            }
+        }
+        player->y = destination->y;
+        player->x = destination->x;
+    }
 }
 
 void convertToItem(interface_t *interface, level_t *level)
@@ -279,10 +408,29 @@ void convertToItem(interface_t *interface, level_t *level)
                 // item creation
                 item_t *item = init_item(tab[i][j], j, i, bloc_width, bloc_height);
 
+                // ajout des doors dans le tableau
+                if (item->id > 3100 && item->id < 3500)
+                {
+                    item->properties.door.id_level = interface->n_level;
+                    if (tab_door[(item->id % 100) - 1].door_A == NULL)
+                    {
+                        tab_door[(item->id % 100) - 1].door_A = item;
+                    }
+                    else if (tab_door[(item->id % 100) - 1].door_B == NULL)
+                    {
+                        tab_door[(item->id % 100) - 1].door_B = item;
+                    }
+                    else
+                    {
+                        // si + dea 2 portes avec le même identifiant
+                        // Ignorer les autres portes portaient le même identifiant
+                        // printf("Erreur: la porte %d a déjà deux portes associées.\n", item->id);
+                    }
+                }
+
                 pthread_mutex_lock(&interface->global_item.mutex);
                 inserer(&interface->global_item, init_cellule(item)); // ajout pour la tête
                 pthread_mutex_unlock(&interface->global_item.mutex);
-
                 init_thread_item(interface, item);
 
                 // pointer to the item
@@ -424,15 +572,12 @@ int interface_game_update(interface_t *interface, item_t *item, int c)
                     deplacement = rand() % 4; // 0-1-2-3
                 }
 
-                if (!obstacle) // any obstacle, shift the item pointer
+                if ((!obstacle) || (obstacle > 3100 && obstacle < 3500)) // any obstacle, shift the item pointer
                 {
                     // remove the item display from the map
                     // undraw_item(interface, *item);
 
                     // shift the item pointer
-                    // ncurses_stop();
-                    // printf("UP\n");
-                    // exit(0);
                     for (int w = 0; w < item->width; w++)
                     {
                         // cleanup à faire !
@@ -447,6 +592,12 @@ int interface_game_update(interface_t *interface, item_t *item, int c)
                         pthread_mutex_unlock(&interface->tab_item[item->y + item->height - 1][item->x + w].mutex);
                     }
                     item->y--;
+
+                    if (item->id > ID_PLAYER && item->id < ID_PLAYER + 10 && (obstacle > 3100 && obstacle < 3500))
+                    {
+                        pass_door(interface, item, obstacle);
+                        return -1;
+                    }
                 }
             }
         }
@@ -457,6 +608,7 @@ int interface_game_update(interface_t *interface, item_t *item, int c)
         if (item->x - 1 >= 0)
         {
             obstacle += is_obstacle(interface, item, item->y, item->x - 1, VERTICAL);
+
             if (item->id == ID_ROBOT && obstacle > 0)
             {
                 deplacement = 1; // robot : turn to the right
@@ -465,7 +617,7 @@ int interface_game_update(interface_t *interface, item_t *item, int c)
             {
                 deplacement = rand() % 4; // 0-1-2-3
             }
-            if (!obstacle) // any obstacle, shift the item pointer
+            if (!obstacle || (obstacle > 3100 && obstacle < 3500)) // any obstacle, shift the item pointer
             {
                 // remove the item display from the map
 
@@ -485,6 +637,12 @@ int interface_game_update(interface_t *interface, item_t *item, int c)
                     pthread_mutex_unlock(&interface->tab_item[item->y + h][item->x + item->width - 1].mutex);
                 }
                 item->x--;
+
+                if (item->id > ID_PLAYER && item->id < ID_PLAYER + 10 && (obstacle > 3100 && obstacle < 3500))
+                {
+                    pass_door(interface, item, obstacle);
+                    return -1;
+                }
             }
         }
         // chute
@@ -505,7 +663,7 @@ int interface_game_update(interface_t *interface, item_t *item, int c)
                 {
                     deplacement = rand() % 4; // 0-1-2-3
                 }
-                if (!obstacle) // any obstacle, shift the item pointer
+                if (!obstacle || (obstacle > 3100 && obstacle < 3500)) // any obstacle, shift the item pointer
                 {
                     // remove the item display from the map
                     // undraw_item(interface, *item);
@@ -524,6 +682,11 @@ int interface_game_update(interface_t *interface, item_t *item, int c)
                         pthread_mutex_unlock(&interface->tab_item[item->y][item->x + w].mutex);
                     }
                     item->y++;
+                    if (item->id > ID_PLAYER && item->id < ID_PLAYER + 10 && (obstacle > 3100 && obstacle < 3500))
+                    {
+                        pass_door(interface, item, obstacle);
+                        return -1;
+                    }
                 }
             }
         }
@@ -534,6 +697,7 @@ int interface_game_update(interface_t *interface, item_t *item, int c)
         if (item->x + item->width + 1 <= WIDTH)
         {
             obstacle += is_obstacle(interface, item, item->y, item->x + item->width, VERTICAL);
+
             if (item->id == ID_ROBOT && obstacle > 0)
             {
                 deplacement = 0;
@@ -542,25 +706,41 @@ int interface_game_update(interface_t *interface, item_t *item, int c)
             {
                 deplacement = rand() % 4; // 0-1-2-3
             }
-            if (obstacle == 0) // any obstacle, shift the item pointer
+            if (obstacle == 0 || (obstacle > 3100 && obstacle < 3500)) // any obstacle, shift the item pointer
             {
                 // remove the item display from the map
                 // undraw_item(interface, *item);
-
-                // METHODE 1
                 for (int h = 0; h < item->height; h++)
                 {
                     // cleanup à faire !
                     pthread_mutex_lock(&interface->tab_item[item->y + h][item->x].mutex);
-                    pthread_mutex_lock(&interface->tab_item[item->y + h][item->x + item->width].mutex);
+                    // pthread_mutex_lock(&interface->tab_item[item->y + h][item->x + item->width].mutex);
+                    // if (obstacle > 3100 && obstacle < 3500)
+                    // {
+                    //     ncurses_stop();
+                    //     printf(" id  \n");
+                    //     exit(0);
+                    // }
                     cellule *move_cell = rechercher(interface->tab_item[item->y + h][item->x], item->id);
                     inserer(&interface->tab_item[item->y + h][item->x + item->width], init_cellule(move_cell->item));
                     supprimer(&interface->tab_item[item->y + h][item->x], rechercher(interface->tab_item[item->y + h][item->x], item->id), DELETE_POINTER);
 
-                    pthread_mutex_unlock(&interface->tab_item[item->y + h][item->x + item->width].mutex);
+                    // pthread_mutex_unlock(&interface->tab_item[item->y + h][item->x + item->width].mutex);
                     pthread_mutex_unlock(&interface->tab_item[item->y + h][item->x].mutex);
                 }
                 item->x++;
+
+                // if (obstacle > 3100 && obstacle < 3500)
+                // {
+                //     ncurses_stop();
+                //     printf(" id  \n");
+                //     exit(0);
+                // }
+                if (item->id > ID_PLAYER && item->id < ID_PLAYER + 10 && (obstacle > 3100 && obstacle < 3500))
+                {
+                    pass_door(interface, item, obstacle);
+                    return -1;
+                }
             }
             // chute
             if (item->id != ID_ROBOT && item->id != ID_PROBE)
@@ -738,7 +918,15 @@ int is_obstacle(interface_t *interface, item_t *item, int new_y, int new_x, int 
                     }
                     action = 1;
                     break;
-                case 3101 ... 3199: // ID_DOOR
+                case 3101 ... 3499: // ID_DOOR
+                    if (item->id > ID_PLAYER && item->id < ID_PLAYER + 10)
+                    {
+                        cellule *cell_player = interface->tab_item[item->y][item->x + item->width - 1].tete;
+                        while (cell_player->item->id != item->id)
+                            cell_player = cell_player->succ;
+                        if (cell_player->item->id == id_obstacle)
+                            return id_obstacle;
+                    }
                     break;
                 case ID_ROBOT:
                 case ID_PROBE:
@@ -756,10 +944,6 @@ int is_obstacle(interface_t *interface, item_t *item, int new_y, int new_x, int 
                             {
                                 item->properties.player.nb_life--;
                                 enemy_cell++;
-                                // window_refresh(interface->win_tools); // #6
-
-                                new_cell->item->etat = 0; // temporaire, doit être fait par une bombe
-                                // envoie signal au thread robot/probe
                             }
                         }
                         obstacle++;
@@ -1007,7 +1191,13 @@ void draw_explosion(interface_t *interface, item_t *item)
             if (new_x >= 0 && new_x < WIDTH && new_y >= 0 && new_y < HEIGHT)
             {
                 pthread_mutex_lock(&interface->tab_item[new_y][new_x].mutex);
-
+                if (interface->tab_item[new_y][new_x].tete != NULL)
+                {
+                    if (interface->tab_item[new_y][new_x].tete->item->id == ID_ROBOT || interface->tab_item[new_y][new_x].tete->item->id == ID_PROBE)
+                    {
+                        interface->tab_item[new_y][new_x].tete->item->etat = 0;
+                    }
+                }
                 if (interface->tab_item[new_y][new_x].tete == NULL)
                 {
                     item_t *explosion = init_item(ID_EXPLOSION, new_x, new_y, 1, 1);
@@ -1140,6 +1330,12 @@ void *routine_robot(void *arg)
             pthread_testcancel();
         }
 
+        if (item->etat == 0)
+        {
+            sleep(6);
+            item->etat = 1;
+        }
+
         // Déplacement du robot
         deplacement = interface_game_update(interface, item, deplacement);
         usleep(200000);
@@ -1193,6 +1389,11 @@ void *routine_probe(void *arg)
         {
             pthread_cancel(pthread_self());
             pthread_testcancel();
+        }
+        if (item->etat == 0)
+        {
+            sleep(6);
+            item->etat = 1;
         }
 
         deplacement = interface_game_update(interface, item, deplacement);

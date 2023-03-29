@@ -11,7 +11,8 @@ typedef struct
 {
     color_t color;
     unsigned int nb_door;
-} door_t; // door
+    int id_level; // id du niveau où se trouve la porte
+} door_t;         // door
 
 typedef struct
 {
@@ -32,6 +33,7 @@ typedef union
 typedef struct
 {
     pthread_cond_t cond;
+    pthread_mutex_t mutex;
     pthread_t *thread;
     properties_t properties;
     unsigned int id;
