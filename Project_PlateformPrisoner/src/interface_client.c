@@ -377,11 +377,14 @@ void move_player_to_door(item_t *player, item_t *destination, interface_t *inter
                 // //#pthread_mutex_unlock(&interface->tab_item[player->y + h][player->x + w].mutex);
             }
         }
-        pthread_mutex_lock(&interface->tab_player.mutex);
-        cellule *move_player = rechercher(interface->tab_player, player->id);
-        inserer(&new_interface->tab_player, init_cellule(move_player->item));
+        // pthread_mutex_lock(&tab_player.mutex);
+        // cellule *move_player = rechercher(interface->tab_player, player->id);
+        // inserer(&new_interface->tab_player, init_cellule(move_player->item));
         // supprimer(&interface->tab_player, rechercher(interface->tab_player, player->id), DELETE_ITEM);
-        pthread_mutex_unlock(&interface->tab_player.mutex);
+        // // ncurses_stop();
+        // // printf("player\n");
+        // // exit(EXIT_FAILURE);
+        // pthread_mutex_unlock(&tab_player.mutex);
 
         player->y = destination->y;
         player->x = destination->x;
@@ -789,6 +792,7 @@ int interface_game_update(interface_t *interface, item_t *item, int c)
         break;
         // space bar
     case ' ':
+        // change_interface(interface, 0);
         if (item->properties.player.nb_bomb > 0)
         {
             item->properties.player.nb_bomb--;
@@ -1104,9 +1108,9 @@ void interface_game_actions(int c)
     /*
     Temporaire : utilisation du tab pour déplacer le premier player
     */
-    pthread_mutex_lock(&interface->tab_player.mutex);
-    item_t *item = interface->tab_player.tete->item; // récup le bon item donné en paramètre à interface_game_actions
-    pthread_mutex_unlock(&interface->tab_player.mutex);
+    pthread_mutex_lock(&tab_player.mutex);
+    item_t *item = tab_player.tete->item; // récup le bon item donné en paramètre à interface_game_actions
+    pthread_mutex_unlock(&tab_player.mutex);
 
     // Keyboard management
     interface_game_update(interface, item, c);
@@ -1136,10 +1140,10 @@ void interface_hud_update(interface_t *interface)
     window_mvprintw(interface->win_tools, 1, 1, "Key");
 
     // temporaire : player
-    pthread_mutex_lock(&interface->tab_player.mutex);
-    if (interface->tab_player.tete != NULL)
+    pthread_mutex_lock(&tab_player.mutex);
+    if (tab_player.tete != NULL)
     {
-        item_t *player = interface->tab_player.tete->item;
+        item_t *player = tab_player.tete->item;
 
         for (int i = 0; i < 4; i++)
         {
@@ -1170,7 +1174,7 @@ void interface_hud_update(interface_t *interface)
             display_item(interface->win_tools, bomb, bomb.x, bomb.y);
         }
     }
-    pthread_mutex_unlock(&interface->tab_player.mutex);
+    pthread_mutex_unlock(&tab_player.mutex);
 
     window_mvprintw(interface->win_tools, 14, 1, "Levels");
     // window_printw(interface->win_tools, " \n  %02d \n", nb_level);
@@ -1181,14 +1185,14 @@ void interface_hud_update(interface_t *interface)
 void init_player(interface_t *interface, int x, int y)
 {
     // on initialise tab_player
-    pthread_mutex_init(&interface->tab_player.mutex, NULL);
-    initialiser_liste(&interface->tab_player);
+    pthread_mutex_init(&tab_player.mutex, NULL);
+    initialiser_liste(&tab_player);
     // on y place le player
     int id_player = 1;
     item_t *player = init_item(ID_PLAYER + id_player, x, y, 3, 4);
-    pthread_mutex_lock(&interface->tab_player.mutex);
-    inserer(&interface->tab_player, init_cellule(player));
-    pthread_mutex_unlock(&interface->tab_player.mutex);
+    pthread_mutex_lock(&tab_player.mutex);
+    inserer(&tab_player, init_cellule(player));
+    pthread_mutex_unlock(&tab_player.mutex);
 
     // place des pointeurs vers le player dans la map d'item
     item_t *p_player = player;
@@ -1327,31 +1331,28 @@ void *routine_display(void *arg)
             {
                 if (interface->tab_item[i][j].tete != NULL)
                 {
-                    if (interface->tab_item[i][j].tete->item->id == ID_EXPLOSION)
-                    {
-                        display_item(interface->win_level, *interface->tab_item[i][j].tete->item, interface->tab_item[i][j].tete->item->x, interface->tab_item[i][j].tete->item->y);
-                    }
+                    display_item(interface->win_level, *interface->tab_item[i][j].tete->item, interface->tab_item[i][j].tete->item->x, interface->tab_item[i][j].tete->item->y);
                 }
             }
         }
 
-        // pthread_mutex_lock(&interface->global_item.mutex);
-        cellule *itt_cell = interface->global_item.tete;
-        while (itt_cell != NULL)
-        {
-            display_item(interface->win_level, *itt_cell->item, itt_cell->item->x, itt_cell->item->y);
-            itt_cell = itt_cell->succ;
-        }
-        // pthread_mutex_unlock(&interface->global_item.mutex);
+        // // pthread_mutex_lock(&interface->global_item.mutex);
+        // cellule *itt_cell = interface->global_item.tete;
+        // while (itt_cell != NULL)
+        // {
+        //     display_item(interface->win_level, *itt_cell->item, itt_cell->item->x, itt_cell->item->y);
+        //     itt_cell = itt_cell->succ;
+        // }
+        // // pthread_mutex_unlock(&interface->global_item.mutex);
 
-        // pthread_mutex_lock(&interface->tab_player.mutex);
-        cellule *itt_cell_player = interface->tab_player.tete;
-        while (itt_cell_player != NULL)
-        {
-            display_item(interface->win_level, *itt_cell_player->item, itt_cell_player->item->x, itt_cell_player->item->y);
-            itt_cell_player = itt_cell_player->succ;
-        }
-        // pthread_mutex_unlock(&interface->tab_player.mutex);
+        // // pthread_mutex_lock(&interface->tab_player.mutex);
+        // cellule *itt_cell_player = tab_player.tete;
+        // while (itt_cell_player != NULL)
+        // {
+        //     display_item(interface->win_level, *itt_cell_player->item, itt_cell_player->item->x, itt_cell_player->item->y);
+        //     itt_cell_player = itt_cell_player->succ;
+        // }
+        // // pthread_mutex_unlock(&interface->tab_player.mutex);
 
         // Met à jour le HUD
         interface_hud_update(interface);

@@ -113,7 +113,29 @@ int main(int argc, char *argv[])
     }
     // Quitter le mode d'affichage ncurses
     ncurses_stop();
-
+    printf("TAB PLAYER 0:\n");
+    if (tab_player.tete != NULL)
+    {
+        cellule *cell_player = tab_player.tete;
+        while (cell_player != NULL)
+        {
+            item_t *player = cell_player->item;
+            printf("player %d (%d, %d)\n", player->id, player->x, player->y);
+            cell_player = cell_player->succ;
+        }
+    }
+    // printf("TAB PLAYER 1:\n");
+    // if (all_interface[1]->tab_player.tete != NULL)
+    // {
+    //     cellule *cell_player = all_interface[1]->tab_player.tete;
+    //     while (cell_player != NULL)
+    //     {
+    //         item_t *player = cell_player->item;
+    //         printf("player %d (%d, %d)\n", player->id, player->x, player->y);
+    //         cell_player = cell_player->succ;
+    //     }
+    // }
+    exit(0);
     // // supprimer l'interface
     for (int i = 0; i < nb_interface; i++)
     {
