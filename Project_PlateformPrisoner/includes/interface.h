@@ -162,7 +162,7 @@ void creer_partie();
 char *afficher_salons();
 void convertToItem(interface_t *interface, level_t *level);
 interface_t **interface_create_game(char *path, int *nb_interface);
-void interface_game_actions(interface_t *interface, int c);
+void interface_game_actions(int c);
 
 void init_thread_item(interface_t *interface, item_t *item);
 // void undraw_item(interface_t *interface, item_t item);

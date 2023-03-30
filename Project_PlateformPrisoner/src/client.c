@@ -105,12 +105,11 @@ int main(int argc, char *argv[])
     int nb_interface = 1;
     all_interface = interface_create_game(path, &nb_interface);
     int ch;
-
     while ((ch = getch()) != 27)
     {
         // on donne au player l'interface dans lequel il se trouve, pour effectuer les actions
         // pour le teste : 0
-        interface_game_actions(all_interface[0], ch);
+        interface_game_actions(ch);
     }
     // Quitter le mode d'affichage ncurses
     ncurses_stop();
