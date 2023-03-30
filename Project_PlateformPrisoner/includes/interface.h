@@ -40,18 +40,19 @@ typedef struct
 liste_door_t tab_door[NB_DOOR];
 
 // Structure représentant l'interface de l'application
-typedef struct
+typedef struct interface_s
 {
-    int n_level;                   // Le numéro du niveau
-    window_t *win_infos;           // La fenêtre d'informations ou HUD (Heads Up Display)
-    window_t *win_level;           // La fenêtre du jeu
-    window_t *win_tools;           // La fenêtre des outils
-    window_t *win_debug;           // La fenêtre de debug
-    unsigned int selection;        // L'outil sélectionnée
-    unsigned int current_color;    // La couleur sélectionné
-    liste tab_item[HEIGHT][WIDTH]; // Tableau de Liste de pointeur vers un items (pour l'instant aucun pointeur)
-    liste global_item;             // Les pointeurs pointent vers les items de cette liste (contiendra les items original de la map)
-    liste tab_player;              // Tableau de joueurs
+    struct interface_s *current_interface; // L'interface courante
+    int n_level;                           // Le numéro du niveau
+    window_t *win_infos;                   // La fenêtre d'informations ou HUD (Heads Up Display)
+    window_t *win_level;                   // La fenêtre du jeu
+    window_t *win_tools;                   // La fenêtre des outils
+    window_t *win_debug;                   // La fenêtre de debug
+    unsigned int selection;                // L'outil sélectionnée
+    unsigned int current_color;            // La couleur sélectionné
+    liste tab_item[HEIGHT][WIDTH];         // Tableau de Liste de pointeur vers un items (pour l'instant aucun pointeur)
+    liste global_item;                     // Les pointeurs pointent vers les items de cette liste (contiendra les items original de la map)
+    liste tab_player;                      // Tableau de joueurs
 } interface_t;
 
 typedef struct data_thread
@@ -180,8 +181,8 @@ void find_start(interface_t *interface);
 void draw_explosion(interface_t *interface, item_t *item);
 void undraw_explosion(interface_t *interface, item_t *item);
 
-void change_interface(interface_t *interface, int new_level);
-void move_player_to_door(item_t *player, item_t *destination, interface_t *interface);
+interface_t *change_interface(interface_t *interface, int new_level);
+void move_player_to_door(item_t *player, item_t *destination, interface_t *interface, interface_t *new_interface);
 
 void *routine_display(void *arg);
 void *routine_robot(void *arg);
