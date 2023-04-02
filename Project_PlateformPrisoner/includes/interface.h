@@ -38,7 +38,7 @@ typedef struct
 
 // extern liste_door_t tab_door[NB_DOOR];
 liste_door_t tab_door[NB_DOOR];
-liste tab_player;                      // Tableau de joueurs
+liste tab_player; // Tableau de joueurs
 
 // Structure représentant l'interface de l'application
 typedef struct interface_s
@@ -173,7 +173,8 @@ int interface_game_update(interface_t *interface, item_t *item, int c);
  * @param[in,out] interface the interface
  */
 void interface_hud_update(interface_t *interface);
-void interface_debug(interface_t *interface, int posX, int posY);
+void interface_debug(interface_t *interface);
+void interface_debug_detail(interface_t *interface, int posX, int posY);
 void chute_player(interface_t *interface, item_t *item);
 int is_obstacle(interface_t *interface, item_t *item, int new_y, int new_x, int check_side);
 void init_player(interface_t *interface, int x, int y);

@@ -116,7 +116,7 @@ char *afficher_salons()
     {
         printf("Saississez le nom du salon : ");
         char salon[50];
-        scanf("%50s", salon);
+        scanf("%49s", salon);
         // convertir le nom du salon en minuscules
         for (char *c = salon; *c; c++)
         {
@@ -251,7 +251,7 @@ interface_t **interface_create_game(char *path, int *nb_interface)
         tab_interface[n_interface]->selection = ID_BLOCK;    // default selection
 
         // fenetre debug
-        tab_interface[n_interface]->win_debug = window_create(80, 0, 62, 22, "DEBUG", FALSE);
+        tab_interface[n_interface]->win_debug = window_create(80, 0, 62, 27, "DEBUG", FALSE);
 
         convertToItem(tab_interface[n_interface], &tab_levels[n_interface]);
     }
@@ -277,8 +277,9 @@ interface_t **interface_create_game(char *path, int *nb_interface)
 
 void pass_door(interface_t *interface, item_t *player, int door_id)
 {
-    if (door_id < 3100 && door_id > 3500)
+    if (door_id < 3100 || door_id > 3500)
     {
+        ncurses_stop();
         printf("Erreur: l'identifiant de la porte est invalide.\n");
         return;
     }
@@ -607,6 +608,7 @@ int interface_game_update(interface_t *interface, item_t *item, int c)
     switch (c)
     {
     case 'z':
+    case 'Z':
     case KEY_UP:
     case 2:
         if ((item->id >= 40 && item->id < 50) || item->id == ID_PROBE)
@@ -650,8 +652,13 @@ int interface_game_update(interface_t *interface, item_t *item, int c)
         }
         break;
     case 'q':
+    case 'Q':
     case KEY_LEFT:
     case 0:
+        if (item->id > ID_PLAYER && item->id < ID_PLAYER + 10)
+        {
+            item->etat = 0;
+        }
         if (item->x - 1 >= 0)
         {
             obstacle += is_obstacle(interface, item, item->y, item->x - 1, VERTICAL);
@@ -699,6 +706,7 @@ int interface_game_update(interface_t *interface, item_t *item, int c)
         }
         break;
     case 's':
+    case 'S':
     case KEY_DOWN:
     case 3:
         if ((item->id >= 40 && item->id < 50) || item->id == ID_PROBE)
@@ -739,8 +747,13 @@ int interface_game_update(interface_t *interface, item_t *item, int c)
         }
         break;
     case 'd':
+    case 'D':
     case KEY_RIGHT:
     case 1:
+        if (item->id > ID_PLAYER && item->id < ID_PLAYER + 10)
+        {
+            item->etat = 1;
+        }
         if (item->x + item->width + 1 <= WIDTH)
         {
             obstacle += is_obstacle(interface, item, item->y, item->x + item->width, VERTICAL);
@@ -847,7 +860,7 @@ int interface_game_update(interface_t *interface, item_t *item, int c)
             return c;
     }
 
-    interface_debug(interface, item->x, item->y);
+    interface_debug(interface);
     return obstacle;
 }
 
@@ -1122,11 +1135,11 @@ void interface_game_actions(int c)
 
         if (window_getcoordinates(interface->win_level, mouseX, mouseY, &posX, &posY))
         {
-            interface_debug(interface, posX, posY);
+            interface_debug_detail(interface, posX, posY);
         }
         else if (window_getcoordinates(interface->win_debug, mouseX, mouseY, &posX, &posY))
         {
-            interface_debug(interface, posX, posY);
+            interface_debug_detail(interface, posX, posY);
         }
     }
 
@@ -1139,7 +1152,7 @@ void interface_hud_update(interface_t *interface)
     // window_erase(interface->win_tools); // #1
     window_mvprintw(interface->win_tools, 1, 1, "Key");
 
-    // temporaire : player
+    // Player HUD
     pthread_mutex_lock(&tab_player.mutex);
     if (tab_player.tete != NULL)
     {
@@ -1147,7 +1160,7 @@ void interface_hud_update(interface_t *interface)
 
         for (int i = 0; i < 4; i++)
         {
-            // afficher les clé du player
+            // Display key
             if (player->properties.player.key[i].color != 0)
             {
                 item_t *key = init_item(player->properties.player.key[i].color, 2 + (i * 2), 3, 1, 2);
@@ -1158,7 +1171,7 @@ void interface_hud_update(interface_t *interface)
 
         window_mvprintw(interface->win_tools, 6, 1, "Lives");
 
-        // temporaire : pour afficher les vies
+        // Display life
         for (int i = 0; i < player->properties.player.nb_life; i++)
         {
             item_t life = *init_item(ID_LIFE, 2 + i, 8, 1, 1);
@@ -1167,7 +1180,7 @@ void interface_hud_update(interface_t *interface)
 
         window_mvprintw(interface->win_tools, 10, 1, "Bombs");
 
-        // temporaire : pour afficher les bombes
+        // Display bomb
         for (int i = 0; i < player->properties.player.nb_bomb; i++)
         {
             item_t bomb = *init_item(ID_BOMB, 2 + i, 12, 1, 1);
@@ -1268,7 +1281,10 @@ void undraw_explosion(interface_t *interface, item_t *item)
     int x = item->x;
     int y = item->y;
     // #pthread_mutex_lock(&interface->tab_item[y][x].mutex);
-    supprimer(&interface->tab_item[y][x], rechercher(interface->tab_item[y][x], ID_ACTIVE_BOMB), DELETE_ITEM);
+    if (rechercher(interface->tab_item[y][x], ID_ACTIVE_BOMB) != NULL)
+    {
+        supprimer(&interface->tab_item[y][x], rechercher(interface->tab_item[y][x], ID_ACTIVE_BOMB), DELETE_ITEM);
+    }
     // #pthread_mutex_unlock(&interface->tab_item[y][x].mutex);
     //  on affiche les explosions
     for (int i = -2; i <= 2; i++)
@@ -1284,7 +1300,7 @@ void undraw_explosion(interface_t *interface, item_t *item)
 
                 if (interface->tab_item[new_y][new_x].tete != NULL)
                 {
-                    if (rechercher(interface->tab_item[new_y][new_x], ID_EXPLOSION))
+                    if (rechercher(interface->tab_item[new_y][new_x], ID_EXPLOSION) != NULL)
                     {
                         supprimer(&interface->tab_item[new_y][new_x], rechercher(interface->tab_item[new_y][new_x], ID_EXPLOSION), DELETE_ITEM);
                     }
@@ -1361,7 +1377,7 @@ void *routine_display(void *arg)
         window_refresh(interface->win_level);
         window_refresh(interface->win_tools);
 
-        interface_debug(interface, 0, 0);
+        interface_debug(interface);
         window_refresh(interface->win_debug);
 
         usleep(10000);

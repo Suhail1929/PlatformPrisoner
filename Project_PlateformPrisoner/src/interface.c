@@ -54,7 +54,7 @@ interface_t *interface_create(level_t *level)
     window_refresh(result->win_tools);
 
     // fenetre debug
-    result->win_debug = window_create(80, 0, 62, 22, "DEBUG", FALSE);
+    result->win_debug = window_create(80, 0, 62, 27, "DEBUG", FALSE);
     window_refresh(result->win_debug);
 
     return result;
@@ -92,7 +92,7 @@ void update_win_level(interface_t *interface, level_t *level)
 void interface_delete(interface_t **interface)
 {
     delete_all_list(&(*interface)->global_item, (*interface)->tab_item); // delete all items and their pointers in tab_item
-    delete_all_list(&(tab_player), (*interface)->tab_item);  // delete all players and their pointers in tab_item
+    delete_all_list(&(tab_player), (*interface)->tab_item);              // delete all players and their pointers in tab_item
     window_delete(&(*interface)->win_infos);
     window_delete(&(*interface)->win_level);
     window_delete(&(*interface)->win_tools);
@@ -608,11 +608,11 @@ void interface_actions(int fd, level_t *level, interface_t *interface, int c)
         {
             interface_level_actions(interface, posX, posY, 0);
             window_mvprintw_col(interface->win_infos, 1, 0, WHITE, "X : %d Y : %d\n", posX, posY);
-            interface_debug(interface, posX, posY);
+            interface_debug_detail(interface, posX, posY);
         }
         else if (window_getcoordinates(interface->win_debug, mouseX, mouseY, &posX, &posY))
         {
-            interface_debug(interface, posX, posY);
+            interface_debug_detail(interface, posX, posY);
         }
         window_refresh(interface->win_infos);
     }
@@ -844,54 +844,51 @@ void displayMapID() // for debugging
 /**
  * @brief Function that display the interface id for debugging
  */
-void interface_debug(interface_t *interface, int posX, int posY)
+void interface_debug(interface_t *interface)
 {
-
-    if (posX >= 0 && posX < 60 && posY >= 0 && posY < 20)
+    for (int i = 0; i < HEIGHT; i++)
     {
-        for (int i = 0; i < HEIGHT; i++)
+        for (int j = 0; j < WIDTH; j++)
         {
-            for (int j = 0; j < WIDTH; j++)
+            if (interface->tab_item[i][j].tete != NULL)
             {
+
+                int entier;
                 if (interface->tab_item[i][j].tete != NULL)
                 {
-
-                    int entier;
-                    if (interface->tab_item[i][j].tete != NULL)
-                    {
-                        entier = interface->tab_item[i][j].tete->item->id;
-                    }
-                    else
-                    {
-                        entier = tab[i][j];
-                    }
-                    while (entier >= 10)
-                    {
-                        entier /= 10;
-                    }
-                    window_mvprintw_col(interface->win_debug, i, j, MAGENTA, "%d", entier);
+                    entier = interface->tab_item[i][j].tete->item->id;
                 }
                 else
                 {
-                    window_mvprintw_col(interface->win_debug, i, j, WHITE, "%d", ID_DELETE);
+                    entier = tab[i][j];
                 }
+                while (entier >= 10)
+                {
+                    entier /= 10;
+                }
+                window_mvprintw_col(interface->win_debug, i, j, MAGENTA, "%d", entier);
+            }
+            else
+            {
+                window_mvprintw_col(interface->win_debug, i, j, WHITE, "%d", ID_DELETE);
             }
         }
-        /*
-                move(23, 80);
-                clrtoeol();
-                if (interface->tab_item[posY][posX].tete != NULL)
-                {
-                    mvprintw(23, 80, "dernier id ajouté : %d", interface->tab_item[posY][posX].tete->item->id);
-                }
-                else
-                {
-                    mvprintw(23, 80, "dernier id ajouté : %d", tab[posY][posX]);
-                }
-                move(24, 80);
-                clrtoeol();
-                mvprintw(24, 80, "Position x: %d, y: %d      ", posX, posY);
-                afficher_liste(interface->tab_item[posY][posX]);
-                */
+    }
+}
+
+void interface_debug_detail(interface_t *interface, int posX, int posY)
+{
+    if (posX >= 0 && posX < 60 && posY >= 0 && posY < 20)
+    {
+        if (interface->tab_item[posY][posX].tete != NULL)
+        {
+            window_mvprintw_col(interface->win_debug, 21, 1, BLUE, "dernier id ajouté : %d", interface->tab_item[posY][posX].tete->item->id);
+        }
+        else
+        {
+            window_mvprintw_col(interface->win_debug, 21, 1, BLUE, "dernier id ajouté : %d", tab[posY][posX]);
+        }
+        window_mvprintw_col(interface->win_debug, 23, 1, BLUE, "Position x: %d, y: %d      ", posX, posY);
+        afficher_liste(interface->win_debug, interface->tab_item[posY][posX]);
     }
 }

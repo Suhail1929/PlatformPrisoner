@@ -3,6 +3,8 @@
 #include <pthread.h>
 
 #include "window.h"
+#include "couleur.h"
+#include "window.h"
 #include "item.h"
 #include "cellule.h"
 #include "liste.h"
@@ -29,21 +31,19 @@ void inserer(liste *l, cellule *c)
     l->tete = c;
 }
 
-void afficher_liste(liste l)
+void afficher_liste(window_t *win, liste l)
 {
 
     if (l.tete == NULL)
     {
-        move(25, 80);
-        clrtoeol();
-        mvprintw(25, 80, "Liste vide");
+        window_mvprintw_col(win, 25, 1, BLUE, "Liste vide                              ");
     }
     else
     {
         char chaine[256] = "";
         cellule *c = l.tete;
-        move(25, 80);
-        clrtoeol();
+        // move(25, 80);
+        // clrtoeol();
         while (c != NULL)
         {
             if (c->item != NULL)
@@ -52,8 +52,9 @@ void afficher_liste(liste l)
             }
             c = c->succ;
         }
-        sprintf(chaine, "%sNULL", chaine);
-        mvprintw(25, 80, chaine);
+        sprintf(chaine, "%sNULL                              ", chaine);
+        // mvprintw(25, 80, chaine);
+        window_mvprintw_col(win, 25, 1, BLUE, chaine);
     }
 }
 

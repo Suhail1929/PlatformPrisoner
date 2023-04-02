@@ -38,7 +38,8 @@ item_t *init_item(unsigned int id, unsigned int x, unsigned int y, unsigned int 
     case 21 ... 24: // ID_KEY
         item->properties.color.color = id % 10;
         break;
-    case 41 ... 44: // ID_PLAYER
+    case 41 ... 44:     // ID_PLAYER
+        item->etat = 1; // actif
         item->properties.player.nb_key = 0;
         item->properties.player.nb_life = 5;
         item->properties.player.nb_bomb = 3;
@@ -108,8 +109,16 @@ void display_item(window_t *window, item_t item, int posX, int posY)
         window_mvaddch(window, posY, posX + 1, charID[0]);
         break;
     case 41 ... 44: // ID_PLAYER(4) + color(1-4)
-        window_mvaddch_col(window, posY, posX + 1, item.properties.player.color.color, ' ' | A_REVERSE);
-        window_mvaddch_col(window, posY, posX, item.properties.player.color.color, '-' | A_REVERSE);
+        if (item.etat == 1)
+        {
+            window_mvaddch_col(window, posY, posX, item.properties.player.color.color, ' ' | A_REVERSE);
+            window_mvaddch_col(window, posY, posX + 1, item.properties.player.color.color, '-' | A_REVERSE);
+        }
+        else
+        {
+            window_mvaddch_col(window, posY, posX + 1, item.properties.player.color.color, ' ' | A_REVERSE);
+            window_mvaddch_col(window, posY, posX, item.properties.player.color.color, '-' | A_REVERSE);
+        }
         window_mvaddch_col(window, posY + 1, posX, item.properties.player.color.color, ' ' | ACS_HLINE);
         window_mvaddch_col(window, posY + 1, posX + 1, item.properties.player.color.color, ' ' | ACS_PLUS);
         window_mvaddch_col(window, posY + 1, posX + 2, item.properties.player.color.color, ' ' | ACS_HLINE);
