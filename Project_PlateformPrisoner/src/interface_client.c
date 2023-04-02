@@ -25,11 +25,12 @@
 
 pthread_t affiche;
 int stop = 0;
-int stop_display = 0;
 int nb_active_bomb = 0;
 interface_t **tab_interface = NULL;
 interface_t interface;
 int current_level = 0;
+
+pthread_mutex_t deplacement_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 // int compteur = 0;
 
@@ -367,15 +368,15 @@ void move_player_to_door(item_t *player, item_t *destination, interface_t *inter
             for (int w = 0; w < player->width; w++)
             {
                 // cleanup à faire !
-                // //#pthread_mutex_lock(&interface->tab_item[player->y + h][player->x + w].mutex);
-                // //#pthread_mutex_lock(&interface->tab_item[destination->y + h][destination->x + w].mutex);
+                pthread_mutex_lock(&interface->tab_item[player->y + h][player->x + w].mutex);
+                pthread_mutex_lock(&interface->tab_item[destination->y + h][destination->x + w].mutex);
 
                 cellule *move_cell = rechercher(interface->tab_item[player->y + h][player->x + w], player->id);
                 inserer(&new_interface->tab_item[destination->y + h][destination->x + w], init_cellule(move_cell->item));
                 supprimer(&interface->tab_item[player->y + h][player->x + w], rechercher(interface->tab_item[player->y + h][player->x + w], player->id), DELETE_POINTER);
 
-                // //#pthread_mutex_unlock(&interface->tab_item[destination->y + h][destination->x + w].mutex);
-                // //#pthread_mutex_unlock(&interface->tab_item[player->y + h][player->x + w].mutex);
+                pthread_mutex_unlock(&interface->tab_item[destination->y + h][destination->x + w].mutex);
+                pthread_mutex_unlock(&interface->tab_item[player->y + h][player->x + w].mutex);
             }
         }
         // pthread_mutex_lock(&tab_player.mutex);
@@ -621,7 +622,7 @@ int interface_game_update(interface_t *interface, item_t *item, int c)
                     deplacement = rand() % 4; // 0-1-2-3
                 }
 
-                if ((!obstacle) || (obstacle > 3100 && obstacle < 3500)) // any obstacle, shift the item pointer
+                if ((!obstacle) || (obstacle > 3100 && obstacle < 3500) || (obstacle == 8)) // any obstacle, shift the item pointer
                 {
                     // remove the item display from the map
                     // undraw_item(interface, *item);
@@ -629,22 +630,26 @@ int interface_game_update(interface_t *interface, item_t *item, int c)
                     // shift the item pointer
                     for (int w = 0; w < item->width; w++)
                     {
-                        // cleanup à faire !
-                        // #pthread_mutex_lock(&interface->tab_item[item->y + item->height - 1][item->x + w].mutex);
-                        // //#pthread_mutex_lock(&interface->tab_item[item->y - 1][item->x + w].mutex);
-
+                        pthread_mutex_lock(&deplacement_mutex);
                         cellule *move_cell = rechercher(interface->tab_item[item->y + item->height - 1][item->x + w], item->id);
                         inserer(&interface->tab_item[item->y - 1][item->x + w], init_cellule(move_cell->item));
                         supprimer(&interface->tab_item[item->y + item->height - 1][item->x + w], rechercher(interface->tab_item[item->y + item->height - 1][item->x + w], item->id), DELETE_POINTER);
-
-                        // //#pthread_mutex_unlock(&interface->tab_item[item->y - 1][item->x + w].mutex);
-                        // #pthread_mutex_unlock(&interface->tab_item[item->y + item->height - 1][item->x + w].mutex);
+                        pthread_mutex_unlock(&deplacement_mutex);
                     }
                     item->y--;
 
                     if (item->id > ID_PLAYER && item->id < ID_PLAYER + 10 && (obstacle > 3100 && obstacle < 3500))
                     {
                         pass_door(interface, item, obstacle);
+                        return -1;
+                    }
+                    else if (item->id > ID_PLAYER && item->id < ID_PLAYER + 10 && (obstacle == 8))
+                    {
+                        ncurses_stop();
+                        printf("YOU WIN !\n");
+                        printf("CHUCK IS HAPPY\n");
+                        stop = 1;
+                        exit(0);
                         return -1;
                     }
                 }
@@ -671,7 +676,7 @@ int interface_game_update(interface_t *interface, item_t *item, int c)
             {
                 deplacement = rand() % 4; // 0-1-2-3
             }
-            if (!obstacle || (obstacle > 3100 && obstacle < 3500)) // any obstacle, shift the item pointer
+            if (!obstacle || (obstacle > 3100 && obstacle < 3500) || (obstacle == 8)) // any obstacle, shift the item pointer
             {
                 // remove the item display from the map
 
@@ -679,22 +684,26 @@ int interface_game_update(interface_t *interface, item_t *item, int c)
 
                 for (int h = 0; h < item->height; h++)
                 {
-                    // cleanup à faire !
-                    // #pthread_mutex_lock(&interface->tab_item[item->y + h][item->x + item->width - 1].mutex);
-                    // //#pthread_mutex_lock(&interface->tab_item[item->y + h][item->x - 1].mutex);
-
+                    pthread_mutex_lock(&deplacement_mutex);
                     cellule *move_cell = rechercher(interface->tab_item[item->y + h][item->x + item->width - 1], item->id);
                     inserer(&interface->tab_item[item->y + h][item->x - 1], init_cellule(move_cell->item));
                     supprimer(&interface->tab_item[item->y + h][item->x + item->width - 1], rechercher(interface->tab_item[item->y + h][item->x + item->width - 1], item->id), DELETE_POINTER);
-
-                    // //#pthread_mutex_unlock(&interface->tab_item[item->y + h][item->x - 1].mutex);
-                    // #pthread_mutex_unlock(&interface->tab_item[item->y + h][item->x + item->width - 1].mutex);
+                    pthread_mutex_unlock(&deplacement_mutex);
                 }
                 item->x--;
 
                 if (item->id > ID_PLAYER && item->id < ID_PLAYER + 10 && (obstacle > 3100 && obstacle < 3500))
                 {
                     pass_door(interface, item, obstacle);
+                    return -1;
+                }
+                else if (item->id > ID_PLAYER && item->id < ID_PLAYER + 10 && (obstacle == 8))
+                {
+                    ncurses_stop();
+                    printf("YOU WIN !\n");
+                    printf("CHUCK IS HAPPY\n");
+                    stop = 1;
+                    exit(0);
                     return -1;
                 }
             }
@@ -718,28 +727,32 @@ int interface_game_update(interface_t *interface, item_t *item, int c)
                 {
                     deplacement = rand() % 4; // 0-1-2-3
                 }
-                if (!obstacle || (obstacle > 3100 && obstacle < 3500)) // any obstacle, shift the item pointer
+                if (!obstacle || (obstacle > 3100 && obstacle < 3500) || (obstacle == 8)) // any obstacle, shift the item pointer
                 {
                     // remove the item display from the map
                     // undraw_item(interface, *item);
 
                     for (int w = 0; w < item->width; w++)
                     {
-                        // cleanup à faire !
-                        // #pthread_mutex_lock(&interface->tab_item[item->y][item->x + w].mutex);
-                        // //#pthread_mutex_lock(&interface->tab_item[item->y + item->height][item->x + w].mutex);
-
+                        pthread_mutex_lock(&deplacement_mutex);
                         cellule *move_cell = rechercher(interface->tab_item[item->y][item->x + w], item->id);
                         inserer(&interface->tab_item[item->y + item->height][item->x + w], init_cellule(move_cell->item));
                         supprimer(&interface->tab_item[item->y][item->x + w], rechercher(interface->tab_item[item->y][item->x + w], item->id), DELETE_POINTER);
-
-                        // //#pthread_mutex_unlock(&interface->tab_item[item->y + item->height][item->x + w].mutex);
-                        // #pthread_mutex_unlock(&interface->tab_item[item->y][item->x + w].mutex);
+                        pthread_mutex_unlock(&deplacement_mutex);
                     }
                     item->y++;
                     if (item->id > ID_PLAYER && item->id < ID_PLAYER + 10 && (obstacle > 3100 && obstacle < 3500))
                     {
                         pass_door(interface, item, obstacle);
+                        return -1;
+                    }
+                    else if (item->id > ID_PLAYER && item->id < ID_PLAYER + 10 && (obstacle == 8))
+                    {
+                        ncurses_stop();
+                        printf("YOU WIN !\n");
+                        printf("CHUCK IS HAPPY\n");
+                        stop = 1;
+                        exit(0);
                         return -1;
                     }
                 }
@@ -766,33 +779,32 @@ int interface_game_update(interface_t *interface, item_t *item, int c)
             {
                 deplacement = rand() % 4; // 0-1-2-3
             }
-            if (obstacle == 0 || (obstacle > 3100 && obstacle < 3500)) // any obstacle, shift the item pointer
+            if (obstacle == 0 || (obstacle > 3100 && obstacle < 3500) || (obstacle == 8)) // any obstacle, shift the item pointer
             {
                 // remove the item display from the map
                 // undraw_item(interface, *item);
                 for (int h = 0; h < item->height; h++)
                 {
-                    // cleanup à faire !
-                    // #pthread_mutex_lock(&interface->tab_item[item->y + h][item->x].mutex);
-                    // //#pthread_mutex_lock(&interface->tab_item[item->y + h][item->x + item->width].mutex);
-                    // if (obstacle > 3100 && obstacle < 3500)
-                    // {
-                    //     ncurses_stop();
-                    //     printf(" id  \n");
-                    //     exit(0);
-                    // }
+                    pthread_mutex_lock(&deplacement_mutex);
                     cellule *move_cell = rechercher(interface->tab_item[item->y + h][item->x], item->id);
                     inserer(&interface->tab_item[item->y + h][item->x + item->width], init_cellule(move_cell->item));
                     supprimer(&interface->tab_item[item->y + h][item->x], rechercher(interface->tab_item[item->y + h][item->x], item->id), DELETE_POINTER);
-
-                    // //#pthread_mutex_unlock(&interface->tab_item[item->y + h][item->x + item->width].mutex);
-                    // #pthread_mutex_unlock(&interface->tab_item[item->y + h][item->x].mutex);
+                    pthread_mutex_unlock(&deplacement_mutex);
                 }
                 item->x++;
 
                 if (item->id > ID_PLAYER && item->id < ID_PLAYER + 10 && (obstacle > 3100 && obstacle < 3500))
                 {
                     pass_door(interface, item, obstacle);
+                    return -1;
+                }
+                else if (item->id > ID_PLAYER && item->id < ID_PLAYER + 10 && (obstacle == 8))
+                {
+                    ncurses_stop();
+                    printf("YOU WIN !\n");
+                    printf("CHUCK IS HAPPY\n");
+                    stop = 1;
+                    exit(0);
                     return -1;
                 }
             }
@@ -808,18 +820,16 @@ int interface_game_update(interface_t *interface, item_t *item, int c)
         // change_interface(interface, 0);
         if (item->properties.player.nb_bomb > 0)
         {
+            // pthread_mutex_lock(&interface->global_item.mutex);
             item->properties.player.nb_bomb--;
             nb_active_bomb++;
             // Create a new bomb item
             item_t *bomb = init_item(ID_ACTIVE_BOMB, item->x + 1, item->y + 3, 1, 1);
             // Add the bomb to the interface's tab_item array
-            pthread_mutex_lock(&interface->global_item.mutex);
             inserer(&interface->global_item, init_cellule(bomb));
-            pthread_mutex_unlock(&interface->global_item.mutex);
+            // pthread_mutex_unlock(&interface->global_item.mutex);
             item_t *p_bomb = bomb;
             inserer(&interface->tab_item[bomb->y][bomb->x], init_cellule(p_bomb)); // add pointer to the bomb
-                                                                                   // Draw the bomb on the interface
-                                                                                   // undraw_item(interface, *item);
             bomb->thread = (pthread_t *)malloc(sizeof(pthread_t));
             data_thread *explosion_data = malloc(sizeof(data_thread));
             explosion_data->interface = interface;
@@ -902,7 +912,16 @@ void chute_player(interface_t *interface, item_t *item)
         if (chute != 0)
         {
             if (item->properties.player.nb_life > 0)
+            {
                 item->properties.player.nb_life--;
+                if (item->properties.player.nb_life == 0)
+                {
+                    ncurses_stop();
+                    printf("GAME OVER ! NOOB\n");
+                    stop = 1;
+                    exit(0);
+                }
+            }
         }
     }
 }
@@ -975,6 +994,7 @@ int is_obstacle(interface_t *interface, item_t *item, int new_y, int new_x, int 
                     }
                     action = 1;
                     break;
+                case ID_EXIT:
                 case 3101 ... 3499: // ID_DOOR
                     if (item->id > ID_PLAYER && item->id < ID_PLAYER + 10)
                     {
@@ -1003,6 +1023,13 @@ int is_obstacle(interface_t *interface, item_t *item, int new_y, int new_x, int 
                             {
                                 item->properties.player.nb_life--;
                                 enemy_cell++;
+                                if (item->properties.player.nb_life == 0)
+                                {
+                                    ncurses_stop();
+                                    printf("GAME OVER ! NOOB\n");
+                                    stop = 1;
+                                    exit(0);
+                                }
                             }
                         }
                         obstacle++;
@@ -1040,11 +1067,14 @@ int is_obstacle(interface_t *interface, item_t *item, int new_y, int new_x, int 
                     {
                         if (new_cell->item->etat == 1)
                         {
+
                             if (item->properties.player.nb_bomb < 3)
                             {
+                                pthread_mutex_lock(&item->mutex);
                                 item->properties.player.nb_bomb = 3;
                                 // send signal to thread bomb
                                 pthread_cond_signal(&new_cell->item->cond);
+                                pthread_mutex_unlock(&item->mutex);
                             }
                         }
                         break;
@@ -1072,7 +1102,6 @@ int is_obstacle(interface_t *interface, item_t *item, int new_y, int new_x, int 
                 case 41 ... 44: // ID_PLAYER
                 case ID_LADDER:
                 case ID_START:
-                case ID_EXIT:
                     obstacle += ID_DELETE;
                     break;
                 }
@@ -1322,11 +1351,11 @@ void *routine_display(void *arg)
         perror("pthread_detach");
         exit(EXIT_FAILURE);
     }
-    stop_display = 0;
+    stop = 0;
 
     while (1)
     {
-        if (stop_display == 1)
+        if (stop == 1)
         {
             pthread_cancel(pthread_self());
             pthread_testcancel();
@@ -1536,7 +1565,7 @@ void *routine_bonus(void *arg)
         pthread_cond_wait(&item->cond, &interface->tab_item[item->y][item->x].mutex);
         item->etat = 0;
         // #pthread_mutex_unlock(&interface->tab_item[item->y][item->x].mutex);
-        sleep(15);
+        sleep(5);
     }
     pthread_exit(NULL);
 }
