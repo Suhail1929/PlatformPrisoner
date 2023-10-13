@@ -1,23 +1,67 @@
 # PlatformPrisoner
 
-I.	Présentation du jeu
+ ____  _       _    __                      ____       _                      
+|  _ \| | __ _| |_ / _| ___  _ __ _ __ ___ |  _ \ _ __(_)___  ___  _ __   ___  _ __ 
+| |_) | |/ _` | __| |_ / _ \| '__| '_ ` _ \| |_) | '__| / __|/ _ \| '_ \ / _ \| '__|
+|  __/| | (_| | |_|  _| (_) | |  | | | | | |  __/| |  | \__ \ (_) | | | |  __/| |   
+|_|   |_|\__,_|\__|_|  \___/|_|  |_| |_| |_|_|   |_|  |_|___/\___/|_| |_|\___||_|   
 
-Le but du jeu est de survivre et de s'échapper d'un labyrinthe rempli de pièges mortels en étant le premier joueur à atteindre la sortie. Le scénario du jeu se déroule dans un futur lointain, où les joueurs incarnent des prisonniers qui ont été capturés par une race extra-terrestre.
-Les joueurs contrôlent un personnage et naviguent à travers des tableaux (des pièces) en récupérant des clés pour ouvrir des portes et éviter les pièges. Le jeu est compétitif, chaque joueur doit être le premier à atteindre la sortie avant les autres joueurs.
-Le jeu offre une expérience de jeu en ligne excitante et permet aux joueurs de s'affronter dans des compétitions palpitantes. Les joueurs peuvent également interagir les uns avec les autres pour coopérer ou entraver leur progression.
-En somme, votre jeu de plateformes multi-joueurs en réseau offre un mélange captivant de compétition, d'action et de coopération, avec un scénario intéressant qui immergera les joueurs dans un univers futuriste et extraterrestre.
+Ce projet consiste en la création d'un jeu multi-joueurs en réseau et multi-threadé.
+Le but du jeu est de sortir d'un labyrinthe rempli de pièges avant les autres joueurs.
 
-II.	Prérequis
+==================== Comment lancer le jeu :
 
-Pour pouvoir lancer le jeu, plusieurs prérequis techniques sont nécessaires. Tout d'abord, il est essentiel de disposer d'un compilateur C pour pouvoir compiler le code source du jeu. Il peut s'agir, par exemple, de GCC, Clang, ou tout autre compilateur compatible avec le langage C.
-Ensuite, il est important d'avoir installé le logiciel Make, qui permet de générer automatiquement l'exécutable du jeu à partir du code source. Make est un outil puissant pour automatiser le processus de compilation et faciliter le développement de projets logiciels.
-Enfin, le jeu utilise une interface utilisateur basée sur la bibliothèque NCurses. Il est donc nécessaire d'installer cette bibliothèque pour pouvoir afficher les éléments graphiques du jeu à l'écran. NCurses est une bibliothèque de programmation qui permet de créer des interfaces utilisateur en mode texte, avec des fonctionnalités telles que la couleur, la saisie au clavier, etc.
+1. Ouvrir un terminal dans le dossier du projet "Project_PlateformPrisoner".
+2. Compiler le jeu en entrant la commande "make" dans le terminal. Cette commande va créer un dossier "bin" contenant le jeu.
+Application : 
+    editor : Editeur de monde
+    client : Interface du joueur
+    server : Gestionnaire du jeu
+3. Lancer l'application en entrant la commande "./bin/<Application>" dans le terminal.
 
-III.	Lancez le jeu !
-Dans le cadre de notre projet, il est essentiel de savoir comment lancer l'éditeur de carte et le serveur/client pour commencer à jouer. Tout d'abord, pour lancer l'éditeur, il faut se positionner dans le dossier approprié et taper "make" dans la console. 
-../PlatformPrisoner$   make
+==================== Makefile :
 
-Ensuite, il suffit de se rendre dans le dossier "bin" pour lancer l'éditeur en utilisant la commande "<nom_fichier.bin>". Ce dernier permet de créer des cartes pour le monde de jeu.
+Le fichier "makefile" contient les instructions pour compiler le jeu. Il contient plusieurs cibles, notamment :
+
+"make clean" : Pour nettoyer le projet, supprime les fichiers temporaires et objets créés lors de la compilation.
+!!! Cette commande ne doit pas être exécutée systématiquement avant chaque compilation si les dépendances ont été correctement spécifiées.
+
+"make depend" : Met à jour les dépendances entre les fichiers sources et headers.
+!!! La commande doit être exécutée à chaque ajout d'objet ou d'inclusion d'en-tête dans le projet.
+
+"make" : Compile le jeu, permet de compiler les programmes une fois que les dépendances ont été ajoutées.
+
+"make archive" : Sauvegarder le projet sous forme d'une archive au format ".tar.gz".
+Cette commande appelle la règle clean au préalable et l'archive est placée dans le répertoire parent. 
+Le nom de l'archive dépend du nom du projet et est suivi de la date du jour.
+
+==================== Structure du projet :
+
+Le dossier "bin" contient les exécutables et mondes du jeu.
+Les fichiers binaires elles contiennent les données des mondes de notre jeu.
+Le dossier "includes" contient les fichiers d'entête headers du projet.
+Le dossier "obj" contient les fichiers objets créés lors de la compilation.
+Le dossier "src" contient les fichiers sources du projet.
+
+==================== Fichiers importants :
+
+"editor.c" : L'éditeur de niveau qui permet de créer les mondes et les places dans un fichier binaire.
+"client.c" : L'interface utilisateur, qui va pouvoir s'amuser sur le jeu, créer ou rejoindre une partie en ligne.
+"server.c" : Le serveur contrôle tout, comme la gestion des connexions, la synchronisation des joueurs et le traitement des entrées.
+"interface.h" et "interface.c" : Les fichiers qui gèrent l'affichage ncurses du jeu.
+"entity.h" et "entity.c" : Les fichiers qui gèrent les entités du jeu (joueurs, ennemis, etc.).
+"data_table.h" et "data_table.c" : Les fichiers qui gèrent la structure des niveaux du jeu via des tables d'adresses.
+"fonction.h" et "fonction.c" : Les fichiers qui gèrent les fonctions associées à ncurses.
+"window.h" et "window.c" : Les fichiers qui gèrent les fenêtres et les événements du jeu.
+"couleur.h" et "couleur.c" : Les fichiers qui définissent les couleurs utilisées dans le jeu.
+
+==================== Bugs connus :
+
+lorsqu'on utilise les flèches gauche ou droite pour naviguer entre les niveaux dans l'éditeur, l'incrémentation ou la décrémentation se fait par deux au lieu d'un.
+
+==================== Remarques :
+
+Ce projet a été développé et testé sur un système MacOS et WSL (distributions Linux sur Windows).
 ../PlatformPrisoner$ ./bin/editor <nom_monde>
 
 Une fois que la carte est créée, il est temps de lancer le serveur et le client. Pour ce faire, les utilisateurs doivent exécuter les fichiers respectifs pour chaque composant. Le serveur est chargé de gérer les connexions et les interactions entre les joueurs, tandis que le client permet aux joueurs de se connecter au monde et d'interagir avec lui. Il est important de s'assurer que les fichiers sont correctement configurés avant de les exécuter.
